@@ -841,7 +841,7 @@ def propogate_rays_through_single_element(optical_element, element_center, eleme
         # % Any rays that have complex values due to the radicand in the above
         # % equation being negative experience total internal reflection.  The
         # % values of these rays are set to NaN for now.
-        tir_indices = (refraction_radicand < 0)
+        tir_indices = np.less(refraction_radicand < 0)
 
         # % This sets any of the light ray directions experiencing total
         # % internal reflection to NaN values
@@ -893,7 +893,7 @@ def propogate_rays_through_single_element(optical_element, element_center, eleme
 
         # % This gives the indices of the light rays that actually intersect the
         # % lens (ie the rays that are within the lens pitch)
-        intersect_lens_indices = (optical_axis_distance <= (element_pitch / 2))
+        intersect_lens_indices = np.less_equal(optical_axis_distance,(element_pitch / 2))
 
         # % This sets any of the light ray directions outside of the domain of
         # % the lens to NaN values
@@ -1068,7 +1068,7 @@ def propogate_rays_through_single_element(optical_element, element_center, eleme
         # % Any rays that have complex values due to the radicand in the above
         # % equation being negative experience total internal reflection.  The
         # % values of these rays are set to NaN for now.
-        tir_indices = (refraction_radicand < 0)
+        tir_indices = np.less(refraction_radicand,0)
         #
         # % This sets any of the light ray directions experiencing total
         # % internal reflection to NaN values
