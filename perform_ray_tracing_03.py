@@ -2,13 +2,13 @@ import numpy as np
 from numpy import linalg as la
 import run_piv_simulation_02
 import scipy.io as sio
-# from progressbar import ProgressBar
+from progressbar import ProgressBar
 import time
 from sklearn.neighbors import NearestNeighbors
 import matplotlib.pyplot as plt
+import scipy.integrate as siint
+from scipy.interpolate import interp1d
 import string
-from display_calculation_progress import display_calculation_progress
-
 
 def create_element_coordinate_data(optical_element):
     # % This function creates data to describe the location of the current
@@ -349,18 +349,17 @@ def generate_lightfield_angular_data(lens_pitch, image_distance, scattering_data
 
     # % If the scattering type is 'mie' then the Mie scattering data is loaded,
     # % otherwise nothing is loaded from the scattering data
-    # if strcmp(scattering_type,'mie');
-    #     % This saves the scattering angle data into the parameters structure
-    #     mie_scattering_angle=scattering_data.scattering_angle;
-    #     % This saves the scattering irradiance values for the different particle
-    #     % diameters into the parameters structure
-    #     mie_scattering_irradiance=scattering_data.scattering_irradiance;
-    #     % This extracts the inverse rotation matrix from the parameters structure
-    #     inverse_rotation_matrix=scattering_data.inverse_rotation_matrix;
-    #     % This extracts the normalized beam propogation direction vector from the
-    #     % parameters structure
-    #     beam_propogation_vector=scattering_data.beam_propogation_vector;
-    # end;
+    if scattering_type == 'mie':
+        #% This saves the scattering angle data into the parameters structure
+        mie_scattering_angle = scattering_data['scattering_angle']
+        #% This saves the scattering irradiance values for the different particle
+        #% diameters into the parameters structure
+        mie_scattering_irradiance=scattering_data['scattering_irradiance']
+        #% This extracts the inverse rotation matrix from the parameters structure
+        inverse_rotation_matrix=scattering_data['inverse_rotation_matrix']
+        #% This extracts the normalized beam propogation direction vector from the
+        #% parameters structure
+        beam_propogation_vector=scattering_data['beam_propogation_vector']
 
     # % This is the number of points to calculate the lightfield structure for
     source_point_number = n_max - n_min + 1
@@ -401,36 +400,40 @@ def generate_lightfield_angular_data(lens_pitch, image_distance, scattering_data
         # % This calculates the angular data using Mie scattering if specified in the
         # % parameters structure, otherwise the particles are assummed to have
         # % uniform irradiance
-        # if strcmp(scattering_type,'mie');
-        #
-        #     % This extracts the current particle diameter index
-        #     diameter_index=lightfield_source.diameter_index(n);
-        #
-        #     % This calculates the lightrays direction vectors (in the camera
-        #     % coordiante system)
-        #     ray_direction_vector=[x_lens-x_current;y_lens-y_current;image_distance*ones(1,lightray_number_per_particle)-z_current];
-        #     % This normalizes the ray direction vectors
-        #     ray_direction_vector=bsxfun(@rdivide,ray_direction_vector,sqrt(ray_direction_vector(1,:).^2+ray_direction_vector(2,:).^2+ray_direction_vector(3,:).^2));
-        #     % This rotates the lightrays direction vectors by the inverse of the
-        #     % camera rotation array so that the ray is now in the world coordinate
-        #     % system
-        #     ray_direction_vector=inverse_rotation_matrix*ray_direction_vector;
-        #     % This calculates the angle that the light ray direction vectors make
-        #     % with the laser propogation direction vector
-        #     ray_scattering_angles=acos(beam_propogation_vector*ray_direction_vector);
-        #
-        #     % This calculates the Mie scattering irradiances at the currently
-        #     % scattered angles and with the current particle diameter
-        #     ray_scattering_irradiance=interp1(mie_scattering_angle,mie_scattering_irradiance(:,diameter_index),ray_scattering_angles,'linear');
-        #
-        #     % This calculates the total irradiance for the current particle's rays
-        #     irradiance_current=ray_scattering_irradiance*lightfield_source.radiance(n);
-        #
-        # elseif strcmp(scattering_type,'diffuse');
-        #
-        # % This specifies the total irradiance for the current particle's
-        # % rays to be uniform
-        irradiance_current = lightfield_source['radiance'][n]
+        if scattering_type=='mie':
+
+            # % This extracts the current particle diameter index
+            diameter_index=lightfield_source['diameter_index'][n]
+
+            # % This calculates the lightrays direction vectors (in the camera
+            # % coordiante system)
+            ray_direction_vector = np.array([np.squeeze(x_lens-x_current),np.squeeze(y_lens-y_current),image_distance*np.ones(lightray_number_per_particle)-np.squeeze(z_current)])
+
+            # % This normalizes the ray direction vectors
+            ray_direction_vector /=np.sqrt(ray_direction_vector[0,:]**2+ray_direction_vector[1,:]**2+ray_direction_vector[2,:]**2)[np.newaxis,:]
+
+            # % This rotates the lightrays direction vectors by the inverse of the
+            # % camera rotation array so that the ray is now in the world coordinate
+            # % system
+            ray_direction_vector=inverse_rotation_matrix*ray_direction_vector
+            # % This calculates the angle that the light ray direction vectors make
+            # % with the laser propogation direction vector
+            ray_scattering_angles=np.squeeze(np.arccos(beam_propogation_vector*ray_direction_vector))
+
+            # % This calculates the Mie scattering irradiances at the currently
+            # % scattered angles and with the current particle diameter
+            set_interp = interp1d(mie_scattering_angle,mie_scattering_irradiance[:,diameter_index])
+            ray_scattering_irradiance = np.squeeze(set_interp(ray_scattering_angles))
+            # ray_scattering_irradiance=interp1d(mie_scattering_angle,mie_scattering_irradiance(:,diameter_index),ray_scattering_angles,'linear')
+
+            # % This calculates the total irradiance for the current particle's rays
+            irradiance_current=ray_scattering_irradiance*lightfield_source['radiance'][n]
+
+        elif scattering_type =='diffuse':
+
+            # % This specifies the total irradiance for the current particle's
+            # % rays to be uniform
+            irradiance_current = lightfield_source['radiance'][n]
 
         # % This calculates the x angles for the light rays
         theta_temp = -(np.squeeze(x_lens)- x_current) / (image_distance - z_current)
@@ -841,7 +844,7 @@ def propogate_rays_through_single_element(optical_element, element_center, eleme
         # % Any rays that have complex values due to the radicand in the above
         # % equation being negative experience total internal reflection.  The
         # % values of these rays are set to NaN for now.
-        tir_indices = np.less(refraction_radicand < 0)
+        tir_indices = np.less(refraction_radicand, 0)
 
         # % This sets any of the light ray directions experiencing total
         # % internal reflection to NaN values
@@ -1052,7 +1055,7 @@ def propogate_rays_through_single_element(optical_element, element_center, eleme
 
                 # % This calculates the integral of the absorbance function
                 # % across the lens
-                element_transmission_ratio = 1 - propogation_distance * quad(absorbance_function_handle, 0.0, 1.0)
+                element_transmission_ratio = 1 - propogation_distance * siint.quad(absorbance_function_handle, 0.0, 1.0)
 
                 # % This rescales the output radiance by the transmission ratio
                 ray_radiance = element_transmission_ratio * ray_radiance
@@ -1704,8 +1707,8 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     I = np.zeros([x_pixel_number, y_pixel_number])
 
     # # TODO change this
-    lightray_process_number = 1
-    lightray_number_per_particle = 1
+    lightray_process_number = 2
+    lightray_number_per_particle = 2
 
     # % This generates an array of indices into the source points to calculate the lightfield
     lightfield_N = lightfield_source['x'].size / np.ceil(lightray_process_number / lightray_number_per_particle)
@@ -1722,11 +1725,10 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     light_ray_data = {}
     # % This iterates through the rays in blocks of less then or equal to
     # % lightray_process_number in size
-    # pbar = ProgressBar(maxval=len(lightfield_vector)-2).start()
+    pbar = ProgressBar(maxval=len(lightfield_vector)-2).start()
     for m in range(0, len(lightfield_vector) - 1):
         # % This displays the progress of the sensor rendering
-        # display_calculation_progress(m,range(0,len(lightfield_vector)-1))
-        #pbar.update(m)
+        pbar.update(m)
         # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         # % Generate lightfield and propogate it through the optical system     %
         # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1821,7 +1823,7 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
                     I[ii_indices[n][p]][jj_indices[n][p]] += pixel_weights[n][p] * light_ray_data['ray_radiance'][n] * \
                                                              cos_4_alpha[n]
 
-    # pbar.finish()
+    pbar.finish()
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # % Rescales and resamples image for export                                 %
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

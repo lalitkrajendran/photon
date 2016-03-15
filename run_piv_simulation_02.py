@@ -1,15 +1,15 @@
 import glob
 import pickle
-#import os
+import os
 import numpy as np
 import scipy.io as sio
 from perform_ray_tracing_03 import perform_ray_tracing_03
-#import subprocess
-#import time
-#from numpy import linalg as la
-#import scipy.special as scispec
+import subprocess
+import time
+from numpy import linalg as la
+import scipy.special as scispec
 #import scipy.misc as scimisc
-#import skimage.io as ski_io
+import skimage.io as ski_io
 import matplotlib.pyplot as plt
 # start matlab engine
 #eng = matlab.engine.start_matlab()
@@ -54,11 +54,11 @@ def create_single_lens_optical_system():
 
     # This is a 1 x 2 double precision vector giving the optical element offset
     # from the optical axis in the x and y dimensions respectively
-    optical_system['design']['axial_offset_distances'] = np.array([0.0,0.0]);
+    optical_system['design']['axial_offset_distances'] = np.array([0.0,0.0])
 
     # This is a 1 x 3 vector giving the rotation angles of the current optical
     # element or system
-    optical_system['design']['rotation_angles'] = np.array([0.0,0.0,0.0]);
+    optical_system['design']['rotation_angles'] = np.array([0.0,0.0,0.0])
 
     # This creates a substructure to describe the geometry of the curret
     # element
@@ -391,6 +391,442 @@ def rotate_coordinates(X,Y,Z,Alpha,Beta,Gamma,XC,YC,ZC):
 
     return [XR,YR,ZR]
 
+def log_normal_pdf(x,mu,sigma):
+# This function calculates the log-normal probability density function of
+# the argument 'x' with a mean of 'mu' and a standard deviation of 'sigma'.
+
+    # This calculates the log-normal probility density function
+    y1 = 1.0/(x * sigma * np.sqrt(2.0 * np.pi))
+    y2 = (np.log(x) - mu)
+    y3 = np.exp(-np.power(y2,2.0)/(2.0*np.power(sigma,2.0)))
+    y = y1 * y3
+
+    return y
+
+def inverse_log_normal_pdf(y,mu,sigma):
+# This function calculates the inverse, ie the two values of x such that
+#
+#  y = pdf(x1) and y = pdf(x2)
+#
+# for the log-normal probability density function of the argument 'y' with
+# a mean of 'mu' and a standard deviation of 'sigma'.
+
+    # This calculates the inverse log-normal probability density function
+    x1 = np.exp(mu - sigma**2 - sigma * np.sqrt(sigma**2.0 - 2.0 * mu - 2.0 * np.log(y * sigma * np.sqrt(2.0*np.pi))))
+    x2 = np.exp(mu - sigma**2 + sigma * np.sqrt(sigma**2.0 - 2.0 * mu - 2.0 * np.log(y * sigma * np.sqrt(2.0*np.pi))))
+
+    return [x1,x2]
+
+def log_normal_cdf(x,mu,sigma):
+# This function calculates the log-normal cumulative density function of
+# the argument 'x' with a mean of 'mu' and a standard deviation of 'sigma'.
+
+    # This calculates the log-normal cumulative density function
+    y=(1.0 + scispec.erf((np.log(x) - mu)/(sigma * np.sqrt(2.0))))/2.0
+
+    return  y
+
+def calculate_log_normal_pdf_extrema(mu,sigma,t):
+# % This function calculates the extrema of the log-normal probability
+# % density function such that
+# %
+# %   t = 1 - ( cdf(x_max) - cdf(x_min) )
+# %
+# % ie the extrema given the portion of the log-normal pdf such that the
+# % percentage of the pdf that lie outside of the extrema equals t.  The
+# % input arguments are the log-normal mean 'mu', the log-normal standard
+# % deviation 'sigma', and the threshhold 't'.
+
+    # % This initializes a first estimate of the 'x_max' extrema
+    x_max = np.exp(mu + sigma)
+
+    # % This iterates through the possible values of the extrema using Newton's
+    # % method to numerically calculate the extrema values
+    while True:
+
+        # This calculates the value of the log-normal pdf at this location
+        y = log_normal_pdf(x_max,mu,sigma)
+
+        # This inverts the log-normal pdf to calculate the other x value that will
+        # produce the current pdf value
+        [x_min,x_max] = inverse_log_normal_pdf(y,mu,sigma)
+
+        # This calculates the difference between the current 'x_max' estimate and
+        # the next iteration 'x_max' estimate
+        dx1 = 1.0 - (log_normal_cdf(x_max,mu,sigma) - log_normal_cdf(x_min,mu,sigma)) - t
+        dx2 = -np.exp(2.0*mu - 2.0*np.power(sigma,2.0))/np.power(x_max,2.0)
+        dx3 = log_normal_pdf(x_min,mu,sigma) * dx2 - log_normal_pdf(x_max,mu,sigma)
+        dx = dx1/dx3
+
+        # This breaks the iteration loop if the change in the 'x_max' value is
+        # smaller than the machine precision for 'mu'
+        if np.abs(dx) < (np.finfo(type(mu)).eps*1.0e2):
+            # This breaks the iteration of Newton's method
+            break
+
+        # This calculates the next estimate of the upper limit using Newton's
+        # method
+        x_max = x_max - dx
+
+    return [x_min,x_max]
+
+def calculate_particle_diameter_distribution(piv_simulation_parameters):
+# This function calculates the discrete values of the possible particle
+# diameters to be simulated during the experiment.
+
+    # This extracts the mean diameter of the particles being used in the
+    # simulated experiment (in microns)
+    particle_diameter_mean = piv_simulation_parameters['particle_field']['particle_diameter_mean']
+
+    # % This extracts the standard deviation of the particle diameter used in
+    # % the simulated experiment (in microns)
+    particle_diameter_std = piv_simulation_parameters['particle_field']['particle_diameter_std']
+
+    # % This extracts the number of different particle sizes to model since the
+    # % particle diameters are taken in discrete intervals for computational
+    # % reasons
+    particle_diameter_number = piv_simulation_parameters['particle_field']['particle_diameter_number']
+
+    # % This extracts the cutoff threshhold of the log-normal cumulative density
+    # % function beyond which extrema particle diameters are not calculated (ie
+    # % if this is set to 0.01 then 1% of the possible particle diameters both
+    # % much smaller  and much larger than the mean diameter that would be found
+    # % on a continuous particle diameter range will not be included in the
+    # % simulation)
+    particle_diameter_cdf_threshhold = piv_simulation_parameters['particle_field']['particle_diameter_cdf_threshhold']
+
+    # % This calculates the location parameter 'mu' of the particle diameters,
+    # % this is different than the mean since the distribution is log-normal
+    particle_diameter_mu = np.log(particle_diameter_mean) - 0.5 * np.log(1.0 + (particle_diameter_std/particle_diameter_mean)**2)
+
+    # % This calculates the scale parameter 'sigma' of the particle diameters,
+    # % this is different than the standard deviation since the distribution is
+    # % log-normal
+    particle_diameter_sigma = np.sqrt(np.log(1.0 + (particle_diameter_std/particle_diameter_mean)**2.0))
+
+    # % This calculates the minimum and maximum particle diameters such that the
+    # % ratio of particle diameters generated between the two extrema compared to
+    # % all possible particle diameters equals the value given by the expression
+    # % 1 - particle_diameter_cdf_threshhold
+    [minimum_particle_diameter,maximum_particle_diameter]=calculate_log_normal_pdf_extrema(particle_diameter_mu,particle_diameter_sigma,particle_diameter_cdf_threshhold);
+
+    # % This calculates the spacing between the adjacent particle diameters
+    particle_diameter_spacing = (maximum_particle_diameter-minimum_particle_diameter)/particle_diameter_number
+
+    # % This is a vector of the particle diameters
+    particle_diameter_vector = minimum_particle_diameter + particle_diameter_spacing * (np.arange(0,particle_diameter_number) + 0.5)
+
+    # % This calculates the probability density function at each of the particle
+    # % diameters (to calculate the ratios of different particle diameters to
+    # % one-another)
+    particle_diameter_pdf = log_normal_pdf(particle_diameter_vector, particle_diameter_mu, particle_diameter_sigma)
+    # % This renormalizes the particle diameter pdf so that it sums to one
+    particle_diameter_pdf = particle_diameter_pdf/np.sum(particle_diameter_pdf)
+
+    return [particle_diameter_vector,particle_diameter_pdf]
+
+def calculate_particle_diameter_indices(piv_simulation_parameters,particle_diameter_pdf,particle_diameter_vector):
+# This function calculates the distribution of the particle diameter
+# indices based upon the particle diameter probability density function
+# and the total particle number.
+
+    # This extracts the number of particles to simulate out of the list of
+    # possible particles
+    particle_number = piv_simulation_parameters['particle_field']['particle_number']
+
+    # This calculates the cumulative sum of the particle diameter PDF function
+    # to determine the particle diameter distribution
+    particle_diameter_cdf = np.cumsum(particle_diameter_pdf)
+
+    # This adds a zero to the beginning of the cumulative distribution function
+    # for indexing purposed in the following for loop
+    particle_diameter_cdf = np.insert(particle_diameter_cdf,0,0.0)
+
+    # This generates a list of random numbers to randomly determine the
+    # particle diameters
+    random_vector = np.random.rand(particle_number)
+
+    # This initializes a vector of the particle diameters
+    particle_diameter_index_distribution = np.zeros(particle_number)
+
+    # This iterates through the possible particle diameters assigning the
+    # diameters based upon the values of the 'random_vector' variable
+    for particle_diameter_index in range(0,len(particle_diameter_vector)-1):
+
+        # These are the indices of the particles to set to the current diameter
+        term1 = (particle_diameter_cdf[particle_diameter_index]<=random_vector)
+        term2 = (particle_diameter_cdf[particle_diameter_index + 1] > random_vector)
+        diameter_indices = np.where(np.logical_and(term1,term2))
+        #diameter_indices = np.where(particle_diameter_cdf[particle_diameter_index]<=random_vector and particle_diameter_cdf[particle_diameter_index>random_vector])
+        #diameter_indices = (term1&term2).astype('int')
+
+        ############THIS COULD BE A PROBLEM############################################
+        # This sets the current indices of the particle diameter distribution
+        # equal to the current diameter
+        particle_diameter_index_distribution[diameter_indices] = particle_diameter_index
+
+    return particle_diameter_index_distribution
+
+def mie_scattering_data(n_medium,n_particle,r_particle,lambda_laser,angle_number):
+# % This function calculates the Mie scattering about a particle within a
+# % medium with a real refractive index of 'n_medium', with a particle with a
+# % complex refractive index of 'n_particle', a radius of 'r_particle', with
+# % light of wavelength 'lambda', and 'angle_number' angles computed between
+# % 0 degrees and 180 degrees inclusive.  The code assumes that the particle
+# % is spherical.  The particle radius and light wavelength are in arbitrary
+# % units.
+# %
+# % The output argument 'angle_data' is the vector of length 'angle_number'
+# % giving the angles between 0 and 180 degrees, the output argument
+# % 's1_data' gives the magnitude of the scattered light that is
+# % perpendicular to the scattering plane, and the output argument 's2_data'
+# % gives the magnitude of the scattered light that is parallel to the
+# % scattering plane.
+# %
+# % The code calls the fortran function 'bhmie_table' to create a table of
+# % the scattering values; this code uses the fortran function 'bhmie'. These
+# % two functions must be compiled (in the terminal) using the commands
+# %
+# %   f77 -c -fPIC bhmie.f
+# %   f77 -o bhmie_table bhmie.o bhmie_table.f
+# %
+# % before this matlab function will run correctly.  The code will also
+# % correctly compile with the 'f95' and 'gfortran' compilers, but these are
+# % less compatible with matlab and may produce unexpected results.
+# %
+# % Authors: Rod La Foy
+# % Created On: 23 August 2013
+# % Modified On: 19 March 2015
+# % Notes: This code calls 'bhmie_table' which is based up the code
+# % 'callbhmie.f' and 'bhmie.f' written by B.T.Draine, Princeton Univ. Obs.
+
+    # This extracts the real part of the particle refractive index
+    n_particle_real = n_particle.real
+
+    # This extracts the imaginary part of the particle refractive index
+    n_particle_imag = n_particle.imag
+
+    # This converts the medium's refractive index to a string
+    n_medium_string = "%6f" % n_medium
+
+    # This converts the particle's real refractive index to a string
+    n_particle_real_string = "%6f" % n_particle_real
+
+    # This converts the particle's imaginary refractive index to a string
+    n_particle_imag_string = "%6f" % n_particle_imag
+
+    # This converts the particle's radius to a string
+    r_particle_string = "%6f" % r_particle
+
+    # This converts the indcident light's wavelength to a string
+    lambda_laser_string = "%6f" % lambda_laser
+
+    # This converts the number of angles to a string
+    angle_number_string = "%d" % angle_number
+
+    # This is the directory path of this m-file
+    code_filename = os.path.realpath(__file__)
+
+    # This is the code_directory
+    code_directory = os.getcwd()
+
+    # This is the filename to save the data to (this uses the 'tempname' matlab
+    # function which creates a (likely) unique temporary file name
+    table_filename = 'mie_table.dat'
+
+    # This checks whether the table data already exists and deletes it if so
+    if os.path.exists(code_directory + table_filename):
+         # This deletes the file containing the Mie scattering data
+         os.remove(code_directory + table_filename)
+
+    # This is the string to execute to create the mie scattering table (the
+    # change directory command is to ensure that the code is in the current
+    # system search path - doing this by setting the environment variables
+    # wasn't working)
+    shell_command_string = './bhmie_table ' + n_medium_string + ' ' + n_particle_real_string + ' ' + n_particle_imag_string + ' ' + r_particle_string + ' ' + lambda_laser_string + ' ' + angle_number_string + ' > ' + table_filename
+
+    # This runs the system command string to calculate the Mie scattering
+    subprocess.call(shell_command_string,shell=True)
+
+    # # This initializes a variable stating the number of attempts that have been
+    # # made to load the Mie scattering data
+    # load_attempt_number = 0
+    #
+    # # This tries loading the Mie scattering data and if the file doesn't exist,
+    # # this pauses and waits
+    # while True:
+    #     # This checks whether the file exists and if so loads it and if not,
+    #     # the code waits a short period
+    #     print 'load_attempt_number %d' % load_attempt_number
+    #     if os.path.exists(table_filename):
+    #         # This reads in the output file containing the Mie scattering data
+    #         scattering_data = np.loadtxt(table_filename,skiprows = 5,unpack = True)
+    #         # This breaks the loop since the data was succesfully loaded
+    #         break
+    #     else:
+    #         # This increments the variable storing the number of load attempts
+    #         load_attempt_number = load_attempt_number + 1;
+    #         # If the number of load attempts exceeds 10, this displays an error
+    #         if load_attempt_number>10:
+    #             # This displays an error stating that the maximum number of
+    #             # load attempts has been exceeded
+    #             raise OSError('The Mie scattering data has not be created and the maximum number of loading attempts for the data has been exceeded.');
+    #         # This pauses for a short period
+    #         time.sleep(0.1)
+
+    # This reads in the output file containing the Mie scattering data
+    scattering_data = np.loadtxt(table_filename,skiprows = 5,unpack = True)
+    scattering_data = scattering_data.T
+    # This deletes the file containing the Mie scattering data
+    os.remove(table_filename)
+
+    # This extracts the independent variable giving the angle for the rays
+    angle_data = np.array(scattering_data[:,0])
+
+    # This converts the angular data from degrees to radians
+    angle_data = np.radians(angle_data)
+
+    # This extracts the dependent variable giving the unpolarized scattering
+    # magnitude
+    s11_data = np.array(scattering_data[:,1])
+
+    # This extracts the dependent variable giving the quantity of polarization
+    # (ie this will be zero for unpolarized scattering . . . I think)
+    pol_data = np.array(scattering_data[:,2])
+
+    # This computes the dependent variable giving the differences between the
+    # perpendicular and parallel polarization magnitudes
+    s12_data = -s11_data * pol_data
+
+    # This computes the dependent variable giving the scattering magnitude
+    # perpendicular to the scattering plane
+    s1_data = s11_data - s12_data
+
+    # This computes the dependent variable giving the scattering magnitude
+    # parallel to the scattering plane
+    s2_data = s11_data + s12_data
+
+    return [angle_data,s1_data,s2_data]
+
+def calculate_mie_scattering_intensity(piv_simulation_parameters,particle_diameter_vector):
+# % This function calculates the intensity of the Mie scattering produced by
+# % the different particle diameters given by 'particle_diameter_vector' for
+# % the illumination source defined in 'piv_simulation_parameters'.
+
+    # % This extracts the refractive index of the medium in which the particles
+    # % are seeded (typically either water or air)
+    medium_refractive_index = piv_simulation_parameters['particle_field']['medium_refractive_index']
+    # % This extracts the refractive index of the seeding particles used in the
+    # % simulation
+    particle_refractive_index = piv_simulation_parameters['particle_field']['particle_refractive_index']
+
+    # % This extracts the number of angles to calculate the Mie scattering
+    # % intensity over (which is later interpolated to the precise angles for
+    # % each paricle)
+    mie_scattering_angle_number = piv_simulation_parameters['particle_field']['mie_scattering_angle_number']
+
+    # % This is the wavelength of the simulated laser used for illumination of
+    # % the particles
+    beam_wavelength = piv_simulation_parameters['particle_field']['beam_wavelength']
+
+    # % This initializes the scattering irradiance array for the particle the
+    # % range of particle diameters
+    nrows = int(2*mie_scattering_angle_number - 1)
+    ncols = len(particle_diameter_vector)
+    scattering_irradiance = np.zeros((nrows,ncols))
+
+    # % This iterates through the different particle diameters calculating the
+    # % Mie scattering intensities
+    for particle_diameter_index in range (0,len(particle_diameter_vector)):
+        # This is the radius of the current particle for which the Mie scattering
+        # will be calculated
+        current_particle_radius = particle_diameter_vector[particle_diameter_index]
+
+        # This calculates the Mie scattering intensities for the current particle
+        # diameter
+        [scattering_angle,perpendicular_scattering_irradiance,parallel_scattering_irradiance] = mie_scattering_data(medium_refractive_index,particle_refractive_index,current_particle_radius,beam_wavelength,mie_scattering_angle_number)
+
+
+        # This calculates the total scattering irradiance from the particles
+        scattering_irradiance[:,particle_diameter_index] = 0.5*perpendicular_scattering_irradiance + 0.5*parallel_scattering_irradiance
+
+    return [scattering_angle,scattering_irradiance]
+
+def create_mie_scattering_data(piv_simulation_parameters):
+# This function creates various parameters used in simulation the Mie
+# scattering of the particles.  Specifically this calculate the size
+# distribution of the particles, the Mie scattering intensities as a
+# function of the scattering angles, and several parameters necessary to
+# calculate the scattering angles of the particles with respect to the
+# laser beam and the simulated cameras.
+
+    # This is the x angle of the camera to the particle volume
+    x_camera_angle = piv_simulation_parameters['camera_design']['x_camera_angle']
+    # This is the y angle of the camera to the particle volume
+    y_camera_angle = piv_simulation_parameters['camera_design']['y_camera_angle']
+
+    # This is a direction vector (ie the magnitude doesn't matter) that points
+    # in the direction of the laser beam propogation - this vector (at least
+    # for now) is defined by a 1 x 3 array and lies in the XY plane (ie the
+    # last component must be zero)
+    beam_propogation_vector = piv_simulation_parameters['particle_field']['beam_propogation_vector']
+
+    # This calculates the particle diameters that will be simulated and the
+    # relative frequency of each of the diameters
+    [particle_diameter_vector,particle_diameter_pdf] = calculate_particle_diameter_distribution(piv_simulation_parameters)
+
+    # % This calculates the distribution of the particle diameter indices
+    # % (indexing into 'particle_diameter_vector') based upon the particle
+    # % diameter probability density function and the total particle number
+    particle_diameter_index_distribution = calculate_particle_diameter_indices(piv_simulation_parameters,particle_diameter_pdf,particle_diameter_vector)
+
+    # % This calculates the Mie scattering intensity data for the set of particle
+    # % diameters and illumination source
+    [scattering_angle,scattering_irradiance] = calculate_mie_scattering_intensity(piv_simulation_parameters,particle_diameter_vector)
+
+    # This calculates the rotation matrix that transforms between the the world
+    # coordinate system and the camera coordinate system
+    rotation_matrix = calculate_rotation_matrix(x_camera_angle,y_camera_angle,0.0)
+
+    # This computes the inverse rotation matrix (ie the transpose of the
+    # rotation matrix)
+    inverse_rotation_matrix = rotation_matrix.transpose()
+
+    # This normalizes the laser beam propogation vector
+    beam_propogation_vector = beam_propogation_vector/la.norm(beam_propogation_vector)
+
+    # This creates a structure to store the Mie scattering data parameters
+    # within
+    mie_scattering_data = {}
+
+    # This saves the paticle diameter vector into the parameters structre
+    mie_scattering_data['particle_diameter_vector'] = particle_diameter_vector
+
+    # This saves the particle diameter probability density function into the
+    # parameters structure
+    mie_scattering_data['particle_diameter_pdf'] = particle_diameter_pdf
+
+    # This saves the particle diameter index (into 'scattering_irradiance') to
+    # the parameters structure
+    mie_scattering_data['particle_diameter_index_distribution'] = particle_diameter_index_distribution
+
+    # This saves the scattering angle data into the parameters structure
+    mie_scattering_data['scattering_angle'] = scattering_angle
+
+    # This saves the scattering irradiance values for the different particle
+    # diameters into the parameters structure
+    mie_scattering_data['scattering_irradiance'] = scattering_irradiance
+
+    # This saves the inverse rotation matrix into the parameters structure
+    mie_scattering_data['inverse_rotation_matrix'] = inverse_rotation_matrix
+
+    # This saves the normalized beam propogation direction vector into the
+    # parameters structure
+    mie_scattering_data['beam_propogation_vector'] = beam_propogation_vector
+
+    return mie_scattering_data
+
+
 def load_lightfield_data(piv_simulation_parameters,optical_system,mie_scattering_data,frame_index,lightfield_source):
 # This function creates the lightfield data for performing the ray tracing
 # operation.
@@ -436,10 +872,6 @@ def load_lightfield_data(piv_simulation_parameters,optical_system,mie_scattering
     # simulation
     perform_mie_scattering = piv_simulation_parameters['particle_field']['perform_mie_scattering']
 
-    # TEMPORARY
-    if perform_mie_scattering:
-        mie_scattering_data = {}
-
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # % Extracts parameters from 'optical_system'                               %
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -464,24 +896,17 @@ def load_lightfield_data(piv_simulation_parameters,optical_system,mie_scattering
     # This extracts the particle diameter distribution if specified by the
     # parameters structure, otherwise a Null value is used
 
-    #COMMENTING OUT THE MIE SCATTERING FOR NOW
-    #     if perform_mie_scattering:
-    #         # This extracts the particle diameter index (into 'scattering_irradiance')
-    #         # from the parameters structure
-    #         print 'Hello'
-    #         particle_diameter_index_distribution = mie_scattering_data['particle_diameter_index_distribution']
-    #         # This sets the irradiance constant for using Mie scattering
-    #         irradiance_constant = 500.0/1.0e4
-    #     else:
-    #         # This sets the particle diameter indices to a Null value
-    #         particle_diameter_index_distribution= None
-    #         # This sets the irradiance constant for not using Mie scattering
-    #         irradiance_constant = 500.0
-
-    # This sets the particle diameter indices to a Null value
-    particle_diameter_index_distribution = None
-    # This sets the irradiance constant for not using Mie scattering
-    irradiance_constant = 500.0
+    if perform_mie_scattering:
+        # This extracts the particle diameter index (into 'scattering_irradiance')
+        # from the parameters structure
+        particle_diameter_index_distribution = mie_scattering_data['particle_diameter_index_distribution']
+        # This sets the irradiance constant for using Mie scattering
+        irradiance_constant = 500.0/1.0e4
+    else:
+        # This sets the particle diameter indices to a Null value
+        particle_diameter_index_distribution= None
+        # This sets the irradiance constant for not using Mie scattering
+        irradiance_constant = 500.0
 
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # % Calculates optical system properties                                    %
@@ -851,6 +1276,8 @@ def run_piv_simulation_02(piv_simulation_parameters):
     # % simulation
     perform_mie_scattering = piv_simulation_parameters['particle_field']['perform_mie_scattering']
 
+    ski_io.use_plugin('freeimage')
+
     # % This generates the particle field images if specified by the parameters
     # % structure
     if generate_particle_field_images:
@@ -859,24 +1286,19 @@ def run_piv_simulation_02(piv_simulation_parameters):
         print('\n\n')
         print('Simulating particle images . . . ')
       
-        # for the time being, ignore mie scattering
-        perform_mie_scattering = False
-        scattering_data = [] #None
-        scattering_type = 'diffuse'
-        
-    #     # This calculates the Mie scattering data if specified in the parameters
-    #     # data structure, otherwise the Mie scattering data is set to a Null value
-    #     if perform_mie_scattering:
-    #         # This calculates the Mie scattering parameters data used in simulating the
-    #         # scattering intensities of the simulated particles
-    #         scattering_data = create_mie_scattering_data(piv_simulation_parameters)
-    #         # This sets the scattering type to mie for the particle simulation
-    #         scattering_type = 'mie'
-    #     else:
-    #         # This sets the Mie scattering data to a Null value
-    #         scattering_data = None
-    #         # This sets the scattering type to diffuse for the particle simulation
-    #         scattering_type = 'diffuse'
+        # This calculates the Mie scattering data if specified in the parameters
+        # data structure, otherwise the Mie scattering data is set to a Null value
+        if perform_mie_scattering:
+            # This calculates the Mie scattering parameters data used in simulating the
+            # scattering intensities of the simulated particles
+            scattering_data = create_mie_scattering_data(piv_simulation_parameters)
+            # This sets the scattering type to mie for the particle simulation
+            scattering_type = 'mie'
+        else:
+            # This sets the Mie scattering data to a Null value
+            scattering_data = None
+            # This sets the scattering type to diffuse for the particle simulation
+            scattering_type = 'diffuse'
         
         
          # This iterates through the frame vectors performing the ray tracing operations for each frame
@@ -898,10 +1320,12 @@ def run_piv_simulation_02(piv_simulation_parameters):
             lightfield_source.update({'lightray_process_number' : lightray_process_number})
                     
             #convert None to NAN
-            lightfield_source['diameter_index'] = np.NAN
+            # if not(lightfield_source['diameter_index']):
+            #     lightfield_source['diameter_index'] = np.NAN
 
             # convert none to NAN just for MATLAB
-            scattering_data = np.NAN
+            if(scattering_data == None):
+                scattering_data = np.NAN
 
             sio.savemat('particle_' + '%02d' % frame_index + '.mat',{'piv_simulation_parameters' : piv_simulation_parameters,
                                    'optical_system' : optical_system,
@@ -918,9 +1342,8 @@ def run_piv_simulation_02(piv_simulation_parameters):
             # This is the filename to save the image data to
             image_filename_write = particle_image_directory + 'particle_image_frame_' + '%04d' % frame_index + '.tif'
 
-            I.tofile(image_filename_write)
             # This saves the image to memory
-            # ski_io.imsave(image_filename_write,I,'tif','Compression','none')
+            ski_io.imsave(image_filename_write,I) #,'tif','Compression','none')
 
     # # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # # % Calibration Grid Simulation                                             %
@@ -990,5 +1413,6 @@ def run_piv_simulation_02(piv_simulation_parameters):
     #         # % This is the filename to save the image data to
     #         image_filename_write=calibration_grid_image_directory + 'calibration_image_plane_' + '%04.0f' % plane_index + '.tif'
             # % This saves the image to memory
+            # ski_io.imsave(image_filename_write,I)
             # imwrite(I,image_filename_write,'tif','Compression','none');
 
