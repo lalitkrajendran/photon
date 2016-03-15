@@ -1,5 +1,5 @@
 #.mat files
-*.mat
+.mat
 
 #.tif images
-*.tif
+.tif
