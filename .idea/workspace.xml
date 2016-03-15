@@ -2,23 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="c90bfca8-8f44-482f-ae09-651496f61998" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/bhmie_lkr.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/optical_system.mat" afterPath="$PROJECT_DIR$/optical_system.mat" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/particle_01.mat" afterPath="$PROJECT_DIR$/particle_01.mat" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/particle_02.mat" afterPath="$PROJECT_DIR$/particle_02.mat" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/piv_simulation_parameters.mat" afterPath="$PROJECT_DIR$/piv_simulation_parameters.mat" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/start_particle.mat" afterPath="$PROJECT_DIR$/start_particle.mat" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test_directory/camera_images/particle_images/camera_01/particle_image_frame_0001.tif" afterPath="$PROJECT_DIR$/test_directory/camera_images/particle_images/camera_01/particle_image_frame_0001.tif" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test_directory/camera_images/particle_images/camera_01/particle_image_frame_0002.tif" afterPath="$PROJECT_DIR$/test_directory/camera_images/particle_images/camera_01/particle_image_frame_0002.tif" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test_directory/particle_positions/particle_data_frame_0001.mat" afterPath="$PROJECT_DIR$/test_directory/particle_positions/particle_data_frame_0001.mat" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test_directory/particle_positions/particle_data_frame_0002.mat" afterPath="$PROJECT_DIR$/test_directory/particle_positions/particle_data_frame_0002.mat" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/perform_ray_tracing_03.py" afterPath="$PROJECT_DIR$/perform_ray_tracing_03.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/run_piv_challenge_simulation_01.py" afterPath="$PROJECT_DIR$/run_piv_challenge_simulation_01.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/run_piv_simulation_02.m" afterPath="$PROJECT_DIR$/run_piv_simulation_02.m" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/run_piv_simulation_02.py" afterPath="$PROJECT_DIR$/run_piv_simulation_02.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test_directory/particle_positions/particle_data_frame_0001.p" afterPath="$PROJECT_DIR$/test_directory/particle_positions/particle_data_frame_0001.p" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test_directory/particle_positions/particle_data_frame_0002.p" afterPath="$PROJECT_DIR$/test_directory/particle_positions/particle_data_frame_0002.p" />
     </list>
     <ignored path="camera_simulation.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -62,7 +46,7 @@
       <file leaf-file-name="perform_ray_tracing_03.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/perform_ray_tracing_03.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.33333334">
+            <state vertical-scroll-proportion="0.33484164">
               <caret line="1730" column="21" selection-start-line="1730" selection-start-column="21" selection-end-line="1730" selection-end-column="21" />
               <folding />
             </state>
@@ -109,6 +93,11 @@
     </option>
   </component>
   <component name="Git.Settings">
+    <option name="PREVIOUS_COMMIT_AUTHORS">
+      <list>
+        <option value="lrajendr" />
+      </list>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="IdeDocumentHistory">
@@ -406,6 +395,13 @@
       <option name="number" value="Default" />
       <updated>1457108350214</updated>
     </task>
+    <task id="LOCAL-00001" summary="implemented mie scattering">
+      <created>1458061436866</created>
+      <option name="number" value="00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1458061436866</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TodoView">
@@ -423,6 +419,7 @@
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25019857" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32880098" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.43757725" sideWeight="0.50282484" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.30612245" sideWeight="0.49717513" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32893157" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -430,7 +427,7 @@
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.2494043" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.13205282" sideWeight="0.49717513" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Debug" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.4009604" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4009604" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -450,6 +447,10 @@
   </component>
   <component name="VcsContentAnnotationSettings">
     <option name="myLimit" value="2678400000" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="implemented mie scattering" />
+    <option name="LAST_COMMIT_MESSAGE" value="implemented mie scattering" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -616,7 +617,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/perform_ray_tracing_03.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.33333334">
+        <state vertical-scroll-proportion="0.33484164">
           <caret line="1730" column="21" selection-start-line="1730" selection-start-column="21" selection-end-line="1730" selection-end-column="21" />
           <folding />
         </state>
