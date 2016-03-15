@@ -1679,9 +1679,9 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     element_center[:,2] = element_center[:,2] + z_lens
 
     if (field_type == 'particle'):
-        savefile = 'start_particle.mat'
+        savefile = 'mat_file/start_particle.mat'
     else:
-        savefile = 'start_calibration.mat'
+        savefile = 'mat_file/start_calibration.mat'
 
     sio.savemat(savefile, {'image_distance': image_distance,
                            'h2_principal_plane': h2_principal_plane,

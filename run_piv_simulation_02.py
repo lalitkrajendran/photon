@@ -1241,7 +1241,7 @@ def run_piv_simulation_02(piv_simulation_parameters):
     optical_system['design']['optical_element'][0]['element_properties'] = np.NAN
 
     # save optical system data to file
-    sio.savemat('optical_system.mat', {'optical_system': optical_system},long_field_names=True)
+    sio.savemat('mat_files/optical_system.mat', {'optical_system': optical_system},long_field_names=True)
 
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # % Particle Field Simulation                                               %
@@ -1327,7 +1327,7 @@ def run_piv_simulation_02(piv_simulation_parameters):
             if(scattering_data == None):
                 scattering_data = np.NAN
 
-            sio.savemat('particle_' + '%02d' % frame_index + '.mat',{'piv_simulation_parameters' : piv_simulation_parameters,
+            sio.savemat('mat_files/particle_' + '%02d' % frame_index + '.mat',{'piv_simulation_parameters' : piv_simulation_parameters,
                                    'optical_system' : optical_system,
                                    'pixel_gain' : pixel_gain,
                                    'scattering_data' : scattering_data,
@@ -1399,7 +1399,7 @@ def run_piv_simulation_02(piv_simulation_parameters):
     #         # save data to mat file
     #         # convert none to NAN just for MATLAB
     #         scattering_data = np.NAN
-    #         sio.savemat('calibration_' + '%02d' % (plane_index+1) + '.mat',{'piv_simulation_parameters' : piv_simulation_parameters,
+    #         sio.savemat('mat_files/calibration_' + '%02d' % (plane_index+1) + '.mat',{'piv_simulation_parameters' : piv_simulation_parameters,
     #                                        'optical_system' : optical_system,
     #                                        'pixel_gain' : pixel_gain,
     #                                        'scattering_data' : scattering_data,

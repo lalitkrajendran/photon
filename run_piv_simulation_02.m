@@ -4,8 +4,8 @@ function run_piv_simulation_02();
 
 % % This creates the simulation parameters for running the simulation
 % piv_simulation_parameters=create_piv_simulation_parameters_02;
-load('piv_simulation_parameters.mat');
-load('optical_system.mat');
+load('mat_files/piv_simulation_parameters.mat');
+load('mat_files/optical_system.mat');
 
 % convert cell arrays to struct 
 a = struct(optical_system.design.optical_element{:});

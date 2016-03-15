@@ -103,9 +103,9 @@ lightray_process_number=lightfield_source.lightray_process_number;
 
 % Load data saved by python code
 if(strcmp(field_type,'particle'))
-    loadfilename = 'start_particle.mat';
+    loadfilename = 'mat_files/start_particle.mat';
 else
-    loadfilename = 'start_calibration.mat';
+    loadfilename = 'mat_files/start_calibration.mat';
 end
 
 load(loadfilename);

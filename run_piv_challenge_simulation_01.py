@@ -215,7 +215,7 @@ for i in range(1,len(camera_parameter_list)+1):
 	piv_simulation_parameters['particle_field']['beam_propogation_vector'] = piv_simulation_parameters['particle_field']['beam_propogation_vector'].astype('float')
 
 	# # save dictionary to mat-file
-	sio.savemat('piv_simulation_parameters.mat', {'piv_simulation_parameters': piv_simulation_parameters}, long_field_names=True)
+	sio.savemat('mat_files/piv_simulation_parameters.mat', {'piv_simulation_parameters': piv_simulation_parameters}, long_field_names=True)
 
 	# start camera simulation
 	run_piv_simulation_02(piv_simulation_parameters)

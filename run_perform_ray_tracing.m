@@ -8,7 +8,7 @@ clc
 %% particle field
 
 for frame_index = 1:1
-    particle_filename = ['particle_' num2str(frame_index,'%02d') '.mat'];
+    particle_filename = ['mat_files/particle_' num2str(frame_index,'%02d') '.mat'];
     load(particle_filename)
     % convert cell arrays to struct 
     a = struct(optical_system.design.optical_element{:});
@@ -31,7 +31,7 @@ end
 % %% calibration
 % 
 % for plane_index = 1:1
-%     calibration_filename = ['calibration_' num2str(plane_index,'%02d') '.mat'];
+%     calibration_filename = ['mat_files/calibration_' num2str(plane_index,'%02d') '.mat'];
 %     load(calibration_filename)
 %     % convert cell arrays to struct 
 %     a = struct(optical_system.design.optical_element{:});
