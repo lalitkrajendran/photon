@@ -1,8 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="c90bfca8-8f44-482f-ae09-651496f61998" name="Default" comment="">
+    <list default="true" id="c90bfca8-8f44-482f-ae09-651496f61998" name="Default" comment="added lines to save lightray_data to bin file as float32">
+      <change type="DELETED" beforePath="$PROJECT_DIR$/calibration_01.mat" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/calibration_02.mat" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/calibration_03.mat" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/calibration_04.mat" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/calibration_05.mat" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/calibration_06.mat" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/calibration_07.mat" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/lightfield_source_01.mat" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/lightfield_source_02.mat" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/optical_system.mat" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/particle_01.mat" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/particle_02.mat" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/piv_simulation_parameters.mat" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/reference_parameters.mat" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/reference_params.mat" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/start_calibration.mat" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/start_particle.mat" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/test.mat" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/test_save.mat" afterPath="" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test.bin" afterPath="$PROJECT_DIR$/test.bin" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test_directory/particle_positions/particle_data_frame_0001.mat" afterPath="$PROJECT_DIR$/test_directory/particle_positions/particle_data_frame_0001.mat" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test_directory/particle_positions/particle_data_frame_0002.mat" afterPath="$PROJECT_DIR$/test_directory/particle_positions/particle_data_frame_0002.mat" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gitignore" afterPath="$PROJECT_DIR$/.gitignore" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/perform_ray_tracing_03.py" afterPath="$PROJECT_DIR$/perform_ray_tracing_03.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/run_piv_challenge_simulation_01.py" afterPath="$PROJECT_DIR$/run_piv_challenge_simulation_01.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test_directory/particle_positions/particle_data_frame_0001.p" afterPath="$PROJECT_DIR$/test_directory/particle_positions/particle_data_frame_0001.p" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test_directory/particle_positions/particle_data_frame_0002.p" afterPath="$PROJECT_DIR$/test_directory/particle_positions/particle_data_frame_0002.p" />
     </list>
     <ignored path="camera_simulation.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -26,8 +53,8 @@
       <file leaf-file-name="run_piv_challenge_simulation_01.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/run_piv_challenge_simulation_01.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-5.888889">
-              <caret line="208" column="0" selection-start-line="208" selection-start-column="0" selection-end-line="208" selection-end-column="0" />
+            <state vertical-scroll-proportion="0.0">
+              <caret line="117" column="26" selection-start-line="117" selection-start-column="26" selection-end-line="117" selection-end-column="26" />
               <folding />
             </state>
           </provider>
@@ -36,7 +63,7 @@
       <file leaf-file-name="run_piv_simulation_02.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/run_piv_simulation_02.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-12.0">
+            <state vertical-scroll-proportion="0.0">
               <caret line="1415" column="14" selection-start-line="1415" selection-start-column="14" selection-end-line="1415" selection-end-column="14" />
               <folding />
             </state>
@@ -46,8 +73,8 @@
       <file leaf-file-name="perform_ray_tracing_03.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/perform_ray_tracing_03.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.33484164">
-              <caret line="1730" column="21" selection-start-line="1730" selection-start-column="21" selection-end-line="1730" selection-end-column="21" />
+            <state vertical-scroll-proportion="0.26603773">
+              <caret line="1757" column="67" selection-start-line="1757" selection-start-column="67" selection-end-line="1757" selection-end-column="67" />
               <folding />
             </state>
           </provider>
@@ -95,6 +122,7 @@
   <component name="Git.Settings">
     <option name="PREVIOUS_COMMIT_AUTHORS">
       <list>
+        <option value="Lalit Rajendran &lt;lrajendr@purdue.edu&gt;" />
         <option value="lrajendr" />
       </list>
     </option>
@@ -108,14 +136,13 @@
         <option value="$PROJECT_DIR$/mie_table.dat" />
         <option value="$PROJECT_DIR$/bhmie.py" />
         <option value="$PROJECT_DIR$/test_bhmie.py" />
-        <option value="$PROJECT_DIR$/run_piv_challenge_simulation_01.py" />
         <option value="$PROJECT_DIR$/run_piv_simulation_02.py" />
+        <option value="$PROJECT_DIR$/run_piv_challenge_simulation_01.py" />
         <option value="$PROJECT_DIR$/perform_ray_tracing_03.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="-1" />
     <option name="y" value="23" />
     <option name="width" value="1280" />
     <option name="height" value="923" />
@@ -164,8 +191,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
-      <pane id="Scratches" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -186,6 +211,8 @@
           </PATH>
         </subPane>
       </pane>
+      <pane id="Scratches" />
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -404,7 +431,7 @@
     <option name="localTasksCounter" value="2" />
     <servers />
   </component>
-  <component name="TodoView">
+  <component name="TodoView" selected-index="4">
     <todo-panel id="selected-file">
       <is-autoscroll-to-source value="true" />
     </todo-panel>
@@ -414,26 +441,26 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="-1" y="23" width="1280" height="923" extended-state="6" />
+    <frame x="0" y="23" width="1280" height="923" extended-state="6" />
     <editor active="false" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25019857" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32880098" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.43757725" sideWeight="0.50282484" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.25019857" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32851985" sideWeight="0.49563146" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32851985" sideWeight="0.50436854" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.30612245" sideWeight="0.49717513" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32893157" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.32851985" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32533014" sideWeight="0.49717513" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.2494043" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2494043" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.13205282" sideWeight="0.49717513" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4009604" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.40072203" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
     </layout>
   </component>
@@ -450,7 +477,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="implemented mie scattering" />
-    <option name="LAST_COMMIT_MESSAGE" value="implemented mie scattering" />
+    <MESSAGE value="added lines to save lightray_data to bin file as float32" />
+    <option name="LAST_COMMIT_MESSAGE" value="added lines to save lightray_data to bin file as float32" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -462,18 +490,66 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="python-line">
           <url>file://$PROJECT_DIR$/perform_ray_tracing_03.py</url>
-          <line>1834</line>
+          <line>1839</line>
           <option name="timeStamp" value="48" />
         </line-breakpoint>
       </breakpoints>
       <breakpoints-dialog>
         <breakpoints-dialog />
       </breakpoints-dialog>
-      <option name="time" value="49" />
+      <option name="time" value="50" />
     </breakpoint-manager>
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/run_piv_challenge_simulation_01.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="208" column="0" selection-start-line="208" selection-start-column="0" selection-end-line="208" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/run_piv_simulation_02.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="1415" column="14" selection-start-line="1415" selection-start-column="14" selection-end-line="1415" selection-end-column="14" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/perform_ray_tracing_03.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/bhmie.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="157" column="0" selection-start-line="157" selection-start-column="0" selection-end-line="157" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test_bhmie.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="32" column="32" selection-start-line="32" selection-start-column="32" selection-end-line="32" selection-end-column="32" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/bhmie_lkr.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="131" column="6" selection-start-line="131" selection-start-column="6" selection-end-line="131" selection-end-column="6" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/run_piv_challenge_simulation_01.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -548,7 +624,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="342" column="0" selection-start-line="342" selection-start-column="0" selection-end-line="342" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -587,7 +662,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="70" column="0" selection-start-line="70" selection-start-column="0" selection-end-line="70" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -595,30 +669,37 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="607" column="0" selection-start-line="607" selection-start-column="0" selection-end-line="607" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/run_piv_simulation_02.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="1415" column="14" selection-start-line="1415" selection-start-column="14" selection-end-line="1415" selection-end-column="14" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/run_piv_challenge_simulation_01.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-5.888889">
-          <caret line="208" column="0" selection-start-line="208" selection-start-column="0" selection-end-line="208" selection-end-column="0" />
+        <state vertical-scroll-proportion="0.0">
+          <caret line="117" column="26" selection-start-line="117" selection-start-column="26" selection-end-line="117" selection-end-column="26" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/run_piv_simulation_02.py">
+    <entry file="file://$USER_HOME$/anaconda/lib/python2.7/site-packages/scipy/io/matlab/mio.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-12.0">
-          <caret line="1415" column="14" selection-start-line="1415" selection-start-column="14" selection-end-line="1415" selection-end-column="14" />
+        <state vertical-scroll-proportion="0.0">
+          <caret line="191" column="0" selection-start-line="191" selection-start-column="0" selection-end-line="191" selection-end-column="0" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/perform_ray_tracing_03.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.33484164">
-          <caret line="1730" column="21" selection-start-line="1730" selection-start-column="21" selection-end-line="1730" selection-end-column="21" />
+        <state vertical-scroll-proportion="0.26603773">
+          <caret line="1757" column="67" selection-start-line="1757" selection-start-column="67" selection-end-line="1757" selection-end-column="67" />
           <folding />
         </state>
       </provider>

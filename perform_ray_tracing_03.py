@@ -1679,9 +1679,9 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     element_center[:,2] = element_center[:,2] + z_lens
 
     if (field_type == 'particle'):
-        savefile = 'mat_file/start_particle.mat'
+        savefile = 'mat_files/start_particle.mat'
     else:
-        savefile = 'mat_file/start_calibration.mat'
+        savefile = 'mat_files/start_calibration.mat'
 
     sio.savemat(savefile, {'image_distance': image_distance,
                            'h2_principal_plane': h2_principal_plane,
@@ -1752,6 +1752,11 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
         # % This extracts the light ray radiance
         # %light_ray_data.ray_radiance=ones(size(lightfield_data.theta))';
         light_ray_data['ray_radiance'] = (1.0 / aperture_f_number ** 2) * np.transpose(lightfield_data['radiance'])
+
+        #TODO : save lighraydata to file and call schlierenray
+        light_ray_data['ray_source_coordinates'].astype('float32').tofile('lightraypos_i.bin')
+        light_ray_data['ray_propogation_direction'].astype('float32').tofile('lightraydir_i.bin')
+
 
         # % This propogates some imaginary light rays through the optical system
         light_ray_data = propogate_rays_through_optical_system(element_data, element_center, element_plane_parameters,

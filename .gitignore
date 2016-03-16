@@ -3,6 +3,6 @@
 
 #.tif images
 *.tif
-
+*.bin
 *~
 .DS_Store
