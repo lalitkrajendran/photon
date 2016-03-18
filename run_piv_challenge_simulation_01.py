@@ -43,6 +43,7 @@ def _todict(matobj):
 			dict[strg] = elem
 	return dict
 
+
 # This function creates a series of PIV images that closely resemble the data that was produced by the PIV Challenge Case E data.
 top_write_directory = '/Users/lalit/Documents/PhD_Research/Projects/Ongoing/portingRodscode/camera_simulation/test_directory/'
 
@@ -115,12 +116,12 @@ Z_Min = -7.5e3
 Z_Max = +7.5e3
 
 # This is the number of particles to simulate
-total_particle_number = 10
+total_particle_number = 100
 
 # This generates the particle positions
-X = (X_Max-X_Min)*np.random.rand(int(total_particle_number),1)+X_Min;
-Y = (Y_Max-Y_Min)*np.random.rand(int(total_particle_number),1)+Y_Min;
-Z = (Z_Max-Z_Min)*np.random.rand(int(total_particle_number),1)+Z_Min;
+X = (X_Max-X_Min)*np.random.rand(int(total_particle_number),1)+X_Min
+Y = (Y_Max-Y_Min)*np.random.rand(int(total_particle_number),1)+Y_Min
+Z = (Z_Max-Z_Min)*np.random.rand(int(total_particle_number),1)+Z_Min
 
 # This generates the first frame particle positions
 X1 = X - X_Velocity/2.0
@@ -159,6 +160,12 @@ particle_data_frame_0002 = {'X': X, 'Y': Y, 'Z': Z}
 pickle.dump(particle_data_frame_0002,open(particle_position_data_directory + 'particle_data_frame_0002.p','wb'))
 sio.savemat(particle_position_data_directory + 'particle_data_frame_0002.mat',particle_data_frame_0002)
 
+
+# create nrrd file
+# nrrd_filename = os.path.dirname(os.path.realpath(__file__)) + '/' + 'test.nrrd'
+# create_nrrd(nrrd_filename)
+
+
 ### Performs Camera Simulation
 # This iterates through the different cameras performing the image simulation
 for i in range(1,len(camera_parameter_list)+1):
@@ -192,7 +199,7 @@ for i in range(1,len(camera_parameter_list)+1):
 	# This changes the number of particles to simulate out of the list of possible
 	# particles (if this number is larger than the number of saved particles,
 	# an error will be returned)
-	piv_simulation_parameters.particle_field.particle_number = 10
+	piv_simulation_parameters.particle_field.particle_number = 100
 
 	# This changes the directory to save the particle images in parameters structure
 	piv_simulation_parameters.output_data.particle_image_directory = particle_image_top_directory + 'camera_%02d' % camera_index + '/'

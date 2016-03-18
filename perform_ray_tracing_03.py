@@ -3,6 +3,8 @@ from numpy import linalg as la
 import run_piv_simulation_02
 import scipy.io as sio
 from progressbar import ProgressBar
+import subprocess
+import os
 import time
 from sklearn.neighbors import NearestNeighbors
 import matplotlib.pyplot as plt
@@ -1547,6 +1549,37 @@ def intersect_sensor_better(camera_design, x, y):
 
     return [ii_indices, jj_indices, pixel_weights]
 
+def trace_rays_through_density_gradients(light_ray_data):
+    # This function calls the SchlierenRay code to trace rays through a medium with
+    # density gradients
+
+    # specify file names to save lightray position and direction
+    light_ray_pos_filename = 'lightrayPos_i.bin'
+    light_ray_dir_filename = 'lightrayDir_i.bin'
+
+    # save light ray data to file
+    light_ray_data['ray_source_coordinates'].astype('float32').tofile(light_ray_pos_filename)
+    light_ray_data['ray_propogation_direction'].astype('float32').tofile(light_ray_dir_filename)
+
+    # change working directory to where schlieren is located
+    subprocess.call('cd ../ray_tracing_density_gradients/schlieren-0.2.0-Build/', shell=True)
+
+    # call CUDA program to trace rays through density gradients
+    subprocess.call('./schlieren ' + 'test.nrrd' + ' ' + light_ray_pos_filename + ' ' + light_ray_dir_filename
+                    + ' '+ str(light_ray_data['ray_source_coordinates'].shape[0]), shell=True)
+
+    # read updated position and direction data from file
+    temp_pos_array = np.fromfile('lightrayPos_f.bin',dtype='float32')
+    temp_dir_array = np.fromfile('lightrayDir_f.bin',dtype='float32')
+
+    # reshape arrays
+    light_ray_data['ray_source_coordinates'] = np.reshape(temp_pos_array,(temp_pos_array.size/3,3))
+    light_ray_data['ray_propogation_direction'] = np.reshape(temp_dir_array,(temp_dir_array.size/3,3))
+
+    # move back to directory where the python codes are located
+    os.chdir(os.path.dirname(os.path.realpath(__file__)))
+
+    return light_ray_data
 
 def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain, scattering_data, scattering_type,
                            lightfield_source, field_type):
@@ -1753,9 +1786,7 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
         # %light_ray_data.ray_radiance=ones(size(lightfield_data.theta))';
         light_ray_data['ray_radiance'] = (1.0 / aperture_f_number ** 2) * np.transpose(lightfield_data['radiance'])
 
-        #TODO : save lighraydata to file and call schlierenray
-        light_ray_data['ray_source_coordinates'].astype('float32').tofile('lightraypos_i.bin')
-        light_ray_data['ray_propogation_direction'].astype('float32').tofile('lightraydir_i.bin')
+        light_ray_data = trace_rays_through_density_gradients(light_ray_data)
 
 
         # % This propogates some imaginary light rays through the optical system
