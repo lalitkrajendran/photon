@@ -1557,16 +1557,16 @@ def trace_rays_through_density_gradients(light_ray_data):
     light_ray_pos_filename = 'lightrayPos_i.bin'
     light_ray_dir_filename = 'lightrayDir_i.bin'
 
-    # save light ray data to file
-    light_ray_data['ray_source_coordinates'].astype('float32').tofile(light_ray_pos_filename)
-    light_ray_data['ray_propogation_direction'].astype('float32').tofile(light_ray_dir_filename)
-
     # change working directory to where schlieren is located
     #subprocess.call('cd ../ray_tracing_density_gradients/schlieren-0.2.0-Build/', shell=True)
     os.chdir('/home/barracuda/a/lrajendr/Projects/ray_tracing_density_gradients/schlieren-0.2.0-Build/')    
 
+    # save light ray data to file
+    light_ray_data['ray_source_coordinates'].astype('float32').tofile(light_ray_pos_filename)
+    light_ray_data['ray_propogation_direction'].astype('float32').tofile(light_ray_dir_filename)
+
     # call CUDA program to trace rays through density gradients
-    subprocess.call('./schlieren ' + 'test.nrrd' + ' ' + light_ray_pos_filename + ' ' + light_ray_dir_filename
+    subprocess.call('cuda-memcheck ./schlieren ' + 'test.nrrd' + ' ' + light_ray_pos_filename + ' ' + light_ray_dir_filename
                     + ' '+ str(light_ray_data['ray_source_coordinates'].shape[0]), shell=True)
 
     # read updated position and direction data from file
