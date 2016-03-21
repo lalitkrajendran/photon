@@ -31,6 +31,7 @@ def generate_progress_string(progress_decimal,progress_bar_character_number):
     # % This is the total text string to be displayed
     text_string = string_prefix + progress_bar_string + string_suffix
 
+    
     return text_string
 
 

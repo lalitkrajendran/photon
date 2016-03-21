@@ -1276,7 +1276,7 @@ def run_piv_simulation_02(piv_simulation_parameters):
     # % simulation
     perform_mie_scattering = piv_simulation_parameters['particle_field']['perform_mie_scattering']
 
-    ski_io.use_plugin('freeimage')
+    #ski_io.use_plugin('freeimage')
 
     # % This generates the particle field images if specified by the parameters
     # % structure
@@ -1343,7 +1343,8 @@ def run_piv_simulation_02(piv_simulation_parameters):
             image_filename_write = particle_image_directory + 'particle_image_frame_' + '%04d' % frame_index + '.tif'
 
             # This saves the image to memory
-            ski_io.imsave(image_filename_write,I) #,'tif','Compression','none')
+            #ski_io.imsave(image_filename_write,I) #,'tif','Compression','none')
+            I.tofile('img_'+'%04d' % frame_index + '.bin')
 
     # # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # # % Calibration Grid Simulation                                             %

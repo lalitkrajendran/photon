@@ -1562,7 +1562,8 @@ def trace_rays_through_density_gradients(light_ray_data):
     light_ray_data['ray_propogation_direction'].astype('float32').tofile(light_ray_dir_filename)
 
     # change working directory to where schlieren is located
-    subprocess.call('cd ../ray_tracing_density_gradients/schlieren-0.2.0-Build/', shell=True)
+    #subprocess.call('cd ../ray_tracing_density_gradients/schlieren-0.2.0-Build/', shell=True)
+    os.chdir('/home/barracuda/a/lrajendr/Projects/ray_tracing_density_gradients/schlieren-0.2.0-Build/')    
 
     # call CUDA program to trace rays through density gradients
     subprocess.call('./schlieren ' + 'test.nrrd' + ' ' + light_ray_pos_filename + ' ' + light_ray_dir_filename
@@ -1744,7 +1745,7 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     lightray_number_per_particle = 2
 
     # % This generates an array of indices into the source points to calculate the lightfield
-    lightfield_N = lightfield_source['x'].size / np.ceil(lightray_process_number / lightray_number_per_particle)
+    lightfield_N = lightfield_source['x'].size / np.ceil(lightray_process_number*1.0 / lightray_number_per_particle)
     if(lightfield_N<1.0):
         lightfield_vector = np.linspace(0,lightfield_source['x'].size,endpoint=False)
     else:
@@ -1864,6 +1865,7 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     # % Rescales and resamples image for export                                 %
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+    '''
     # % This rescales the image intensity to account for the pixel gain
     I *= 10 ** (pixel_gain/ 20.0)
     #
@@ -1878,7 +1880,7 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     # % This converts the image from double precision to 16 bit precision
     I = np.uint16(I)
 
-    plt.imshow(I,cmap = plt.get_cmap('gray'),vmin=0,vmax=2**16-1)
-    plt.show()
-
+    #plt.imshow(I,cmap = plt.get_cmap('gray'),vmin=0,vmax=2**16-1)
+    #plt.show()
+    '''
     return I
