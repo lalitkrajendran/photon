@@ -1746,14 +1746,15 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     # % This generates an array of indices into the source points to calculate the lightfield
     lightfield_N = lightfield_source['x'].size / np.ceil(lightray_process_number / lightray_number_per_particle)
     if(lightfield_N<1.0):
-        lightfield_vector = np.linspace(0,lightfield_source['x'].size,endpoint=False)
+        # lightfield_vector = np.linspace(0,lightfield_source['x'].size,endpoint=False)
+        lightfield_vector = np.r_[0:lightfield_source['x'].size-1]
     else:
-        lightfield_vector = np.linspace(0, lightfield_source['x'].size, lightfield_N,endpoint=False)
-
+        # lightfield_vector = np.linspace(0, lightfield_source['x'].size, lightfield_N,endpoint=False)
+        lightfield_vector = np.r_[0:lightfield_source['x'].size-1:lightfield_N]
     # % This checks whether the last segment of indices is at the end of the
     # % vector and if not, adds them
-    if lightfield_vector[-1] != lightfield_source['x'].size:
-        np.append(lightfield_vector, lightfield_source['x'].size)
+    if lightfield_vector[-1] != lightfield_source['x'].size-1:
+        lightfield_vector = np.append(lightfield_vector, lightfield_source['x'].size-1)
 
     light_ray_data = {}
     # % This iterates through the rays in blocks of less then or equal to
