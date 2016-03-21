@@ -388,10 +388,12 @@ def generate_lightfield_angular_data(lens_pitch, image_distance, scattering_data
 
         # % This creates random radial coordinates for the lightrays to intersect
         # % on the lens
+        np.random.seed(523)
         r = R * np.sqrt(np.random.rand(1, lightray_number_per_particle))
 
         # % This creates random angular coordinates for the lightrays to
         # % intersect on the lens
+        np.random.seed(105)
         psi = 2.0 * np.pi * np.random.rand(1, lightray_number_per_particle)
 
         # % This calculates the random cartesian coordinate of the points the
@@ -821,7 +823,6 @@ def propogate_rays_through_single_element(optical_element, element_center, eleme
         # % vectors and the normal vectors of the lens (ie the dot product of the
         # % vectors)
         ray_dot_product = -np.diag(np.dot(ray_propogation_direction, lens_normal_vectors.T))
-
         # % This calculates the radicand in the refraction ray propogation
         # % direction equation
         refraction_radicand = 1.0 - (refractive_index_ratio ** 2) * (1.0 - ray_dot_product ** 2)
@@ -1566,7 +1567,7 @@ def trace_rays_through_density_gradients(light_ray_data):
     light_ray_data['ray_propogation_direction'].astype('float32').tofile(light_ray_dir_filename)
 
     # call CUDA program to trace rays through density gradients
-    subprocess.call('cuda-memcheck ./schlieren ' + 'test.nrrd' + ' ' + light_ray_pos_filename + ' ' + light_ray_dir_filename
+    subprocess.call('cuda-memcheck ./schlieren ' + 'const_grad.nrrd' + ' ' + light_ray_pos_filename + ' ' + light_ray_dir_filename
                     + ' '+ str(light_ray_data['ray_source_coordinates'].shape[0]), shell=True)
 
     # read updated position and direction data from file
@@ -1579,6 +1580,7 @@ def trace_rays_through_density_gradients(light_ray_data):
 
     # move back to directory where the python codes are located
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
+    print "current directory : " + os.getcwd()
 
     return light_ray_data
 
@@ -1741,8 +1743,8 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     I = np.zeros([x_pixel_number, y_pixel_number])
 
     # # TODO change this
-    lightray_process_number = 2
-    lightray_number_per_particle = 2
+    lightray_process_number = 10
+    lightray_number_per_particle = 10
 
     # % This generates an array of indices into the source points to calculate the lightfield
     lightfield_N = lightfield_source['x'].size / np.ceil(lightray_process_number*1.0 / lightray_number_per_particle)

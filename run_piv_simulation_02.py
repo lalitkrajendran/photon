@@ -1326,8 +1326,8 @@ def run_piv_simulation_02(piv_simulation_parameters):
             # convert none to NAN just for MATLAB
             if(scattering_data == None):
                 scattering_data = np.NAN
-
-            sio.savemat('mat_files/particle_' + '%02d' % frame_index + '.mat',{'piv_simulation_parameters' : piv_simulation_parameters,
+            os.chdir(os.path.dirname(os.path.realpath(__file__)))
+            sio.savemat('./mat_files/particle_' + '%02d' % frame_index + '.mat',{'piv_simulation_parameters' : piv_simulation_parameters,
                                    'optical_system' : optical_system,
                                    'pixel_gain' : pixel_gain,
                                    'scattering_data' : scattering_data,
@@ -1345,6 +1345,7 @@ def run_piv_simulation_02(piv_simulation_parameters):
             # This saves the image to memory
             #ski_io.imsave(image_filename_write,I) #,'tif','Compression','none')
             I.tofile('img_'+'%04d' % frame_index + '.bin')
+            plt.imsave('img_'+'%04d' % frame_index + '.png',I*10**8,cmap = plt.get_cmap('gray'),vmin=0,vmax=50)
 
     # # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # # % Calibration Grid Simulation                                             %
