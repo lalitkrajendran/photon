@@ -43,16 +43,20 @@ ny = 200
 nz = 100
 z_object = 823668.800556
 
+Z_Min = -3.0e2
+Z_Max = 3.0e02
 X_Velocity = 01.0e3
 Y_Velocity = 01.0e3
-Z_Velocity = 00.1e3
+#Z_Velocity = 00.1e3
 
 data['x'] = np.linspace(-15e4,15e4,nx).astype('float32') - X_Velocity/2
 data['y'] = np.linspace(-15e4,15e4,ny).astype('float32') - Y_Velocity/2
 # data['z'] = np.linspace(-15e3,15e3,nz).astype('float32') + z_object - Z_Velocity/2
-data['z'] = np.linspace(7.5e5,9.0e5,nz).astype('float32')
+#data['z'] = np.linspace(8.7e5,9.5e5,nz).astype('float32')
+data['z'] = np.linspace(Z_Min,Z_Max,nz).astype('float32') + z_object
+
 # specify gradients for x and y directions
-grad_x = 5e-4
+grad_x = 2.0
 grad_y = 0.0
 
 x = np.array(data['x'])

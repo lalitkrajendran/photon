@@ -4,8 +4,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # load images
-img1 = io.imread('no_grad.png')
-img2 = io.imread('const_grad.png')
+img1 = io.imread('bos_ref.png')
+img2 = io.imread('bos_test.png')
 
 # convert rgb images to grayscale
 img1 = color.rgb2gray(img1)
