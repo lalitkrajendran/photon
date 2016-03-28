@@ -826,7 +826,9 @@ def propogate_rays_through_single_element(optical_element, element_center, eleme
         # % This is the scaled cosine of the angle of the incident light ray
         # % vectors and the normal vectors of the lens (ie the dot product of the
         # % vectors)
-        ray_dot_product = -np.diag(np.dot(ray_propogation_direction, lens_normal_vectors.T))
+        #ray_dot_product = -np.diag(np.dot(ray_propogation_direction, lens_normal_vectors.T))
+        ray_dot_product = np.einsum('ij,ij->i',ray_propogation_direction,lens_normal_vectors)
+
         # % This calculates the radicand in the refraction ray propogation
         # % direction equation
         refraction_radicand = 1.0 - (refractive_index_ratio ** 2) * (1.0 - ray_dot_product ** 2)
@@ -976,7 +978,8 @@ def propogate_rays_through_single_element(optical_element, element_center, eleme
         # % This is the scaled cosine of the angle of the incident light ray
         # % vectors and the normal vectors of the lens (ie the dot product of the
         # % vectors)
-        ray_dot_product = -np.diag(np.dot(ray_propogation_direction, lens_normal_vectors.T))
+        #ray_dot_product = -np.diag(np.dot(ray_propogation_direction, lens_normal_vectors.T))
+        ray_dot_product = np.einsum('ij,ij->i',ray_propogation_direction,lens_normal_vectors)
 
         # % This calculates the radicand in the refraction ray propogation
         # % direction equation
@@ -1747,11 +1750,11 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     I = np.zeros([x_pixel_number, y_pixel_number])
 
     # # TODO change this
-    lightray_process_number = 10
-    lightray_number_per_particle = 10
+    #lightray_process_number = 10
+    #lightray_number_per_particle = 10
 
     # % This generates an array of indices into the source points to calculate the lightfield
-    lightfield_N = lightfield_source['x'].size / np.ceil(lightray_process_number*1.0 / lightray_number_per_particle)
+    lightfield_N = np.ceil(lightray_process_number*1.0 / lightray_number_per_particle)
     if(lightfield_N<1.0):
         # lightfield_vector = np.linspace(0,lightfield_source['x'].size,endpoint=False)
         lightfield_vector = np.r_[0:lightfield_source['x'].size-1]
@@ -1770,6 +1773,7 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     for m in range(0, len(lightfield_vector) - 1):
         # % This displays the progress of the sensor rendering
         pbar.update(m)
+        time.sleep(1)
         # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         # % Generate lightfield and propogate it through the optical system     %
         # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1795,7 +1799,7 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
         light_ray_data['ray_radiance'] = (1.0 / aperture_f_number ** 2) * np.transpose(lightfield_data['radiance'])
 
         # This traces the light rays through a medium containing density gradients
-        light_ray_data = trace_rays_through_density_gradients(light_ray_data)
+        #light_ray_data = trace_rays_through_density_gradients(light_ray_data)
 
 
         # % This propogates some imaginary light rays through the optical system
