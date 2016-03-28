@@ -351,6 +351,7 @@ def generate_lightfield_angular_data(lens_pitch, image_distance, scattering_data
 
     # % If the scattering type is 'mie' then the Mie scattering data is loaded,
     # % otherwise nothing is loaded from the scattering data
+    '''
     if scattering_type == 'mie':
         #% This saves the scattering angle data into the parameters structure
         mie_scattering_angle = scattering_data['scattering_angle']
@@ -362,7 +363,7 @@ def generate_lightfield_angular_data(lens_pitch, image_distance, scattering_data
         #% This extracts the normalized beam propogation direction vector from the
         #% parameters structure
         beam_propogation_vector=scattering_data['beam_propogation_vector']
-
+    '''
     # % This is the number of points to calculate the lightfield structure for
     source_point_number = n_max - n_min + 1
 
@@ -402,6 +403,7 @@ def generate_lightfield_angular_data(lens_pitch, image_distance, scattering_data
         # % This calculates the angular data using Mie scattering if specified in the
         # % parameters structure, otherwise the particles are assummed to have
         # % uniform irradiance
+        '''
         if scattering_type=='mie':
 
             # % This extracts the current particle diameter index
@@ -436,7 +438,9 @@ def generate_lightfield_angular_data(lens_pitch, image_distance, scattering_data
             # % This specifies the total irradiance for the current particle's
             # % rays to be uniform
             irradiance_current = lightfield_source['radiance'][n]
-
+        '''
+        irradiance_current = lightfield_source['radiance'][n]
+        
         # % This calculates the x angles for the light rays
         theta_temp = -(np.squeeze(x_lens)- x_current) / (image_distance - z_current)
         # % This calculates the y angles for the light rays
