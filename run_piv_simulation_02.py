@@ -1310,7 +1310,7 @@ def run_piv_simulation_02(piv_simulation_parameters):
         # for frame_index in np.array(frame_vector):
         for frame_index in range(1,3):
             # This creates the lightfield data for performing the raytracing operation
-            #print " Generating lightfield source"
+            print "frame_index : %d" % frame_index
             lightfield_source = dict()
                         
             lightfield_source = load_lightfield_data(piv_simulation_parameters,optical_system,scattering_data,frame_index, lightfield_source)

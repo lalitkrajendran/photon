@@ -1744,11 +1744,11 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     I = np.zeros([x_pixel_number, y_pixel_number])
 
     # # TODO change this
-    lightray_process_number = 2
-    lightray_number_per_particle = 2
+    lightray_process_number = 100
+    lightray_number_per_particle = 50
 
     # % This generates an array of indices into the source points to calculate the lightfield
-    lightfield_N = lightfield_source['x'].size / np.ceil(lightray_process_number / lightray_number_per_particle)
+    lightfield_N = np.ceil(lightray_process_number / lightray_number_per_particle)
     if(lightfield_N<1.0):
         # lightfield_vector = np.linspace(0,lightfield_source['x'].size,endpoint=False)
         lightfield_vector = np.r_[0:lightfield_source['x'].size-1]
@@ -1763,10 +1763,12 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     light_ray_data = {}
     # % This iterates through the rays in blocks of less then or equal to
     # % lightray_process_number in size
-    # pbar = ProgressBar(maxval=len(lightfield_vector)-2).start()
+    pbar = ProgressBar(maxval=len(lightfield_vector)-2).start()
     for m in range(0, len(lightfield_vector) - 1):
+        print "%d out of %d particles have been simulated" % (m*lightfield_N,lightfield_vector[-1])
         # % This displays the progress of the sensor rendering
-        # pbar.update(m)
+        pbar.update(m)
+        time.sleep(1)
         # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         # % Generate lightfield and propogate it through the optical system     %
         # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1792,7 +1794,7 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
         light_ray_data['ray_radiance'] = (1.0 / aperture_f_number ** 2) * np.transpose(lightfield_data['radiance'])
 
         # This traces the light rays through a medium containing density gradients
-        light_ray_data = trace_rays_through_density_gradients(light_ray_data)
+        #light_ray_data = trace_rays_through_density_gradients(light_ray_data)
 
 
         # % This propogates some imaginary light rays through the optical system
@@ -1865,11 +1867,12 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
                     I[ii_indices[n][p]][jj_indices[n][p]] += pixel_weights[n][p] * light_ray_data['ray_radiance'][n] * \
                                                              cos_4_alpha[n]
 
-    # pbar.finish()
+    pbar.finish()
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # % Rescales and resamples image for export                                 %
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+    '''
     # % This rescales the image intensity to account for the pixel gain
     I *= 10 ** (pixel_gain/ 20.0)
     #
@@ -1884,7 +1887,7 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     # % This converts the image from double precision to 16 bit precision
     I = np.uint16(I)
 
-    plt.imshow(I,cmap = plt.get_cmap('gray'),vmin=0,vmax=2**16-1)
-    plt.show()
-
+    # plt.imshow(I,cmap = plt.get_cmap('gray'),vmin=0,vmax=2**16-1)
+    # plt.show()
+    '''
     return I
