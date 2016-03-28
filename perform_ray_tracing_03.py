@@ -824,8 +824,8 @@ def propogate_rays_through_single_element(optical_element, element_center, eleme
         # % This is the scaled cosine of the angle of the incident light ray
         # % vectors and the normal vectors of the lens (ie the dot product of the
         # % vectors)
-        ray_dot_product = -np.diag(np.dot(ray_propogation_direction, lens_normal_vectors.T))
-
+        # ray_dot_product = -np.diag(np.dot(ray_propogation_direction, lens_normal_vectors.T))
+        ray_dot_product = np.einsum('ij,ij->i',ray_propogation_direction,lens_normal_vectors)
         # % This calculates the radicand in the refraction ray propogation
         # % direction equation
         refraction_radicand = 1.0 - (refractive_index_ratio ** 2) * (1.0 - ray_dot_product ** 2)
@@ -975,8 +975,8 @@ def propogate_rays_through_single_element(optical_element, element_center, eleme
         # % This is the scaled cosine of the angle of the incident light ray
         # % vectors and the normal vectors of the lens (ie the dot product of the
         # % vectors)
-        ray_dot_product = -np.diag(np.dot(ray_propogation_direction, lens_normal_vectors.T))
-
+        # ray_dot_product = -np.diag(np.dot(ray_propogation_direction, lens_normal_vectors.T))
+        ray_dot_product = np.einsum('ij,ij->i',ray_propogation_direction,lens_normal_vectors)
         # % This calculates the radicand in the refraction ray propogation
         # % direction equation
         refraction_radicand = 1.0 - (refractive_index_ratio ** 2) * (1.0 - ray_dot_product ** 2)
@@ -1744,8 +1744,8 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     I = np.zeros([x_pixel_number, y_pixel_number])
 
     # # TODO change this
-    lightray_process_number = 100
-    lightray_number_per_particle = 50
+    lightray_process_number = 1e2
+    lightray_number_per_particle = 0.5e2
 
     # % This generates an array of indices into the source points to calculate the lightfield
     lightfield_N = np.ceil(lightray_process_number / lightray_number_per_particle)
@@ -1765,7 +1765,7 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     # % lightray_process_number in size
     pbar = ProgressBar(maxval=len(lightfield_vector)-2).start()
     for m in range(0, len(lightfield_vector) - 1):
-        print "%d out of %d particles have been simulated" % (m*lightfield_N,lightfield_vector[-1])
+        # print "%d out of %d particles have been simulated" % (m*lightfield_N,lightfield_vector[-1])
         # % This displays the progress of the sensor rendering
         pbar.update(m)
         time.sleep(1)
