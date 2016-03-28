@@ -1,13 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="c90bfca8-8f44-482f-ae09-651496f61998" name="Default" comment="">
+    <list default="true" id="c90bfca8-8f44-482f-ae09-651496f61998" name="Default" comment="made the creation of lightfield_vector consistent with rod's code">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/bhmie.o" afterPath="$PROJECT_DIR$/bhmie.o" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/bhmie_table" afterPath="$PROJECT_DIR$/bhmie_table" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test_directory/particle_positions/particle_data_frame_0001.mat" afterPath="$PROJECT_DIR$/test_directory/particle_positions/particle_data_frame_0001.mat" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test_directory/particle_positions/particle_data_frame_0002.mat" afterPath="$PROJECT_DIR$/test_directory/particle_positions/particle_data_frame_0002.mat" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/vcs.xml" afterPath="$PROJECT_DIR$/.idea/vcs.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/bhmie_table.out" afterPath="$PROJECT_DIR$/bhmie_table.out" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/createNRRD.py" afterPath="$PROJECT_DIR$/createNRRD.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/perform_ray_tracing_03.py" afterPath="$PROJECT_DIR$/perform_ray_tracing_03.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test_directory/particle_positions/particle_data_frame_0001.p" afterPath="$PROJECT_DIR$/test_directory/particle_positions/particle_data_frame_0001.p" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test_directory/particle_positions/particle_data_frame_0002.p" afterPath="$PROJECT_DIR$/test_directory/particle_positions/particle_data_frame_0002.p" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/run_piv_challenge_simulation_01.py" afterPath="$PROJECT_DIR$/run_piv_challenge_simulation_01.py" />
     </list>
     <ignored path="camera_simulation.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -32,7 +36,7 @@
         <entry file="file://$PROJECT_DIR$/run_piv_challenge_simulation_01.py">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="201" column="66" selection-start-line="201" selection-start-column="66" selection-end-line="201" selection-end-column="66" />
+              <caret line="138" column="0" selection-start-line="138" selection-start-column="0" selection-end-line="138" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -42,7 +46,17 @@
         <entry file="file://$PROJECT_DIR$/createNRRD.py">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="23" column="35" selection-start-line="23" selection-start-column="35" selection-end-line="23" selection-end-column="35" />
+              <caret line="87" column="10" selection-start-line="87" selection-start-column="10" selection-end-line="87" selection-end-column="10" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="h5tonrrd.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/../../Computer_Generated_Schlieren/Software/pyCodes/h5tonrrd/src/h5tonrrd.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="162" column="0" selection-start-line="162" selection-start-column="0" selection-end-line="162" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -51,8 +65,8 @@
       <file leaf-file-name="run_piv_simulation_02.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/run_piv_simulation_02.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="1413" column="34" selection-start-line="1413" selection-start-column="34" selection-end-line="1413" selection-end-column="34" />
+            <state vertical-scroll-proportion="-25.444445">
+              <caret line="990" column="1" selection-start-line="990" selection-start-column="1" selection-end-line="990" selection-end-column="1" />
               <folding />
             </state>
           </provider>
@@ -61,8 +75,8 @@
       <file leaf-file-name="perform_ray_tracing_03.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/perform_ray_tracing_03.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.2680851">
-              <caret line="1754" column="36" selection-start-line="1754" selection-start-column="36" selection-end-line="1754" selection-end-column="36" />
+            <state vertical-scroll-proportion="0.63829786">
+              <caret line="1576" column="85" selection-start-line="1576" selection-start-column="85" selection-end-line="1576" selection-end-column="85" />
               <folding />
             </state>
           </provider>
@@ -125,14 +139,15 @@
         <option value="$PROJECT_DIR$/bhmie.py" />
         <option value="$PROJECT_DIR$/test_bhmie.py" />
         <option value="$PROJECT_DIR$/run_piv_simulation_02.py" />
-        <option value="$PROJECT_DIR$/createNRRD.py" />
         <option value="$PROJECT_DIR$/run_piv_challenge_simulation_01.py" />
         <option value="$PROJECT_DIR$/perform_ray_tracing_03.py" />
+        <option value="$PROJECT_DIR$/compareImages.py" />
+        <option value="$PROJECT_DIR$/../../../../../scp-dump/compareImages.py" />
+        <option value="$PROJECT_DIR$/createNRRD.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="1" />
     <option name="y" value="23" />
     <option name="width" value="1280" />
     <option name="height" value="923" />
@@ -156,7 +171,7 @@
       </profile-state>
     </entry>
   </component>
-  <component name="ProjectLevelVcsManager" settingsEditedManually="false">
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
     <OptionsSetting value="true" id="Add" />
     <OptionsSetting value="true" id="Remove" />
     <OptionsSetting value="true" id="Checkout" />
@@ -167,7 +182,7 @@
     <ConfirmationsSetting value="0" id="Remove" />
   </component>
   <component name="ProjectView">
-    <navigator currentView="ProjectPane" proportions="" version="1">
+    <navigator proportions="" version="1">
       <flattenPackages />
       <showMembers />
       <showModules />
@@ -180,36 +195,18 @@
       <manualOrder />
       <foldersAlwaysOnTop value="true" />
     </navigator>
-    <panes>
-      <pane id="ProjectPane">
-        <subPane>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="camera_simulation" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="camera_simulation" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="camera_simulation" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-        </subPane>
-      </pane>
-      <pane id="Scratches" />
-      <pane id="Scope" />
-    </panes>
+    <panes />
   </component>
   <component name="PropertiesComponent">
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../../Computer_Generated_Schlieren/Software/pyCodes/h5tonrrd/src/h5tonrrd.py" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../../../../../scp-dump" />
     <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
     <property name="settings.editor.splitter.proportion" value="0.2" />
     <property name="ToolWindowTerminal.ShowToolbar" value="false" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/../../../../../scp-dump" />
+    </key>
   </component>
   <component name="RunManager" selected="Python.run_piv_challenge_simulation_01">
     <configuration default="false" name="run_piv_challenge_simulation_01" type="PythonConfigurationType" factoryName="Python" temporary="true">
@@ -449,10 +446,16 @@
       <option name="project" value="LOCAL" />
       <updated>1458333839580</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="made the creation of lightfield_vector consistent with rod's code">
+      <created>1458571107050</created>
+      <option name="number" value="00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1458571107050</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
-  <component name="TodoView" selected-index="4">
+  <component name="TodoView">
     <todo-panel id="selected-file">
       <is-autoscroll-to-source value="true" />
     </todo-panel>
@@ -462,7 +465,7 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="1" y="23" width="1280" height="923" extended-state="6" />
+    <frame x="0" y="23" width="1280" height="923" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25019857" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
@@ -472,7 +475,7 @@
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32851985" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32490975" sideWeight="0.49717513" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.2494043" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.13205282" sideWeight="0.49717513" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.1299639" sideWeight="0.49717513" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.40072203" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
@@ -500,7 +503,8 @@
     <MESSAGE value="implemented mie scattering" />
     <MESSAGE value="added lines to save lightray_data to bin file as float32" />
     <MESSAGE value="added function to call schlierenray" />
-    <option name="LAST_COMMIT_MESSAGE" value="added function to call schlierenray" />
+    <MESSAGE value="made the creation of lightfield_vector consistent with rod's code" />
+    <option name="LAST_COMMIT_MESSAGE" value="made the creation of lightfield_vector consistent with rod's code" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -512,18 +516,41 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="python-line">
           <url>file://$PROJECT_DIR$/perform_ray_tracing_03.py</url>
-          <line>1871</line>
+          <line>1875</line>
           <option name="timeStamp" value="48" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="python-line">
+          <url>file://$PROJECT_DIR$/run_piv_challenge_simulation_01.py</url>
+          <line>138</line>
+          <option name="timeStamp" value="58" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="python-line">
+          <url>file://$PROJECT_DIR$/run_piv_simulation_02.py</url>
+          <line>941</line>
+          <option name="timeStamp" value="61" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="python-line">
+          <url>file://$PROJECT_DIR$/perform_ray_tracing_03.py</url>
+          <line>1791</line>
+          <option name="timeStamp" value="68" />
         </line-breakpoint>
       </breakpoints>
       <breakpoints-dialog>
         <breakpoints-dialog />
       </breakpoints-dialog>
-      <option name="time" value="53" />
+      <option name="time" value="71" />
     </breakpoint-manager>
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/run_piv_challenge_simulation_01.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/run_piv_challenge_simulation_01.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -741,26 +768,17 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/../../Computer_Generated_Schlieren/Software/pyCodes/h5tonrrd/src/h5tonrrd.py">
+    <entry file="file://$USER_HOME$/anaconda/lib/python2.7/site-packages/numpy/lib/npyio.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.5754717">
-          <caret line="190" column="0" selection-start-line="163" selection-start-column="0" selection-end-line="190" selection-end-column="0" />
+        <state vertical-scroll-proportion="0.0">
+          <caret line="933" column="0" selection-start-line="933" selection-start-column="0" selection-end-line="933" selection-end-column="0" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/createNRRD.py">
+    <entry file="file://$USER_HOME$/anaconda/lib/python2.7/site-packages/progressbar/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="23" column="35" selection-start-line="23" selection-start-column="35" selection-end-line="23" selection-end-column="35" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/run_piv_simulation_02.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="1413" column="34" selection-start-line="1413" selection-start-column="34" selection-end-line="1413" selection-end-column="34" />
-          <folding />
+        <state vertical-scroll-proportion="0.29268292">
+          <caret line="207" column="0" selection-start-line="207" selection-start-column="0" selection-end-line="207" selection-end-column="0" />
         </state>
       </provider>
     </entry>
@@ -788,18 +806,58 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/../../Computer_Generated_Schlieren/Software/pyCodes/h5tonrrd/src/h5tonrrd.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="162" column="0" selection-start-line="162" selection-start-column="0" selection-end-line="162" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../../../../../scp-dump/compareImages.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.6557377">
+          <caret line="24" column="0" selection-start-line="24" selection-start-column="0" selection-end-line="24" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/compareImages.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/createNRRD.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="87" column="10" selection-start-line="87" selection-start-column="10" selection-end-line="87" selection-end-column="10" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/run_piv_challenge_simulation_01.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="201" column="66" selection-start-line="201" selection-start-column="66" selection-end-line="201" selection-end-column="66" />
+          <caret line="138" column="0" selection-start-line="138" selection-start-column="0" selection-end-line="138" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/run_piv_simulation_02.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-25.444445">
+          <caret line="990" column="1" selection-start-line="990" selection-start-column="1" selection-end-line="990" selection-end-column="1" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/perform_ray_tracing_03.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.2680851">
-          <caret line="1754" column="36" selection-start-line="1754" selection-start-column="36" selection-end-line="1754" selection-end-column="36" />
+        <state vertical-scroll-proportion="0.63829786">
+          <caret line="1576" column="85" selection-start-line="1576" selection-start-column="85" selection-end-line="1576" selection-end-column="85" />
           <folding />
         </state>
       </provider>

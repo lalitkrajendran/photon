@@ -45,7 +45,7 @@ def _todict(matobj):
 
 
 # This function creates a series of PIV images that closely resemble the data that was produced by the PIV Challenge Case E data.
-top_write_directory = '/home/barracuda/a/lrajendr/Projects/camera_simulation/test_directory/'
+top_write_directory = './test_directory/'
 
 # Create the top write directory
 if not(os.path.exists(top_write_directory)):

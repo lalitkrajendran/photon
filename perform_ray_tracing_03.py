@@ -388,12 +388,10 @@ def generate_lightfield_angular_data(lens_pitch, image_distance, scattering_data
 
         # % This creates random radial coordinates for the lightrays to intersect
         # % on the lens
-        np.random.seed(523)
         r = R * np.sqrt(np.random.rand(1, lightray_number_per_particle))
 
         # % This creates random angular coordinates for the lightrays to
         # % intersect on the lens
-        np.random.seed(105)
         psi = 2.0 * np.pi * np.random.rand(1, lightray_number_per_particle)
 
         # % This calculates the random cartesian coordinate of the points the
@@ -823,6 +821,7 @@ def propogate_rays_through_single_element(optical_element, element_center, eleme
         # % vectors and the normal vectors of the lens (ie the dot product of the
         # % vectors)
         ray_dot_product = -np.diag(np.dot(ray_propogation_direction, lens_normal_vectors.T))
+
         # % This calculates the radicand in the refraction ray propogation
         # % direction equation
         refraction_radicand = 1.0 - (refractive_index_ratio ** 2) * (1.0 - ray_dot_product ** 2)
@@ -1559,15 +1558,14 @@ def trace_rays_through_density_gradients(light_ray_data):
     light_ray_dir_filename = 'lightrayDir_i.bin'
 
     # change working directory to where schlieren is located
-    #subprocess.call('cd ../ray_tracing_density_gradients/schlieren-0.2.0-Build/', shell=True)
-    os.chdir('/home/barracuda/a/lrajendr/Projects/ray_tracing_density_gradients/schlieren-0.2.0-Build/')    
+    subprocess.call('cd ../ray_tracing_density_gradients/schlieren-0.2.0-Build/', shell=True)
 
     # save light ray data to file
     light_ray_data['ray_source_coordinates'].astype('float32').tofile(light_ray_pos_filename)
     light_ray_data['ray_propogation_direction'].astype('float32').tofile(light_ray_dir_filename)
 
     # call CUDA program to trace rays through density gradients
-    subprocess.call('cuda-memcheck ./schlieren ' + 'const_grad.nrrd' + ' ' + light_ray_pos_filename + ' ' + light_ray_dir_filename
+    subprocess.call('./schlieren ' + 'test.nrrd' + ' ' + light_ray_pos_filename + ' ' + light_ray_dir_filename
                     + ' '+ str(light_ray_data['ray_source_coordinates'].shape[0]), shell=True)
 
     # read updated position and direction data from file
@@ -1580,7 +1578,6 @@ def trace_rays_through_density_gradients(light_ray_data):
 
     # move back to directory where the python codes are located
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
-    print "current directory : " + os.getcwd()
 
     return light_ray_data
 
@@ -1743,11 +1740,11 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     I = np.zeros([x_pixel_number, y_pixel_number])
 
     # # TODO change this
-    lightray_process_number = 10
-    lightray_number_per_particle = 10
+    lightray_process_number = 2
+    lightray_number_per_particle = 2
 
     # % This generates an array of indices into the source points to calculate the lightfield
-    lightfield_N = lightfield_source['x'].size / np.ceil(lightray_process_number*1.0 / lightray_number_per_particle)
+    lightfield_N = lightfield_source['x'].size / np.ceil(lightray_process_number / lightray_number_per_particle)
     if(lightfield_N<1.0):
         # lightfield_vector = np.linspace(0,lightfield_source['x'].size,endpoint=False)
         lightfield_vector = np.r_[0:lightfield_source['x'].size-1]
@@ -1762,10 +1759,10 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     light_ray_data = {}
     # % This iterates through the rays in blocks of less then or equal to
     # % lightray_process_number in size
-    pbar = ProgressBar(maxval=len(lightfield_vector)-2).start()
+    # pbar = ProgressBar(maxval=len(lightfield_vector)-2).start()
     for m in range(0, len(lightfield_vector) - 1):
         # % This displays the progress of the sensor rendering
-        pbar.update(m)
+        # pbar.update(m)
         # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         # % Generate lightfield and propogate it through the optical system     %
         # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1864,12 +1861,11 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
                     I[ii_indices[n][p]][jj_indices[n][p]] += pixel_weights[n][p] * light_ray_data['ray_radiance'][n] * \
                                                              cos_4_alpha[n]
 
-    pbar.finish()
+    # pbar.finish()
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # % Rescales and resamples image for export                                 %
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    '''
     # % This rescales the image intensity to account for the pixel gain
     I *= 10 ** (pixel_gain/ 20.0)
     #
@@ -1884,7 +1880,7 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     # % This converts the image from double precision to 16 bit precision
     I = np.uint16(I)
 
-    #plt.imshow(I,cmap = plt.get_cmap('gray'),vmin=0,vmax=2**16-1)
-    #plt.show()
-    '''
+    plt.imshow(I,cmap = plt.get_cmap('gray'),vmin=0,vmax=2**16-1)
+    plt.show()
+
     return I
