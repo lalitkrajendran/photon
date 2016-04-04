@@ -38,7 +38,7 @@ max_val = max(var);
 % P = polar(angle_data,log(max_val)*ones(size(angle_data)));
 % set(P, 'Visible', 'off')
 % hold on
-h = polar(angle_data,log(var));
+h = polar(angle_data,log10(var));
 set(h,'LineWidth',1.0);
 title('\bf 10\mu m oil particle in air');
 % axis tight
