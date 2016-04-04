@@ -105,20 +105,20 @@ for i in range(1,len(camera_parameter_list)+1):
 # This is a uniform velocity field to simulate
 X_Velocity = 01.0e3
 Y_Velocity = 01.0e3
-#Z_Velocity = 00.1e3
-Z_Velocity = 0.0
+Z_Velocity = 00.1e3
+#Z_Velocity = 0.0
 
 # This is the domain of the particles to be simulated
 X_Min = -7.5e4
 X_Max = +7.5e4
 Y_Min = -7.5e4
 Y_Max = +7.5e4
-#Z_Min = -7.5e3
-#Z_Max = +7.5e3
-Z_Min = 5.0e2
+Z_Min = -7.5e3
+Z_Max = +7.5e3
+#Z_Min = 3.0e2
 #Z_Max = 0.0
 # This is the number of particles to simulate
-total_particle_number = 1000
+total_particle_number = 10000
 
 # initialize random number seed
 RAND_SEED = 5
@@ -130,20 +130,20 @@ X = (X_Max-X_Min)*np.random.rand(int(total_particle_number),1)+X_Min
 np.random.seed(22)
 Y = (Y_Max-Y_Min)*np.random.rand(int(total_particle_number),1)+Y_Min
 np.random.seed(51)
-#Z = (Z_Max-Z_Min)*np.random.rand(int(total_particle_number),1)+Z_Min
-Z = Z_Min*np.ones((int(total_particle_number),1))
+Z = (Z_Max-Z_Min)*np.random.rand(int(total_particle_number),1)+Z_Min
+#Z = Z_Min*np.ones((int(total_particle_number),1))
 
 # This generates the first frame particle positions
 X1 = X - X_Velocity/2.0
 Y1 = Y - Y_Velocity/2.0
-#Z1 = Z - Z_Velocity/2.0
-Z1 = Z
+Z1 = Z - Z_Velocity/2.0
+#Z1 = Z
 
 # This generates the second frame particle positions
 X2 = X + X_Velocity/2.0
 Y2 = Y + Y_Velocity/2.0
-#Z2 = Z + Z_Velocity/2.0
-Z2 = Z
+Z2 = Z + Z_Velocity/2.0
+#Z2 = Z
 
 # This creates the directory to save the particle data positions in
 particle_position_data_directory = top_write_directory + 'particle_positions/'
@@ -182,11 +182,6 @@ sio.savemat(particle_position_data_directory + 'particle_data_frame_0002.mat',pa
 # This iterates through the different cameras performing the image simulation
 for i in range(1,len(camera_parameter_list)+1):
 	camera_index = i
-
-	# temporary for debugging
-	if(i>1):
-		break
-
 	# This displays that the current camera simulation is being ran
 	print "\n\n\n\n"
 	print "Running camera %d simulation . . . " % camera_index
@@ -216,7 +211,7 @@ for i in range(1,len(camera_parameter_list)+1):
 	# This changes the number of particles to simulate out of the list of possible
 	# particles (if this number is larger than the number of saved particles,
 	# an error will be returned)
-	piv_simulation_parameters.particle_field.particle_number = 1000
+	piv_simulation_parameters.particle_field.particle_number = 10000
 
 	# This changes the directory to save the particle images in parameters structure
 	piv_simulation_parameters.output_data.particle_image_directory = particle_image_top_directory + 'camera_%02d' % camera_index + '/'

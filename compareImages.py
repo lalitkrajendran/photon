@@ -21,7 +21,8 @@ t[:,:,0] = img1
 t[:,:,1] = img2
 
 # display image
-plt.imshow(t)
-plt.show()
+#plt.imshow(t)
+plt.imsave('bos_comparison.png',t)
+#plt.show()
 
 
