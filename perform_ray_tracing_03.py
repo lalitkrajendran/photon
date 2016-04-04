@@ -389,11 +389,15 @@ def generate_lightfield_angular_data(lens_pitch, image_distance, scattering_data
 
         # % This creates random radial coordinates for the lightrays to intersect
         # % on the lens
-        r = R * np.sqrt(np.random.rand(1, lightray_number_per_particle))
+        np.random.seed(1105)
+        r_temp = np.random.rand(1, lightray_number_per_particle)
+        r = R * np.sqrt(r_temp)
 
         # % This creates random angular coordinates for the lightrays to
         # % intersect on the lens
-        psi = 2.0 * np.pi * np.random.rand(1, lightray_number_per_particle)
+        np.random.seed(4092)
+        psi_temp = np.random.rand(1, lightray_number_per_particle)
+        psi = 2.0 * np.pi * psi_temp
 
         # % This calculates the random cartesian coordinate of the points the
         # % rays will intersect on the lens
@@ -825,14 +829,9 @@ def propogate_rays_through_single_element(optical_element, element_center, eleme
         # % This is the scaled cosine of the angle of the incident light ray
         # % vectors and the normal vectors of the lens (ie the dot product of the
         # % vectors)
-<<<<<<< HEAD
-        # ray_dot_product = -np.diag(np.dot(ray_propogation_direction, lens_normal_vectors.T))
-        ray_dot_product = np.einsum('ij,ij->i',ray_propogation_direction,lens_normal_vectors)
-=======
         #ray_dot_product = -np.diag(np.dot(ray_propogation_direction, lens_normal_vectors.T))
         ray_dot_product = -np.einsum('ij,ij->i',ray_propogation_direction,lens_normal_vectors)
 
->>>>>>> origin/master
         # % This calculates the radicand in the refraction ray propogation
         # % direction equation
         refraction_radicand = 1.0 - (refractive_index_ratio ** 2) * (1.0 - ray_dot_product ** 2)
@@ -982,13 +981,9 @@ def propogate_rays_through_single_element(optical_element, element_center, eleme
         # % This is the scaled cosine of the angle of the incident light ray
         # % vectors and the normal vectors of the lens (ie the dot product of the
         # % vectors)
-<<<<<<< HEAD
-        # ray_dot_product = -np.diag(np.dot(ray_propogation_direction, lens_normal_vectors.T))
-        ray_dot_product = np.einsum('ij,ij->i',ray_propogation_direction,lens_normal_vectors)
-=======
         #ray_dot_product = -np.diag(np.dot(ray_propogation_direction, lens_normal_vectors.T))
         ray_dot_product = -np.einsum('ij,ij->i',ray_propogation_direction,lens_normal_vectors)
->>>>>>> origin/master
+
         # % This calculates the radicand in the refraction ray propogation
         # % direction equation
         refraction_radicand = 1.0 - (refractive_index_ratio ** 2) * (1.0 - ray_dot_product ** 2)
@@ -1448,7 +1443,7 @@ def propogate_rays_through_optical_system(element_data, element_center, element_
 
             # % This propogates the light rays through the single optical element
             light_ray_data = propogate_rays_through_single_element(current_optical_element, current_element_center,
-                                                                   current_plane_parameters, light_ray_data);
+                                                                   current_plane_parameters, light_ray_data)
 
         else:
 
@@ -1755,20 +1750,15 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     # % This initializes the sensor image
     I = np.zeros([x_pixel_number, y_pixel_number])
 
-    # # TODO change this
-<<<<<<< HEAD
-    lightray_process_number = 1e2
-    lightray_number_per_particle = 0.5e2
+    #lightray_process_number = 100000
+    #lightray_number_per_particle = 10000
 
-    # % This generates an array of indices into the source points to calculate the lightfield
-    lightfield_N = np.ceil(lightray_process_number / lightray_number_per_particle)
-=======
     lightray_process_number = 100000
     lightray_number_per_particle = 10000
 
     # % This generates an array of indices into the source points to calculate the lightfield
     lightfield_N = np.ceil(lightray_process_number*1.0 / lightray_number_per_particle)
->>>>>>> origin/master
+
     if(lightfield_N<1.0):
         # lightfield_vector = np.linspace(0,lightfield_source['x'].size,endpoint=False)
         lightfield_vector = np.r_[0:lightfield_source['x'].size-1]
@@ -1894,7 +1884,7 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     # % Rescales and resamples image for export                                 %
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    
+    '''
     # % This rescales the image intensity to account for the pixel gain
     I *= 10 ** (pixel_gain/ 20.0)
     #
@@ -1908,15 +1898,8 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
 
     # % This converts the image from double precision to 16 bit precision
     I = np.uint16(I)
-<<<<<<< HEAD
-
-    # plt.imshow(I,cmap = plt.get_cmap('gray'),vmin=0,vmax=2**16-1)
-    # plt.show()
     '''
-=======
-    
     #plt.imshow(I,cmap = plt.get_cmap('gray'),vmin=0,vmax=2**16-1)
     #plt.show()
     
->>>>>>> origin/master
     return I

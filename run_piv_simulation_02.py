@@ -751,7 +751,7 @@ def calculate_mie_scattering_intensity(piv_simulation_parameters,particle_diamet
         #scattering_irradiance[:,particle_diameter_index] = 0.5*perpendicular_scattering_irradiance + 0.5*parallel_scattering_irradiance
 
         # calculate size parameter
-        x = 2*np.pi*current_particle_radius*2*medium_refractive_index/beam_wavelength
+        x = 2*np.pi*current_particle_radius*medium_refractive_index/beam_wavelength
         # set refractive index of medium (air)
         ref_med = medium_refractive_index 
         # set refractive index of particle (olive oil)
@@ -763,10 +763,10 @@ def calculate_mie_scattering_intensity(piv_simulation_parameters,particle_diamet
         # call bhmie function to evaluate mie scattering intensities
         [s1,s2,qext,qsca,qback,gsca,theta] = bhmie(x,refrel,nang)
         dang = 0.5*np.pi/(nang-1)
-        # create range of angles
-        scattering_angle = (np.arange(1,s1.size+1)-1.0)*dang*180/np.pi
+        # create range of angles (in radians)
+        scattering_angle = (np.arange(1,s1.size+1)-1.0)*dang
         s11 = 0.5*(abs(s1)**2 + abs(s2)**2)
-        
+
         scattering_irradiance[:,particle_diameter_index] = s11
         
         # convert scattering amplitude to scattering irradiance
@@ -1040,6 +1040,7 @@ def calculate_sunflower_coordinates(grid_point_diameter,lightray_number_per_grid
         circle_lightray_point_number = np.round(rho*(2.0 * np.pi * radius_current))
         
         # This is a vector of angles for the points
+        np.random.seed(714)
         theta_current = (2.0*np.pi/circle_lightray_point_number)*(np.arange(1.0,circle_lightray_point_number)-1.0) + 2.0*np.pi*np.random.rand(1,1)
         
         # These are the coordinates of the current radius's points
@@ -1060,10 +1061,6 @@ def calculate_sunflower_coordinates(grid_point_diameter,lightray_number_per_grid
     y_lightray_coordinates = np.transpose(np.append(y_lightray_coordinates,0.0))
     
     return [x_lightray_coordinates,y_lightray_coordinates]
-
-
-
-
 
 def generate_calibration_lightfield_data(piv_simulation_parameters,optical_system,plane_index):
 # % This function generates a structure containing the location of the each of the
@@ -1372,7 +1369,7 @@ def run_piv_simulation_02(piv_simulation_parameters):
             # This saves the image to memory
             ski_io.imsave(image_filename_write,I) #,'tif','Compression','none')
             I.tofile('img_'+'%04d' % frame_index + '.bin')
-            #plt.imsave('img_'+'%04d' % frame_index + '.png',I*10**15,cmap = plt.get_cmap('gray'),vmin=0,vmax=50)
+            plt.imsave('img_'+'%04d' % frame_index + '.png',I*10**15,cmap = plt.get_cmap('gray'),vmin=0,vmax=50)
             #if(frame_index==2):
             #    return 
             #plt.imsave(image_filename_write,I,cmap=plt.get_cmap('gray'))
