@@ -42,7 +42,7 @@ nx = 200
 ny = 200
 nz = 100
 z_object = 823668.800556
-<<<<<<< Updated upstream
+#<<<<<<< Updated upstream
 
 Z_Min = -3.0e2
 Z_Max = 3.0e02
@@ -55,6 +55,11 @@ data['y'] = np.linspace(-15e4,15e4,ny).astype('float32') - Y_Velocity/2
 # data['z'] = np.linspace(-15e3,15e3,nz).astype('float32') + z_object - Z_Velocity/2
 #data['z'] = np.linspace(8.7e5,9.5e5,nz).astype('float32')
 data['z'] = np.linspace(Z_Min,Z_Max,nz).astype('float32') + z_object
+
+# convert co-ordinates from microns to meters
+data['x']/=1.0e6
+data['y']/=1.0e6
+data['z']/=1.0e6
 
 # specify gradients for x and y directions
 grad_x = 2.0
@@ -81,6 +86,7 @@ for k in range(0,nz):
 
 nrrd_filename = '/home/barracuda/a/lrajendr/Projects/ray_tracing_density_gradients/schlieren-0.2.0-Build/const_grad.nrrd'
 save_nrrd(data,nrrd_filename)
+'''
 =======
 
 X_Velocity = 01.0e3
@@ -111,7 +117,7 @@ for k in range(0,nz):
 # plt.show()
 save_nrrd(data,'const_grad.nrrd')
 >>>>>>> Stashed changes
-
+'''
 
 
 
