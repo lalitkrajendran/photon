@@ -1368,8 +1368,8 @@ def run_piv_simulation_02(piv_simulation_parameters):
 
             # This saves the image to memory
             ski_io.imsave(image_filename_write,I) #,'tif','Compression','none')
-            I.tofile('img_'+'%04d' % frame_index + '.bin')
-            plt.imsave('img_'+'%04d' % frame_index + '.png',I*10**15,cmap = plt.get_cmap('gray'),vmin=0,vmax=50)
+            # I.tofile('img_'+'%04d' % frame_index + '.bin')
+            # plt.imsave('img_'+'%04d' % frame_index + '.png',I*10**15,cmap = plt.get_cmap('gray'),vmin=0,vmax=50)
             #if(frame_index==2):
             #    return 
             #plt.imsave(image_filename_write,I,cmap=plt.get_cmap('gray'))
