@@ -349,9 +349,9 @@ def generate_lightfield_angular_data(lens_pitch, image_distance, scattering_data
     # % n_min to n_max.  The parameter lightray_number_per_particle is the number of rays to generate for each
     # % source point.
 
+    
     # % If the scattering type is 'mie' then the Mie scattering data is loaded,
     # % otherwise nothing is loaded from the scattering data
-    '''
     if scattering_type == 'mie':
         #% This saves the scattering angle data into the parameters structure
         mie_scattering_angle = scattering_data['scattering_angle']
@@ -363,7 +363,7 @@ def generate_lightfield_angular_data(lens_pitch, image_distance, scattering_data
         #% This extracts the normalized beam propogation direction vector from the
         #% parameters structure
         beam_propogation_vector=scattering_data['beam_propogation_vector']
-    '''
+    
     # % This is the number of points to calculate the lightfield structure for
     source_point_number = n_max - n_min + 1
 
@@ -400,10 +400,10 @@ def generate_lightfield_angular_data(lens_pitch, image_distance, scattering_data
         x_lens = r * np.cos(psi)
         y_lens = r * np.sin(psi)
 
+        
         # % This calculates the angular data using Mie scattering if specified in the
         # % parameters structure, otherwise the particles are assummed to have
         # % uniform irradiance
-        '''
         if scattering_type=='mie':
 
             # % This extracts the current particle diameter index
@@ -438,8 +438,9 @@ def generate_lightfield_angular_data(lens_pitch, image_distance, scattering_data
             # % This specifies the total irradiance for the current particle's
             # % rays to be uniform
             irradiance_current = lightfield_source['radiance'][n]
-        '''
-        irradiance_current = lightfield_source['radiance'][n]
+        
+        # REMOVE THIS LINE IF YOU REMOVE THE BLOCK COMMENTS
+        #irradiance_current = lightfield_source['radiance'][n]
         
         # % This calculates the x angles for the light rays
         theta_temp = -(np.squeeze(x_lens)- x_current) / (image_distance - z_current)
@@ -824,8 +825,14 @@ def propogate_rays_through_single_element(optical_element, element_center, eleme
         # % This is the scaled cosine of the angle of the incident light ray
         # % vectors and the normal vectors of the lens (ie the dot product of the
         # % vectors)
+<<<<<<< HEAD
         # ray_dot_product = -np.diag(np.dot(ray_propogation_direction, lens_normal_vectors.T))
         ray_dot_product = np.einsum('ij,ij->i',ray_propogation_direction,lens_normal_vectors)
+=======
+        #ray_dot_product = -np.diag(np.dot(ray_propogation_direction, lens_normal_vectors.T))
+        ray_dot_product = -np.einsum('ij,ij->i',ray_propogation_direction,lens_normal_vectors)
+
+>>>>>>> origin/master
         # % This calculates the radicand in the refraction ray propogation
         # % direction equation
         refraction_radicand = 1.0 - (refractive_index_ratio ** 2) * (1.0 - ray_dot_product ** 2)
@@ -975,8 +982,13 @@ def propogate_rays_through_single_element(optical_element, element_center, eleme
         # % This is the scaled cosine of the angle of the incident light ray
         # % vectors and the normal vectors of the lens (ie the dot product of the
         # % vectors)
+<<<<<<< HEAD
         # ray_dot_product = -np.diag(np.dot(ray_propogation_direction, lens_normal_vectors.T))
         ray_dot_product = np.einsum('ij,ij->i',ray_propogation_direction,lens_normal_vectors)
+=======
+        #ray_dot_product = -np.diag(np.dot(ray_propogation_direction, lens_normal_vectors.T))
+        ray_dot_product = -np.einsum('ij,ij->i',ray_propogation_direction,lens_normal_vectors)
+>>>>>>> origin/master
         # % This calculates the radicand in the refraction ray propogation
         # % direction equation
         refraction_radicand = 1.0 - (refractive_index_ratio ** 2) * (1.0 - ray_dot_product ** 2)
@@ -1744,16 +1756,24 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     I = np.zeros([x_pixel_number, y_pixel_number])
 
     # # TODO change this
+<<<<<<< HEAD
     lightray_process_number = 1e2
     lightray_number_per_particle = 0.5e2
 
     # % This generates an array of indices into the source points to calculate the lightfield
     lightfield_N = np.ceil(lightray_process_number / lightray_number_per_particle)
+=======
+    lightray_process_number = 100000
+    lightray_number_per_particle = 10000
+
+    # % This generates an array of indices into the source points to calculate the lightfield
+    lightfield_N = np.ceil(lightray_process_number*1.0 / lightray_number_per_particle)
+>>>>>>> origin/master
     if(lightfield_N<1.0):
         # lightfield_vector = np.linspace(0,lightfield_source['x'].size,endpoint=False)
         lightfield_vector = np.r_[0:lightfield_source['x'].size-1]
     else:
-        # lightfield_vector = np.linspace(0, lightfield_source['x'].size, lightfield_N,endpoint=False)
+        #lightfield_vector = np.linspace(0, lightfield_source['x'].size, lightfield_N,endpoint=False)
         lightfield_vector = np.r_[0:lightfield_source['x'].size-1:lightfield_N]
     # % This checks whether the last segment of indices is at the end of the
     # % vector and if not, adds them
@@ -1868,11 +1888,13 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
                                                              cos_4_alpha[n]
 
     pbar.finish()
+    print "max(I): %f" % I.max()
+
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # % Rescales and resamples image for export                                 %
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    '''
+    
     # % This rescales the image intensity to account for the pixel gain
     I *= 10 ** (pixel_gain/ 20.0)
     #
@@ -1886,8 +1908,15 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
 
     # % This converts the image from double precision to 16 bit precision
     I = np.uint16(I)
+<<<<<<< HEAD
 
     # plt.imshow(I,cmap = plt.get_cmap('gray'),vmin=0,vmax=2**16-1)
     # plt.show()
     '''
+=======
+    
+    #plt.imshow(I,cmap = plt.get_cmap('gray'),vmin=0,vmax=2**16-1)
+    #plt.show()
+    
+>>>>>>> origin/master
     return I

@@ -8,6 +8,7 @@ import subprocess
 import time
 from numpy import linalg as la
 import scipy.special as scispec
+from bhmie import bhmie
 #import scipy.misc as scimisc
 import skimage.io as ski_io
 import matplotlib.pyplot as plt
@@ -544,6 +545,7 @@ def calculate_particle_diameter_indices(piv_simulation_parameters,particle_diame
 
     # This generates a list of random numbers to randomly determine the
     # particle diameters
+    np.random.seed(232)
     random_vector = np.random.rand(particle_number)
 
     # This initializes a vector of the particle diameters
@@ -744,12 +746,31 @@ def calculate_mie_scattering_intensity(piv_simulation_parameters,particle_diamet
 
         # This calculates the Mie scattering intensities for the current particle
         # diameter
-        [scattering_angle,perpendicular_scattering_irradiance,parallel_scattering_irradiance] = mie_scattering_data(medium_refractive_index,particle_refractive_index,current_particle_radius,beam_wavelength,mie_scattering_angle_number)
-
-
+        #[scattering_angle,perpendicular_scattering_irradiance,parallel_scattering_irradiance] = mie_scattering_data(medium_refractive_index,particle_refractive_index,current_particle_radius,beam_wavelength,mie_scattering_angle_number)
         # This calculates the total scattering irradiance from the particles
-        scattering_irradiance[:,particle_diameter_index] = 0.5*perpendicular_scattering_irradiance + 0.5*parallel_scattering_irradiance
+        #scattering_irradiance[:,particle_diameter_index] = 0.5*perpendicular_scattering_irradiance + 0.5*parallel_scattering_irradiance
 
+        # calculate size parameter
+        x = 2*np.pi*current_particle_radius*2*medium_refractive_index/beam_wavelength
+        # set refractive index of medium (air)
+        ref_med = medium_refractive_index 
+        # set refractive index of particle (olive oil)
+        ref_part = particle_refractive_index
+        # calculate relative refractive index
+        refrel = ref_part/ref_med
+        # specify number of angles between 0 and 90 where irradiance data is reqd
+        nang = mie_scattering_angle_number
+        # call bhmie function to evaluate mie scattering intensities
+        [s1,s2,qext,qsca,qback,gsca,theta] = bhmie(x,refrel,nang)
+        dang = 0.5*np.pi/(nang-1)
+        # create range of angles
+        scattering_angle = (np.arange(1,s1.size+1)-1.0)*dang*180/np.pi
+        s11 = 0.5*(abs(s1)**2 + abs(s2)**2)
+        
+        scattering_irradiance[:,particle_diameter_index] = s11
+        
+        # convert scattering amplitude to scattering irradiance
+        #scattering_irradiance[:,particle_diameter_index] = scattering_irradiance[:,particle_diameter_index]**2
     return [scattering_angle,scattering_irradiance]
 
 def create_mie_scattering_data(piv_simulation_parameters):
@@ -1290,6 +1311,7 @@ def run_piv_simulation_02(piv_simulation_parameters):
         print('\n\n')
         print('Simulating particle images . . . ')
       
+        
         # This calculates the Mie scattering data if specified in the parameters
         # data structure, otherwise the Mie scattering data is set to a Null value
         if perform_mie_scattering:
@@ -1303,7 +1325,7 @@ def run_piv_simulation_02(piv_simulation_parameters):
             scattering_data = None
             # This sets the scattering type to diffuse for the particle simulation
             scattering_type = 'diffuse'
-        
+
         
          # This iterates through the frame vectors performing the ray tracing operations for each frame
         field_type = 'particle'
@@ -1343,82 +1365,84 @@ def run_piv_simulation_02(piv_simulation_parameters):
             # I=perform_ray_tracing_03(piv_simulation_parameters,optical_system,pixel_gain,scattering_data,scattering_type,lightfield_source);
             I = perform_ray_tracing_03(piv_simulation_parameters,optical_system,pixel_gain,scattering_data,scattering_type,lightfield_source,field_type)
 
+            print "max(I): %f" % I.max()
             # This is the filename to save the image data to
             image_filename_write = particle_image_directory + 'particle_image_frame_' + '%04d' % frame_index + '.tif'
 
             # This saves the image to memory
-            #ski_io.imsave(image_filename_write,I) #,'tif','Compression','none')
+            ski_io.imsave(image_filename_write,I) #,'tif','Compression','none')
             I.tofile('img_'+'%04d' % frame_index + '.bin')
-            plt.imsave('img_'+'%04d' % frame_index + '.png',I*10**8,cmap = plt.get_cmap('gray'),vmin=0,vmax=50)
-
-    # # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    # # % Calibration Grid Simulation                                             %
-    # # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    #
-    # # % This extracts the Boolean value stating whether to generate the calibration
-    # # % images from the structure
-    # generate_calibration_grid_images = piv_simulation_parameters['calibration_grid']['generate_calibration_grid_images']
-    # # % This extracts the calibration plane number from the structure
-    # calibration_plane_number = int(piv_simulation_parameters['calibration_grid']['calibration_plane_number'])
-    # # % This extracts the directory to save the calibration grid images from
-    # # % parameters structure
-    # calibration_grid_image_directory = piv_simulation_parameters['output_data']['calibration_grid_image_directory']
-    # # % This extracts the number of lightrays to simulate per particle (this is roughly
-    # # % equivalent to the power of the laser)
-    # lightray_number_per_particle = piv_simulation_parameters['calibration_grid']['lightray_number_per_particle']
-    # # % This extracts the number of lightrays to propogate per iteration (this is a
-    # # % function of the RAM available on the computer)
-    # lightray_process_number = piv_simulation_parameters['calibration_grid']['lightray_process_number']
-    # # % This is the gain of the sensor in decibels to be used in the calibration
-    # # % grid simulation
-    # pixel_gain = piv_simulation_parameters['calibration_grid']['pixel_gain']
-    #
-    # # % This generates the calibration grid images if specified by the parameters
-    # # % structure
-    # if generate_calibration_grid_images:
-    #
-    #     # % This displays that the calibration images are being simulated
-    #     # fprintf('\n\n');
-    #     print 'Simulating calibration images . . . '
-    #
-    #     # % This sets the scattering type to diffuse for the calibration grid
-    #     # % simulation
-    #     scattering_type = 'diffuse'
-    #     # % This sets the scattering data to a Null value for the calibration grid
-    #     scattering_data = None
-    #
-    #     field_type = 'calibration'
-    #     # % This iterates through the calibration grid planes performing the ray
-    #     # % tracing operations for each plane
-    #     # for plane_index in range(0,calibration_plane_number):
-    #     for plane_index in range(0,1):
-    #
-    #         # % This creates the lightfield data for performing the raytracing operation
-    #         lightfield_source = generate_calibration_lightfield_data(piv_simulation_parameters,optical_system,plane_index)
-    #         # % This adds the number of lightrays per particle to the
-    #         # % 'lightfield_source' data
-    #         lightfield_source['lightray_number_per_particle'] = lightray_number_per_particle
-    #         # % This adds the number of lightrays to simulateously process to the
-    #         # % 'lightfield_source' data
-    #         lightfield_source['lightray_process_number'] = lightray_process_number
-    #
-    #         # save data to mat file
-    #         # convert none to NAN just for MATLAB
-    #         scattering_data = np.NAN
-    #         sio.savemat('mat_files/calibration_' + '%02d' % (plane_index+1) + '.mat',{'piv_simulation_parameters' : piv_simulation_parameters,
-    #                                        'optical_system' : optical_system,
-    #                                        'pixel_gain' : pixel_gain,
-    #                                        'scattering_data' : scattering_data,
-    #                                        'scattering_type' : scattering_type,
-    #                                        'lightfield_source' : lightfield_source
-    #                                        },long_field_names=True)
-    #         # % This performs the ray tracing to generate the sensor image
-    #         # I=perform_ray_tracing_03(piv_simulation_parameters,optical_system,pixel_gain,scattering_data,scattering_type,lightfield_source);
-    #         I = perform_ray_tracing_03(piv_simulation_parameters,optical_system,pixel_gain,scattering_data,scattering_type,lightfield_source,field_type)
-    #
-    #         # % This is the filename to save the image data to
-    #         image_filename_write=calibration_grid_image_directory + 'calibration_image_plane_' + '%04.0f' % plane_index + '.tif'
+            #plt.imsave('img_'+'%04d' % frame_index + '.png',I*10**15,cmap = plt.get_cmap('gray'),vmin=0,vmax=50)
+            #if(frame_index==2):
+            #    return 
+            #plt.imsave(image_filename_write,I,cmap=plt.get_cmap('gray'))
+    # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    # % Calibration Grid Simulation                                             %
+    # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
+    # % This extracts the Boolean value stating whether to generate the calibration
+    # % images from the structure
+    generate_calibration_grid_images = piv_simulation_parameters['calibration_grid']['generate_calibration_grid_images']
+    # % This extracts the calibration plane number from the structure
+    calibration_plane_number = int(piv_simulation_parameters['calibration_grid']['calibration_plane_number'])
+    # % This extracts the directory to save the calibration grid images from
+    # % parameters structure
+    calibration_grid_image_directory = piv_simulation_parameters['output_data']['calibration_grid_image_directory']
+    # % This extracts the number of lightrays to simulate per particle (this is roughly
+    # % equivalent to the power of the laser)
+    lightray_number_per_particle = piv_simulation_parameters['calibration_grid']['lightray_number_per_particle']
+    # % This extracts the number of lightrays to propogate per iteration (this is a
+    # % function of the RAM available on the computer)
+    lightray_process_number = piv_simulation_parameters['calibration_grid']['lightray_process_number']
+    # % This is the gain of the sensor in decibels to be used in the calibration
+    # % grid simulation
+    pixel_gain = piv_simulation_parameters['calibration_grid']['pixel_gain']
+       
+    # % This generates the calibration grid images if specified by the parameters
+    # % structure
+    if generate_calibration_grid_images:
+        
+        # % This displays that the calibration images are being simulated
+        # fprintf('\n\n');
+        print 'Simulating calibration images . . . '
+    
+        # % This sets the scattering type to diffuse for the calibration grid
+        # % simulation
+        scattering_type = 'diffuse'
+        # % This sets the scattering data to a Null value for the calibration grid
+        scattering_data = None
+    
+        field_type = 'calibration'
+        # % This iterates through the calibration grid planes performing the ray
+        # % tracing operations for each plane
+        for plane_index in range(0,calibration_plane_number):
+        
+            # % This creates the lightfield data for performing the raytracing operation
+            lightfield_source = generate_calibration_lightfield_data(piv_simulation_parameters,optical_system,plane_index)
+            # % This adds the number of lightrays per particle to the
+            # % 'lightfield_source' data
+            lightfield_source['lightray_number_per_particle'] = lightray_number_per_particle
+            # % This adds the number of lightrays to simulateously process to the
+            # % 'lightfield_source' data
+            lightfield_source['lightray_process_number'] = lightray_process_number
+            # save data to mat file
+            # convert none to NAN just for MATLAB
+            scattering_data = np.NAN
+            sio.savemat('mat_files/calibration_' + '%02d' % (plane_index+1) + '.mat',{'piv_simulation_parameters' : piv_simulation_parameters,
+                                            'optical_system' : optical_system,
+                                            'pixel_gain' : pixel_gain,
+                                            'scattering_data' : scattering_data,
+                                            'scattering_type' : scattering_type,
+                                            'lightfield_source' : lightfield_source
+                                            },long_field_names=True)
+            # % This performs the ray tracing to generate the sensor image
+            # I=perform_ray_tracing_03(piv_simulation_parameters,optical_system,pixel_gain,scattering_data,scattering_type,lightfield_source);
+            I = perform_ray_tracing_03(piv_simulation_parameters,optical_system,pixel_gain,scattering_data,scattering_type,lightfield_source,field_type)
+    
+            # % This is the filename to save the image data to
+            image_filename_write=calibration_grid_image_directory + 'calibration_image_plane_' + '%04.0f' % plane_index + '.tif'
             # % This saves the image to memory
-            # ski_io.imsave(image_filename_write,I)
+            ski_io.imsave(image_filename_write,I)
             # imwrite(I,image_filename_write,'tif','Compression','none');
+            #plt.imsave(image_filename_write,I,cmap=plt.get_cmap('gray'))
 

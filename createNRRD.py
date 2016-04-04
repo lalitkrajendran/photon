@@ -67,8 +67,12 @@ z = np.array(data['z'])
 X,Y = np.meshgrid(x,y,indexing='ij')
 
 data['rho'] = 1.225*np.ones([nx,ny,nz])
+
+
 for k in range(0,nz):
     data['rho'][:,:,k] += grad_x*(X-x.min())/X.max() # + grad_y*(Y - y.min())/Y.max()
+
+#data['rho'][:,:,50] += grad_x*(X-x.min())/X.max() # + grad_y*(Y - y.min())/Y.max()
 
 # data['rho'] = data['rho'].T
 # plot density profile
