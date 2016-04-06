@@ -177,6 +177,8 @@ sio.savemat(particle_position_data_directory + 'particle_data_frame_0002.mat', p
 ### Performs Camera Simulation
 # This iterates through the different cameras performing the image simulation
 for i in range(1, len(camera_parameter_list) + 1):
+    if(i>1):
+      break
     camera_index = i
     # This displays that the current camera simulation is being ran
     print "\n\n\n\n"

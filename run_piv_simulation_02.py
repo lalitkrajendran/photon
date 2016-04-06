@@ -1367,11 +1367,12 @@ def run_piv_simulation_02(piv_simulation_parameters):
             image_filename_write = particle_image_directory + 'particle_image_frame_' + '%04d' % frame_index + '.tif'
 
             # This saves the image to memory
-            ski_io.imsave(image_filename_write,I) #,'tif','Compression','none')
-            # I.tofile('img_'+'%04d' % frame_index + '.bin')
+            #ski_io.imsave(image_filename_write,I) #,'tif','Compression','none')
+            plt.imsave(image_filename_write,I,cmap=plt.get_cmap('gray'),vmin=I.min(),vmax=0.75*I.max())
+            I.tofile('img_'+'%04d' % frame_index + '.bin')
             # plt.imsave('img_'+'%04d' % frame_index + '.png',I*10**15,cmap = plt.get_cmap('gray'),vmin=0,vmax=50)
-            #if(frame_index==2):
-            #    return 
+            if(frame_index==2):
+                return 
             #plt.imsave(image_filename_write,I,cmap=plt.get_cmap('gray'))
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # % Calibration Grid Simulation                                             %
@@ -1437,9 +1438,10 @@ def run_piv_simulation_02(piv_simulation_parameters):
             I = perform_ray_tracing_03(piv_simulation_parameters,optical_system,pixel_gain,scattering_data,scattering_type,lightfield_source,field_type)
     
             # % This is the filename to save the image data to
-            image_filename_write=calibration_grid_image_directory + 'calibration_image_plane_' + '%04.0f' % plane_index + '.tif'
+            mage_filename_write=calibration_grid_image_directory + 'calibration_image_plane_' + '%04.0f' % plane_index + '.tif'
             # % This saves the image to memory
-            ski_io.imsave(image_filename_write,I)
+            plt.imsave(image_filename_write,I,cmap=plt.get_cmap('gray'),vmin=I.min(),vmax=I.max())
+            #ski_io.imsave(image_filename_write,I)
             # imwrite(I,image_filename_write,'tif','Compression','none');
             #plt.imsave(image_filename_write,I,cmap=plt.get_cmap('gray'))
 

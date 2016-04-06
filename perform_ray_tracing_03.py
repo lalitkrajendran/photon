@@ -1753,7 +1753,7 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     #lightray_process_number = 100000
     #lightray_number_per_particle = 10000
 
-    lightray_process_number = 100000
+    lightray_process_number = 1000000
     lightray_number_per_particle = 10000
 
     # % This generates an array of indices into the source points to calculate the lightfield
@@ -1884,6 +1884,7 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     # % Rescales and resamples image for export                                 %
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+    '''
     # % This rescales the image intensity to account for the pixel gain
     I *= 10 ** (pixel_gain/ 20.0)
     #
@@ -1897,7 +1898,7 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
 
     # % This converts the image from double precision to 16 bit precision
     I = np.uint16(I)
-
+    '''
     #plt.imshow(I,cmap = plt.get_cmap('gray'),vmin=0,vmax=2**16-1)
     #plt.show()
     
