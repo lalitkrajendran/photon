@@ -1750,11 +1750,11 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     # % This initializes the sensor image
     I = np.zeros([x_pixel_number, y_pixel_number])
 
-    #lightray_process_number = 100000
-    #lightray_number_per_particle = 10000
-
     lightray_process_number = 1000000
     lightray_number_per_particle = 10000
+
+    # lightray_process_number = 1000
+    # lightray_number_per_particle = 10
 
     # % This generates an array of indices into the source points to calculate the lightfield
     lightfield_N = np.ceil(lightray_process_number*1.0 / lightray_number_per_particle)
@@ -1874,7 +1874,7 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
                 if not(np.isnan(pixel_weights[n][p])):
                     # % This interpolates the ray intensities onto the pixels
                     # % surrounding the pixel intersection point
-                    I[ii_indices[n][p]][jj_indices[n][p]] += pixel_weights[n][p] * light_ray_data['ray_radiance'][n] * \
+                    I[ii_indices[n][p]-1][jj_indices[n][p]-1] += pixel_weights[n][p] * light_ray_data['ray_radiance'][n] * \
                                                              cos_4_alpha[n]
 
     pbar.finish()
