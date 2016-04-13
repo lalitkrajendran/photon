@@ -1,4 +1,5 @@
 import numpy as np
+import weave
 from numpy import linalg as la
 import run_piv_simulation_02
 import scipy.io as sio
@@ -10,6 +11,11 @@ from sklearn.neighbors import NearestNeighbors
 import matplotlib.pyplot as plt
 import scipy.integrate as siint
 from scipy.interpolate import interp1d
+# import pyximport
+# pyximport.install()
+import c_functions
+
+#import increment_pixel_radiance
 import string
 
 def create_element_coordinate_data(optical_element):
@@ -501,6 +507,14 @@ def ray_sphere_intersection(xc, yc, zc, R, vx, vy, vz, x0, y0, z0, surface):
     beta = 2 * (vx * (x0 - xc) + vy * (y0 - yc) + vz * (z0 - zc))
     gamma = (x0 - xc) ** 2 + (y0 - yc) ** 2 + (z0 - zc) ** 2 - R ** 2
 
+    # alpha = np.zeros_likes(vx)
+    # beta = np.zeros_like(vx)
+    # gamma = np.zeros_like(vx)
+
+    # expr_alpha = "alpha = vx[:]*vx[:] + vy[:]*vy[:] + vz[:]*vz[:]"
+    # expr_beta = "beta = 2 * (vx[:] * (x0[:] - xc) + vy[:] * (y0[:]- yc) + vz[:] * (z0[:] - zc))"
+    # expr_gamma = "gamm = (x0 - xc)*(x0 - xc) + (y0 - yc)*(y0 - yc) + (z0 - zc) ** 2 - R ** 2"
+    #
     # % This calculates the square root argument of the quadratic formula
     square_root_arguments = beta ** 2 - 4.0 * alpha * gamma
 
@@ -548,14 +562,18 @@ def ray_sphere_intersection(xc, yc, zc, R, vx, vy, vz, x0, y0, z0, surface):
             # % This gives the second intersection time variable (ie the maximum
             # % of 't1' and 't2' that is non-NaN, in the case where both 't1'
             # % and 't2' have NaN values, the output of 't' is also NaN)
-            # %t=nanmax(t1,t2); TODO
+            # %t=nanmax(t1,t2);
+            # NOTE: using nanmax gives wrong results (no particles make it through) even though it is consistent with
+            # the comments
             t = np.fmin(t1, t2)
 
         elif R <= 0:
             # % This gives the first intersection time variable (ie the minimum
             # % of 't1' and 't2' that is non-NaN, in the case where both 't1'
             # % and 't2' have NaN values, the output of 't' is also NaN)
-            # %t=nanmin(t1,t2); TODO
+            # %t=nanmin(t1,t2);
+            # NOTE: using nanmin gives wrong results (no particles make it through) even though it is consistent with
+            # the comments
             t = np.fmax(t1, t2)
 
     # % This calculates the 3D coordinate of the intersection point
@@ -899,6 +917,7 @@ def propogate_rays_through_single_element(optical_element, element_center, eleme
                                                                           ray_source_coordinates[:,0],
                                                                           ray_source_coordinates[:,1],
                                                                           ray_source_coordinates[:,2], 'back')
+
 
         # % This calculates how far the intersection point is from the optical
         # % axis of the lens (for determining if the rays hit the lens outside of
@@ -1547,12 +1566,29 @@ def intersect_sensor_better(camera_design, x, y):
 
     # % This sets the weights of the jj indices that are out of bounds to NaN
     # % values
-    for r in range(0,pixel_weights.shape[0]):
-        for c in range(0,pixel_weights.shape[1]):
-            if(jj_indices[r,c]<0) or (x_pixel_number<=jj_indices[r,c]):
-                pixel_weights[r,c] = np.NAN
-            if(ii_indices[r,c]<0) or  (y_pixel_number<=ii_indices[r,c]):
-                pixel_weights[r,c] = np.NAN
+    # for r in range(0,pixel_weights.shape[0]):
+    #     for c in range(0,pixel_weights.shape[1]):
+    #         if(jj_indices[r,c]<0) or (x_pixel_number<=jj_indices[r,c]):
+    #             pixel_weights[r,c] = np.NAN
+    #         if(ii_indices[r,c]<0) or  (y_pixel_number<=ii_indices[r,c]):
+    #             pixel_weights[r,c] = np.NAN
+    #
+    # print "ii_indices.dtype : "
+    # print ii_indices.dtype
+
+    pixel_weights[(jj_indices < 0)] = np.NAN
+    pixel_weights[(x_pixel_number <=jj_indices)] = np.NAN
+
+    # jj_indices[(jj_indices < 0)] = x_pixel_number + 1
+    # jj_indices[(x_pixel_number <= jj_indices)] = x_pixel_number + 1
+
+    pixel_weights[(ii_indices < 0)] = np.NAN
+    pixel_weights[(y_pixel_number <=ii_indices)] = np.NAN
+
+    # ii_indices[(ii_indices < 0)] = y_pixel_number+1
+    # ii_indices[(y_pixel_number <=ii_indices)] = y_pixel_number+1
+
+
     # pixel_weights[(jj_indices < 1) or (x_pixel_number < jj_indices)] = np.NAN
     # % This sets the weights of the ii indices that are out of bounds to NaN
     # % values
@@ -1722,25 +1758,25 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     element_plane_parameters[:,3] = element_plane_parameters[:,3] - element_plane_parameters[:,2] * z_lens
     element_center[:,2] = element_center[:,2] + z_lens
 
-    if (field_type == 'particle'):
-        savefile = 'mat_files/start_particle.mat'
-    else:
-        savefile = 'mat_files/start_calibration.mat'
-
-    sio.savemat(savefile, {'image_distance': image_distance,
-                           'h2_principal_plane': h2_principal_plane,
-                           'v2_vertex_plane': v2_vertex_plane,
-                           'v1_vertex_plane': v1_vertex_plane,
-                           'z_sensor': z_sensor,
-                           'z_lens': z_lens,
-                           'lens_pitch': lens_pitch,
-                           'element_center': element_center,
-                           'element_plane_parameters': element_plane_parameters,
-                           'element_type': element_type,
-                           'element_system_index': element_system_index,
-                           'element_count': element_count,
-                           'element_data': element_data,
-                           'elements_coplanar': elements_coplanar}, long_field_names=True)
+    # if (field_type == 'particle'):
+    #     savefile = 'mat_files/start_particle.mat'
+    # else:
+    #     savefile = 'mat_files/start_calibration.mat'
+    #
+    # sio.savemat(savefile, {'image_distance': image_distance,
+    #                        'h2_principal_plane': h2_principal_plane,
+    #                        'v2_vertex_plane': v2_vertex_plane,
+    #                        'v1_vertex_plane': v1_vertex_plane,
+    #                        'z_sensor': z_sensor,
+    #                        'z_lens': z_lens,
+    #                        'lens_pitch': lens_pitch,
+    #                        'element_center': element_center,
+    #                        'element_plane_parameters': element_plane_parameters,
+    #                        'element_type': element_type,
+    #                        'element_system_index': element_system_index,
+    #                        'element_count': element_count,
+    #                        'element_data': element_data,
+    #                        'elements_coplanar': elements_coplanar}, long_field_names=True)
 
     # I = 1
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1748,7 +1784,8 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     #
     # % This initializes the sensor image
-    I = np.zeros([x_pixel_number, y_pixel_number])
+    # I = np.zeros([x_pixel_number, y_pixel_number])
+    I = np.zeros([x_pixel_number+1, y_pixel_number+1])
 
     lightray_process_number = 1000000
     lightray_number_per_particle = 10000
@@ -1778,7 +1815,7 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
         # print "%d out of %d particles have been simulated" % (m*lightfield_N,lightfield_vector[-1])
         # % This displays the progress of the sensor rendering
         pbar.update(m)
-        time.sleep(1)
+        # time.sleep(1)
         # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         # % Generate lightfield and propogate it through the optical system     %
         # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1849,7 +1886,9 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
         # % This is the angle between the lightray and the sensor (ie a lightray
         # % normal to the sensor would yield an angle of zero)
         alpha = np.arctan(np.sqrt((ray_propogation_direction[:,0] / ray_propogation_direction[:,2]) ** 2 + (
-        ray_propogation_direction[:,1] / ray_propogation_direction[:,2]) ** 2))
+            ray_propogation_direction[:,1] / ray_propogation_direction[:,2]) ** 2))
+
+
         # % This calculates the cos^4(alpha) term which controls the contribution
         # % of the incident light rays onto the measured energy in the sensor
         cos_4_alpha = np.cos(alpha) ** 4
@@ -1860,26 +1899,25 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
                                                                           ray_source_coordinates[:,0],
                                                                           ray_source_coordinates[:,1])
 
-        # % These nested for loops complete the same calculation as the above
-        # % block of code, but require about 2.5 times longer to complete
-        # %
-        # % This iterates through the pixel locations upon which a ray intersected
-        # % incrementing the image intensities
-        for n in range(0, ray_source_coordinates.shape[0]):
-            # % This iterates through the four adjacent pixels to the
-            # % intersection point of the light ray
-            for p in range(0, 4):
-                # % This adds the ray to the upper left intersection pixel (if the
-                # % weighting is not a NaN value)
-                if not(np.isnan(pixel_weights[n][p])):
-                    # % This interpolates the ray intensities onto the pixels
-                    # % surrounding the pixel intersection point
-                    I[ii_indices[n][p]-1][jj_indices[n][p]-1] += pixel_weights[n][p] * light_ray_data['ray_radiance'][n] * \
-                                                             cos_4_alpha[n]
+        ii_indices = ii_indices.astype('int32')
+        jj_indices = jj_indices.astype('int32')
+
+        jj_indices[(jj_indices < 0)] = x_pixel_number + 1
+        jj_indices[(x_pixel_number <= jj_indices)] = x_pixel_number + 1
+
+        ii_indices[(ii_indices < 0)] = y_pixel_number + 1
+        ii_indices[(y_pixel_number <= ii_indices)] = y_pixel_number + 1
+
+        I = c_functions.increment_pixel_radiance(I, pixel_weights, ii_indices.astype('int32'),
+                                                              jj_indices.astype('int32'), \
+                                                              light_ray_data['ray_radiance'], cos_4_alpha, \
+                                                              ray_source_coordinates.shape[0])
 
     pbar.finish()
     print "max(I): %f" % I.max()
 
+    # remove cells that store nan values
+    I = I[:-1,:-1]
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # % Rescales and resamples image for export                                 %
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

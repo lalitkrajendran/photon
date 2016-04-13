@@ -116,7 +116,7 @@ Z_Min = -7.5e3
 Z_Max = +7.5e3
 
 # This is the number of particles to simulate
-total_particle_number = 100
+total_particle_number = 100000
 
 # initialize random number seed
 RAND_SEED = 5
@@ -177,8 +177,8 @@ sio.savemat(particle_position_data_directory + 'particle_data_frame_0002.mat', p
 ### Performs Camera Simulation
 # This iterates through the different cameras performing the image simulation
 for i in range(1, len(camera_parameter_list) + 1):
-    if(i>1):
-      break
+    # if(i>1):
+    #   break
     camera_index = i
     # This displays that the current camera simulation is being ran
     print "\n\n\n\n"
@@ -209,7 +209,7 @@ for i in range(1, len(camera_parameter_list) + 1):
     # This changes the number of particles to simulate out of the list of possible
     # particles (if this number is larger than the number of saved particles,
     # an error will be returned)
-    piv_simulation_parameters.particle_field.particle_number = 100
+    piv_simulation_parameters.particle_field.particle_number = 100000
 
     # This changes the directory to save the particle images in parameters structure
     piv_simulation_parameters.output_data.particle_image_directory = particle_image_top_directory + 'camera_%02d' % camera_index + '/'

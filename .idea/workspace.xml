@@ -2,7 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="c90bfca8-8f44-482f-ae09-651496f61998" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test_directory/camera_images/particle_images/camera_01/particle_image_frame_0001.tif" afterPath="$PROJECT_DIR$/test_directory/camera_images/particle_images/camera_01/particle_image_frame_0001.tif" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/c_functions.pyx" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/hello_world.pyx" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/increment_pixel_radiance.pyx" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/setup.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test_directory/particle_positions/particle_data_frame_0001.mat" afterPath="$PROJECT_DIR$/test_directory/particle_positions/particle_data_frame_0001.mat" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test_directory/particle_positions/particle_data_frame_0002.mat" afterPath="$PROJECT_DIR$/test_directory/particle_positions/particle_data_frame_0002.mat" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
@@ -34,8 +37,8 @@
       <file leaf-file-name="run_piv_challenge_simulation_01.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/run_piv_challenge_simulation_01.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="390">
-              <caret line="211" column="66" selection-start-line="211" selection-start-column="66" selection-end-line="211" selection-end-column="66" />
+            <state relative-caret-position="2700">
+              <caret line="180" column="13" selection-start-line="180" selection-start-column="13" selection-end-line="180" selection-end-column="13" />
               <folding />
             </state>
           </provider>
@@ -44,8 +47,8 @@
       <file leaf-file-name="run_piv_simulation_02.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/run_piv_simulation_02.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="354">
-              <caret line="1374" column="21" selection-start-line="1374" selection-start-column="21" selection-end-line="1374" selection-end-column="21" />
+            <state relative-caret-position="283">
+              <caret line="1446" column="42" selection-start-line="1446" selection-start-column="42" selection-end-line="1446" selection-end-column="42" />
               <folding />
             </state>
           </provider>
@@ -54,8 +57,48 @@
       <file leaf-file-name="perform_ray_tracing_03.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/perform_ray_tracing_03.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="174">
-              <caret line="1760" column="0" selection-start-line="1760" selection-start-column="0" selection-end-line="1760" selection-end-column="0" />
+            <state relative-caret-position="133">
+              <caret line="1925" column="71" selection-start-line="1925" selection-start-column="71" selection-end-line="1925" selection-end-column="71" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="c_functions.pyx" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/c_functions.pyx">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="430">
+              <caret line="45" column="0" selection-start-line="45" selection-start-column="0" selection-end-line="45" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="setup.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/setup.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="15">
+              <caret line="1" column="34" selection-start-line="1" selection-start-column="34" selection-end-line="1" selection-end-column="34" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="test_cython.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/test_cython.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="390">
+              <caret line="26" column="33" selection-start-line="26" selection-start-column="33" selection-end-line="26" selection-end-column="33" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="hello_world.pyx" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/hello_world.pyx">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="420">
+              <caret line="28" column="0" selection-start-line="28" selection-start-column="0" selection-end-line="28" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -93,16 +136,22 @@
         <option value="$PROJECT_DIR$/createNRRD.py" />
         <option value="$PROJECT_DIR$/test_progressbar.py" />
         <option value="$PROJECT_DIR$/create_piv_simulation_parameters.py" />
+        <option value="$PROJECT_DIR$/add_radiance_to_pixels.pyx.py" />
+        <option value="$PROJECT_DIR$/increment_pixel_radiance.pyx" />
+        <option value="$PROJECT_DIR$/setup.py" />
+        <option value="$PROJECT_DIR$/test_cython.py" />
+        <option value="$PROJECT_DIR$/hello_world.pyx" />
+        <option value="$PROJECT_DIR$/c_functions.pyx" />
         <option value="$PROJECT_DIR$/run_piv_challenge_simulation_01.py" />
-        <option value="$PROJECT_DIR$/perform_ray_tracing_03.py" />
         <option value="$PROJECT_DIR$/run_piv_simulation_02.py" />
+        <option value="$PROJECT_DIR$/perform_ray_tracing_03.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
     <option name="y" value="23" />
     <option name="width" value="1280" />
-    <option name="height" value="699" />
+    <option name="height" value="923" />
   </component>
   <component name="ProjectInspectionProfilesVisibleTreeState">
     <entry key="Project Default">
@@ -151,7 +200,24 @@
       <pane id="Scope" />
       <pane id="Scratches" />
       <pane id="ProjectPane">
-        <subPane />
+        <subPane>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="camera_simulation" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="camera_simulation" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="camera_simulation" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+        </subPane>
       </pane>
     </panes>
   </component>
@@ -163,6 +229,7 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/../../../../../scp-dump" />
     </key>
   </component>
@@ -180,23 +247,6 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <module name="camera_simulation" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/run_piv_challenge_simulation_01.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <method />
-    </configuration>
-    <configuration default="false" name="run_piv_simulation_02" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <module name="camera_simulation" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/run_piv_simulation_02.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <method />
@@ -248,6 +298,23 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <module name="camera_simulation" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/test_progressbar.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <method />
+    </configuration>
+    <configuration default="false" name="test_cython" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="camera_simulation" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/test_cython.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <method />
@@ -388,18 +455,18 @@
     </configuration>
     <list size="5">
       <item index="0" class="java.lang.String" itemvalue="Python.run_piv_challenge_simulation_01" />
-      <item index="1" class="java.lang.String" itemvalue="Python.run_piv_simulation_02" />
-      <item index="2" class="java.lang.String" itemvalue="Python.test_bhmie" />
-      <item index="3" class="java.lang.String" itemvalue="Python.createNRRD" />
-      <item index="4" class="java.lang.String" itemvalue="Python.test_progressbar" />
+      <item index="1" class="java.lang.String" itemvalue="Python.test_bhmie" />
+      <item index="2" class="java.lang.String" itemvalue="Python.createNRRD" />
+      <item index="3" class="java.lang.String" itemvalue="Python.test_progressbar" />
+      <item index="4" class="java.lang.String" itemvalue="Python.test_cython" />
     </list>
     <recent_temporary>
       <list size="5">
         <item index="0" class="java.lang.String" itemvalue="Python.run_piv_challenge_simulation_01" />
-        <item index="1" class="java.lang.String" itemvalue="Python.test_progressbar" />
-        <item index="2" class="java.lang.String" itemvalue="Python.createNRRD" />
-        <item index="3" class="java.lang.String" itemvalue="Python.test_bhmie" />
-        <item index="4" class="java.lang.String" itemvalue="Python.run_piv_simulation_02" />
+        <item index="1" class="java.lang.String" itemvalue="Python.test_cython" />
+        <item index="2" class="java.lang.String" itemvalue="Python.test_progressbar" />
+        <item index="3" class="java.lang.String" itemvalue="Python.createNRRD" />
+        <item index="4" class="java.lang.String" itemvalue="Python.test_bhmie" />
       </list>
     </recent_temporary>
   </component>
@@ -489,7 +556,7 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="23" width="1280" height="699" extended-state="6" />
+    <frame x="0" y="23" width="1280" height="923" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25019857" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
@@ -497,11 +564,11 @@
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32851985" sideWeight="0.50436854" order="11" side_tool="true" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.30565584" sideWeight="0.49717513" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32851985" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32490975" sideWeight="0.49717513" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.32490975" sideWeight="0.49717513" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.2494043" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.1299639" sideWeight="0.49717513" order="10" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.42238268" sideWeight="0.49717513" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.40065682" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32972324" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -544,68 +611,33 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="python-line">
           <url>file://$PROJECT_DIR$/perform_ray_tracing_03.py</url>
-          <line>837</line>
+          <line>855</line>
           <option name="timeStamp" value="77" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="python-line">
           <url>file://$PROJECT_DIR$/perform_ray_tracing_03.py</url>
-          <line>1904</line>
+          <line>1942</line>
           <option name="timeStamp" value="104" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="python-line">
+          <url>file://$PROJECT_DIR$/perform_ray_tracing_03.py</url>
+          <line>1827</line>
+          <option name="timeStamp" value="113" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="python-line">
+          <url>file://$PROJECT_DIR$/perform_ray_tracing_03.py</url>
+          <line>1919</line>
+          <option name="timeStamp" value="115" />
         </line-breakpoint>
       </breakpoints>
       <breakpoints-dialog>
         <breakpoints-dialog />
       </breakpoints-dialog>
-      <option name="time" value="105" />
+      <option name="time" value="116" />
     </breakpoint-manager>
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/run_piv_challenge_simulation_01.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1785">
-          <caret line="119" column="0" selection-start-line="119" selection-start-column="0" selection-end-line="119" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/createNRRD.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1365">
-          <caret line="91" column="10" selection-start-line="91" selection-start-column="10" selection-end-line="91" selection-end-column="10" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../../Computer_Generated_Schlieren/Software/pyCodes/h5tonrrd/src/h5tonrrd.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2430">
-          <caret line="162" column="0" selection-start-line="162" selection-start-column="0" selection-end-line="162" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/run_piv_simulation_02.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test_progressbar.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="120">
-          <caret line="8" column="13" selection-start-line="8" selection-start-column="13" selection-end-line="8" selection-end-column="13" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/perform_ray_tracing_03.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="12420">
-          <caret line="828" column="0" selection-start-line="827" selection-start-column="0" selection-end-line="828" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/bhmie.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2355">
@@ -846,7 +878,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="933" column="0" selection-start-line="933" selection-start-column="0" selection-end-line="933" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -914,26 +945,74 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/run_piv_challenge_simulation_01.py">
+    <entry file="file://$PROJECT_DIR$/add_radiance_to_pixels.pyx.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/setup.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="15">
+          <caret line="1" column="34" selection-start-line="1" selection-start-column="34" selection-end-line="1" selection-end-column="34" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/increment_pixel_radiance.pyx">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="420">
+          <caret line="28" column="0" selection-start-line="28" selection-start-column="0" selection-end-line="28" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test_cython.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="390">
-          <caret line="211" column="66" selection-start-line="211" selection-start-column="66" selection-end-line="211" selection-end-column="66" />
+          <caret line="26" column="33" selection-start-line="26" selection-start-column="33" selection-end-line="26" selection-end-column="33" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/hello_world.pyx">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="420">
+          <caret line="28" column="0" selection-start-line="28" selection-start-column="0" selection-end-line="28" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/c_functions.pyx">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="430">
+          <caret line="45" column="0" selection-start-line="45" selection-start-column="0" selection-end-line="45" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/run_piv_challenge_simulation_01.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2700">
+          <caret line="180" column="13" selection-start-line="180" selection-start-column="13" selection-end-line="180" selection-end-column="13" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/run_piv_simulation_02.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="354">
-          <caret line="1374" column="21" selection-start-line="1374" selection-start-column="21" selection-end-line="1374" selection-end-column="21" />
+        <state relative-caret-position="283">
+          <caret line="1446" column="42" selection-start-line="1446" selection-start-column="42" selection-end-line="1446" selection-end-column="42" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/perform_ray_tracing_03.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="174">
-          <caret line="1760" column="0" selection-start-line="1760" selection-start-column="0" selection-end-line="1760" selection-end-column="0" />
+        <state relative-caret-position="133">
+          <caret line="1925" column="71" selection-start-line="1925" selection-start-column="71" selection-end-line="1925" selection-end-column="71" />
           <folding />
         </state>
       </provider>
