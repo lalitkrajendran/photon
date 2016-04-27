@@ -47,7 +47,8 @@ __device__ float random_single(unsigned int seed)
 
 __global__ void generate_lightfield_angular_data(float lens_pitch, float image_distance,
 		scattering_data_t scattering_data, int scattering_type, lightfield_source_t lightfield_source,
-                                     int lightray_number_per_particle, int n_min, int n_max, lightfield_data_t d_lightfield_data)
+                                     int lightray_number_per_particle, int n_min, int n_max, float beam_wavelength,
+                                     float aperture_f_number, light_ray_data_t light_ray_data)
 {
 	/*
 		This function generates the light field data for the source points specified by the
@@ -162,12 +163,16 @@ __global__ void generate_lightfield_angular_data(float lens_pitch, float image_d
 	}
 
 	// save the light rays to the light field data structure
-	d_lightfield_data.x[global_ray_id] = x_current;
-	d_lightfield_data.y[global_ray_id] = y_current;
-	d_lightfield_data.z[global_ray_id] = z_current;
-	d_lightfield_data.theta[global_ray_id] = theta_temp;
-	d_lightfield_data.phi[global_ray_id] = phi_temp;
-	d_lightfield_data.radiance[global_ray_id] = irradiance_current;
+	light_ray_data.ray_source_coordinates[global_ray_id] = make_float3(x_current,y_current,z_current);
+	light_ray_data.ray_propagation_direction[global_ray_id] = normalize(make_float3(theta_temp,phi_temp,1.0));
+	light_ray_data.ray_wavelength[global_ray_id] = beam_wavelength;
+	light_ray_data.ray_radiance[global_ray_id] = 1/(aperture_f_number*aperture_f_number)*irradiance_current;
+//	d_lightfield_data.x[global_ray_id] = x_current;
+//	d_lightfield_data.y[global_ray_id] = y_current;
+//	d_lightfield_data.z[global_ray_id] = z_current;
+//	d_lightfield_data.theta[global_ray_id] = theta_temp;
+//	d_lightfield_data.phi[global_ray_id] = phi_temp;
+//	d_lightfield_data.radiance[global_ray_id] = irradiance_current;
 
 }
 
@@ -199,13 +204,13 @@ extern "C"{
 
 void read_from_file()
 {
-	float lens_pitch, image_distance;
+	float lens_pitch, image_distance, beam_wavelength, aperture_f_number;
 	scattering_data_t scattering_data_p;
 	int scattering_type;
 	lightfield_source_t lightfield_source_p;
 	int lightray_number_per_particle;
 	int n_min; int n_max;
-	lightfield_data_t lightfield_data_p;
+
 	/*
 	 * 	This function saves the data passed from python to a file.
 	 * 	This is done to enable debugging this program within eclipse.
@@ -238,6 +243,12 @@ void read_from_file()
 
 	// lightray_number_per_particle
 	file_scalars.read((char*)&lightray_number_per_particle, sizeof(int));
+
+	// beam_wavelength
+	file_scalars.read((char*)&beam_wavelength, sizeof(float));
+
+	// aperture_f_number
+	file_scalars.read((char*)&aperture_f_number, sizeof(float));
 
 	file_scalars.close();
 
@@ -332,7 +343,7 @@ void read_from_file()
 //		strcpy(scattering_type_str,"diffuse");
 	char scattering_type_str[] = "mie";
 
-	start_ray_tracing(lens_pitch, image_distance,&scattering_data_p, scattering_type_str,&lightfield_source_p,lightray_number_per_particle,n_min, n_max,&lightfield_data_p);
+	start_ray_tracing(lens_pitch, image_distance,&scattering_data_p, scattering_type_str,&lightfield_source_p,lightray_number_per_particle,n_min, n_max,beam_wavelength,aperture_f_number);
 
 
 }
@@ -340,7 +351,7 @@ void read_from_file()
 void save_to_file(float lens_pitch, float image_distance,
 		scattering_data_t* scattering_data_p, char* scattering_type_str,
 		lightfield_source_t* lightfield_source_p, int lightray_number_per_particle,
-		int n_min, int n_max,lightfield_data_t* lightfield_data_p)
+		int n_min, int n_max,float beam_wavelength, float aperture_f_number)
 {
 	/*
 	 * 	This function saves the data passed from python to a file.
@@ -374,6 +385,12 @@ void save_to_file(float lens_pitch, float image_distance,
 
 	// lightray_number_per_particle
 	file_scalars.write((char*)&lightray_number_per_particle, sizeof(int));
+
+	// beam_wavelength
+	file_scalars.write((char*)&beam_wavelength, sizeof(float));
+
+	// aperture_f_number
+	file_scalars.write((char*)&aperture_f_number, sizeof(float));
 
 	file_scalars.close();
 
@@ -464,27 +481,17 @@ int add(int a, int b)
 void start_ray_tracing(float lens_pitch, float image_distance,
 		scattering_data_t* scattering_data_p, char* scattering_type_str,
 		lightfield_source_t* lightfield_source_p, int lightray_number_per_particle,
-		int n_min, int n_max,lightfield_data_t* lightfield_data_p)
+		int n_min, int n_max,float beam_wavelength, float aperture_f_number)
 {
 	// create instance of structure using the pointers
 	scattering_data_t scattering_data = *scattering_data_p;
 	lightfield_source_t lightfield_source = *lightfield_source_p;
-	lightfield_data_t lightfield_data = *lightfield_data_p;
 
 	int source_point_number = n_max - n_min + 1;
 
 	// allocate space for the light field variables on the CPU
 
 	int N = lightray_number_per_particle*source_point_number;
-
-	// allocate space and initialize all arrays in lightfield_data to zeros
-	lightfield_data.x = (float *) malloc(lightray_number_per_particle*source_point_number*sizeof(float));
-	lightfield_data.y = (float *) malloc(lightray_number_per_particle*source_point_number*sizeof(float));
-	lightfield_data.z = (float *) malloc(lightray_number_per_particle*source_point_number*sizeof(float));
-	lightfield_data.theta = (float *) malloc(lightray_number_per_particle*source_point_number*sizeof(float));
-	lightfield_data.phi = (float *) malloc(lightray_number_per_particle*source_point_number*sizeof(float));
-	lightfield_data.radiance = (double *) malloc(lightray_number_per_particle*source_point_number*sizeof(double));
-	lightfield_data.num_lightrays = N;
 
 	//--------------------------------------------------------------------------------------
 	// allocate space on GPU for lightfield_source
@@ -562,39 +569,40 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	scattering_data.scattering_irradiance = d_scattering_irradiance;
 
 	//--------------------------------------------------------------------------------------
-	// allocate space on GPU for lightfield_data
+	// allocate space on GPU for light_ray_data
 	//--------------------------------------------------------------------------------------
 
+	// allocate space for light_ray_data on CPU
+	light_ray_data_t light_ray_data;
+	light_ray_data.ray_source_coordinates = (float3 *) malloc(N*sizeof(float3));
+	light_ray_data.ray_propagation_direction = (float3 *) malloc(N*sizeof(float3));
+	light_ray_data.ray_wavelength = (float *) malloc(N*sizeof(float));
+	light_ray_data.ray_radiance = (double *) malloc(N*sizeof(double));
+	light_ray_data.num_lightrays = N;
 	// declare pointers to GPU arrays
-	float *d_x, *d_y, *d_z, *d_theta, *d_phi;
-	double *d_radiance;
+	float3 *d_ray_source_coordinates, *d_ray_propagation_direction;
+	float *d_ray_wavelength;
+	double *d_ray_radiance;
 
 	// allocate memory on GPU
-	cudaMalloc((void**)&d_x, N*sizeof(float));
-	cudaMalloc((void**)&d_y, N*sizeof(float));
-	cudaMalloc((void**)&d_z, N*sizeof(float));
-	cudaMalloc((void**)&d_theta, N*sizeof(float));
-	cudaMalloc((void**)&d_phi, N*sizeof(float));
-	cudaMalloc((void**)&d_radiance, N*sizeof(double));
+	cudaMalloc((void**)&d_ray_source_coordinates, N*sizeof(float3));
+	cudaMalloc((void**)&d_ray_propagation_direction, N*sizeof(float3));
+	cudaMalloc((void**)&d_ray_wavelength, N*sizeof(float));
+	cudaMalloc((void**)&d_ray_radiance, N*sizeof(double));
 
 	// initialize arrays to zero
-	cudaMemset(d_x,0.0,N*sizeof(float));
-	cudaMemset(d_y,0.0,N*sizeof(float));
-	cudaMemset(d_z,0.0,N*sizeof(float));
-	cudaMemset(d_theta,0.0,N*sizeof(float));
-	cudaMemset(d_phi,0.0,N*sizeof(float));
-	cudaMemset(d_radiance,0.0,N*sizeof(double));
+	cudaMemset(d_ray_source_coordinates,0.0,N*sizeof(float3));
+	cudaMemset(d_ray_propagation_direction,0.0,N*sizeof(float3));
+	cudaMemset(d_ray_wavelength,0.0,N*sizeof(float));
+	cudaMemset(d_ray_radiance,0.0,N*sizeof(double));
 
-	// copy contents of lightfield_data structure
-	lightfield_data_t lightfield_data_copy = lightfield_data;
+	// copy contents of light_ray_data structure
+	light_ray_data_t light_ray_data_copy = light_ray_data;
 	// point structure to device arrays
-	lightfield_data.x = d_x;
-	lightfield_data.y = d_y;
-	lightfield_data.z = d_z;
-	lightfield_data.theta = d_theta;
-	lightfield_data.phi = d_phi;
-	lightfield_data.radiance = d_radiance;
-
+	light_ray_data.ray_source_coordinates = d_ray_source_coordinates;
+	light_ray_data.ray_propagation_direction = d_ray_propagation_direction;
+	light_ray_data.ray_wavelength = d_ray_wavelength;
+	light_ray_data.ray_radiance = d_ray_radiance;
 
 	int scattering_type = 0;
 	if(strcmp(scattering_type_str,"mie")==0)
@@ -609,43 +617,34 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	// call kernel
 	generate_lightfield_angular_data<<<grid,block>>>(lens_pitch, image_distance,scattering_data,
 			scattering_type, lightfield_source,lightray_number_per_particle, n_min, n_max,
-			lightfield_data);
+			beam_wavelength,aperture_f_number,light_ray_data);
 
 	cudaThreadSynchronize();
 
-	// copy lightfield_data back to device
-	cudaMemcpy(lightfield_data_copy.x,lightfield_data.x,N*sizeof(float),cudaMemcpyDeviceToHost);
-	cudaMemcpy(lightfield_data_copy.y,lightfield_data.y,N*sizeof(float),cudaMemcpyDeviceToHost);
-	cudaMemcpy(lightfield_data_copy.z,lightfield_data.z,N*sizeof(float),cudaMemcpyDeviceToHost);
-	cudaMemcpy(lightfield_data_copy.theta,lightfield_data.theta,N*sizeof(float),cudaMemcpyDeviceToHost);
-	cudaMemcpy(lightfield_data_copy.phi,lightfield_data.phi,lightfield_data.num_lightrays*sizeof(float),cudaMemcpyDeviceToHost);
-	cudaMemcpy(lightfield_data_copy.radiance,lightfield_data.radiance,lightfield_data.num_lightrays*sizeof(double),cudaMemcpyDeviceToHost);
+	// copy light_ray_data back to host
+	cudaMemcpy(light_ray_data_copy.ray_source_coordinates,light_ray_data.ray_source_coordinates,N*sizeof(float3),cudaMemcpyDeviceToHost);
+	cudaMemcpy(light_ray_data_copy.ray_propagation_direction,light_ray_data.ray_propagation_direction,N*sizeof(float3),cudaMemcpyDeviceToHost);
+	cudaMemcpy(light_ray_data_copy.ray_wavelength,light_ray_data.ray_wavelength,N*sizeof(float),cudaMemcpyDeviceToHost);
+	cudaMemcpy(light_ray_data_copy.ray_radiance,light_ray_data.ray_radiance,N*sizeof(double),cudaMemcpyDeviceToHost);
 
 	cudaThreadSynchronize();
 
-	// point original lightfield structure to update host arrays
-	lightfield_data.x = lightfield_data_copy.x;
-	lightfield_data.y = lightfield_data_copy.y;
-	lightfield_data.z = lightfield_data_copy.z;
-	lightfield_data.theta = lightfield_data_copy.theta;
-	lightfield_data.phi = lightfield_data_copy.phi;
-	lightfield_data.radiance = lightfield_data_copy.radiance;
+	// point original light_ray_data to updated host arrays
+	light_ray_data.ray_source_coordinates = light_ray_data_copy.ray_source_coordinates;
+	light_ray_data.ray_propagation_direction = light_ray_data_copy.ray_propagation_direction;
+	light_ray_data.ray_wavelength = light_ray_data_copy.ray_wavelength;
+	light_ray_data.ray_radiance = light_ray_data_copy.ray_radiance;
 
 	// display first and last few elements of lightfield_data
-	N = lightfield_data.num_lightrays;
+	N = light_ray_data.num_lightrays;
 	printf("lightfield_data contents\n");
-	printf("x (1st three): %f, %f, %f\n",lightfield_data.x[0],lightfield_data.x[1],lightfield_data.x[2]);
-	printf("x (last three): %f, %f, %f\n",lightfield_data.x[N-3],lightfield_data.x[N-2],lightfield_data.x[N-1]);
-	printf("y (1st three): %f, %f, %f\n",lightfield_data.y[0],lightfield_data.y[1],lightfield_data.y[2]);
-	printf("y (last three): %f, %f, %f\n",lightfield_data.y[N-3],lightfield_data.y[N-2],lightfield_data.y[N-1]);
-	printf("z (1st three): %f, %f, %f\n",lightfield_data.z[0],lightfield_data.z[1],lightfield_data.z[2]);
-	printf("z (last three): %f, %f, %f\n",lightfield_data.z[N-3],lightfield_data.z[N-2],lightfield_data.z[N-1]);
-	printf("theta (1st three): %f, %f, %f\n",lightfield_data.theta[0],lightfield_data.theta[1],lightfield_data.theta[2]);
-	printf("theta (last three): %f, %f, %f\n",lightfield_data.theta[N-3],lightfield_data.theta[N-2],lightfield_data.theta[N-1]);
-	printf("phi (1st three): %f, %f, %f\n",lightfield_data.phi[0],lightfield_data.phi[1],lightfield_data.phi[2]);
-	printf("phi (last three): %f, %f, %f\n",lightfield_data.phi[N-3],lightfield_data.phi[N-2],lightfield_data.phi[N-1]);
-	printf("radiance (1st three): %f, %f, %f\n",lightfield_data.radiance[0],lightfield_data.radiance[1],lightfield_data.radiance[2]);
-	printf("radiance (last three): %f, %f, %f\n",lightfield_data.radiance[N-3],lightfield_data.radiance[N-2],lightfield_data.radiance[N-1]);
+	printf("ray_source_coordinates (1st): %f, %f, %f\n",light_ray_data.ray_source_coordinates[0].x,light_ray_data.ray_source_coordinates[0].y,light_ray_data.ray_source_coordinates[0].z);
+	printf("ray_source_coordinates (last): %f, %f, %f\n",light_ray_data.ray_source_coordinates[N-1].x,light_ray_data.ray_source_coordinates[N-1].y,light_ray_data.ray_source_coordinates[N-1].z);
+	printf("ray_propagation_direction (1st): %f, %f, %f\n",light_ray_data.ray_propagation_direction[0].x,light_ray_data.ray_propagation_direction[0].y,light_ray_data.ray_propagation_direction[0].z);
+	printf("ray_propagation_direction (last): %f, %f, %f\n",light_ray_data.ray_propagation_direction[N-1].x,light_ray_data.ray_propagation_direction[N-1].y,light_ray_data.ray_propagation_direction[N-1].z);
+	printf("ray_wavelength (1st, last): %f, %f\n",light_ray_data.ray_wavelength[0],light_ray_data.ray_wavelength[N-1]);
+	printf("ray_radiance (1st, last): %f, %f\n",light_ray_data.ray_radiance[0],light_ray_data.ray_radiance[N-1]);
+
 
 	// free pointers
 	cudaFree(gpuData);
@@ -659,14 +658,10 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	cudaFree(d_scattering_irradiance);
 	cudaFree(data_array);
 
-	// allocate memory on GPU
-	cudaFree(d_x);
-	cudaFree(d_y);
-	cudaFree(d_z);
-	cudaFree(d_theta);
-	cudaFree(d_phi);
-	cudaFree(d_radiance);
-
+	cudaFree(d_ray_source_coordinates);
+	cudaFree(d_ray_propagation_direction);
+	cudaFree(d_ray_wavelength);
+	cudaFree(d_ray_radiance);
 
 }
 

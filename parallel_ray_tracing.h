@@ -52,17 +52,26 @@ typedef struct lightfield_data_t
 	int num_lightrays;
 }lightfield_data_t;
 
+typedef struct light_ray_data_t
+{
+	float3* ray_source_coordinates;
+	float3* ray_propagation_direction;
+	float* ray_wavelength;
+	double* ray_radiance;
+	int num_lightrays;
+
+}light_ray_data_t;
 __global__ void generate_lightfield_angular_data(float ,float,scattering_data_t* ,
-		int , lightfield_source_t* , int , int , int );
+		int , lightfield_source_t* , int , int , int, float, float);
 __device__ float random_single(unsigned int );
 
 extern "C"{
 void save_to_file(float , float ,scattering_data_t* , char* ,lightfield_source_t* ,
-		int ,int , int, lightfield_data_t* );
+		int ,int , int, float, float );
 void read_from_file();
 int add(int a, int b);
 void start_ray_tracing(float , float ,scattering_data_t* , char* ,lightfield_source_t* ,
-		int ,int , int, lightfield_data_t* );
+		int ,int , int, float, float );
 
 }
 

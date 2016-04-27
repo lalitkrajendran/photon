@@ -11,6 +11,7 @@
 #ifndef FLOAT3_OPERATORS_H_
 #define FLOAT3_OPERATORS_H_
 
+#include <string>
 __device__ float3 operator/(const float3 &a, const float &b) {
 
 return make_float3(a.x/b, a.y/b, a.z/b);
@@ -67,5 +68,11 @@ __device__ float angleBetween(const float3& v1, const float3& v2)
   return acosf(dp)*180.0/M_PI;
 }
 
-
+void print3(char* msg,float3 v)
+{
+//#if __DEVICE_EMULATION__
+  printf("%s",msg);
+  printf(": %f %f %f\n", v.x, v.y, v.z);
+//#endif
+}
 #endif /* FLOAT3_OPERATORS_H_ */
