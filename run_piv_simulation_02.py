@@ -989,12 +989,12 @@ def load_lightfield_data(piv_simulation_parameters,optical_system,mie_scattering
     R = irradiance_constant*(1.0/(gaussian_sigma*np.sqrt(2.0*np.pi))) * np.exp(-1.0*(np.power(Z,2.0)/(2.0*np.power(gaussian_sigma,2.0))))
     # This rotates the image coordinates by the specified angles
     [X,Y,Z] = rotate_coordinates(X,Y,Z,x_camera_angle,y_camera_angle,0.0,0.0,0.0,0.0)
-    print "x_camera_angle: %f, y_camera_angle : %f" % (x_camera_angle, y_camera_angle)
-    print "Z_max: %f, Z_min: %f" % (Z.max(), Z.min())
+    #print "x_camera_angle: %f, y_camera_angle : %f" % (x_camera_angle, y_camera_angle)
+    #print "Z_max: %f, Z_min: %f" % (Z.max(), Z.min())
 
     # This translates the Z coordinates of the paricles to the focal plane
     Z = Z + z_object
-    print "z_max: %f, z_min: %f" % (Z.max(),Z.min())
+    #print "z_max: %f, z_min: %f" % (Z.max(),Z.min())
 
     # This adds in the particles to the lightfield source data
     lightfield_source['x'] = X

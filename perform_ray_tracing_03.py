@@ -1,5 +1,5 @@
 import numpy as np
-import weave
+#import weave
 from numpy import linalg as la
 import run_piv_simulation_02
 import scipy.io as sio
@@ -14,7 +14,8 @@ from scipy.interpolate import interp1d
 # import pyximport
 # pyximport.install()
 import c_functions
-
+import ctypes
+import numpy.ctypeslib as npct
 #import increment_pixel_radiance
 import string
 
@@ -573,7 +574,8 @@ def ray_sphere_intersection(xc, yc, zc, R, vx, vy, vz, x0, y0, z0, surface):
             # % and 't2' have NaN values, the output of 't' is also NaN)
             # %t=nanmin(t1,t2);
             # NOTE: using nanmin gives wrong results (no particles make it through) even though it is consistent with
-            # the comments
+            # the comments (it is because, the sign of the radius of curvature changes from the front to the back surface.
+            # so, for example, a convex lens has a positive front curvature and a negative back curvature)
             t = np.fmax(t1, t2)
 
     # % This calculates the 3D coordinate of the intersection point
@@ -1596,6 +1598,10 @@ def intersect_sensor_better(camera_design, x, y):
 
     return [ii_indices, jj_indices, pixel_weights]
 
+
+
+
+
 def trace_rays_through_density_gradients(light_ray_data):
     # This function calls the SchlierenRay code to trace rays through a medium with
     # density gradients
@@ -1627,6 +1633,267 @@ def trace_rays_through_density_gradients(light_ray_data):
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
     return light_ray_data
+
+
+def save_data_to_file(lens_pitch, image_distance, scattering_data, scattering_type, lightfield_source,
+                                 lightray_number_per_particle, n_min, n_max):
+    # save scattering data to file
+    # class scattering_data_struct(ctypes.Structure):
+    #     _fields_ = [
+    #         ('inverse_rotation_matrix', ctypes.c_float*3*3), #_floatpp),
+    #         ('beam_propogation_vector',  ctypes.c_float*3), #ctypes.POINTER(ctypes.c_float)),
+    #         ('scattering_angle', _floatp),
+    #         ('scattering_irradiance', _floatp),
+    #         ('num_angles', ctypes.c_int),
+    #         ('num_diameters', ctypes.c_int)
+    #     ]
+    # light_ray_data['ray_source_coordinates'].astype('float32').tofile(light_ray_pos_filename)
+
+    f = open('scattering_data.bin','wb')
+
+    # class lightfield_source_struct(ctypes.Structure):
+    #     _fields_ = [
+    #         ('lightray_number_per_particle', ctypes.c_int),
+    #         ('lightray_process_number', ctypes.c_int),
+    #         ('diameter_index', _intp),
+    #         ('radiance', _doublep),
+    #         ('x', _floatp),
+    #         ('y', _floatp),
+    #         ('z', _floatp),
+    #         ('num_rays', ctypes.c_int)
+    #     ]
+
+
+def prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, scattering_type, lightfield_source,
+                                     lightray_number_per_particle, n_min, n_max,beam_wavelength,aperture_f_number,
+                                 element_data, element_center,
+                                 element_plane_parameters, element_system_index
+                                 ):
+    #-------------------------------------------------------------------------------------------------------------------
+    # convert variables to appropriate ctypes formats
+    # -------------------------------------------------------------------------------------------------------------------
+
+    # convert float64 to float32 for gpu
+    # lens_pitch = lens_pitch.astype('float32')
+    # image_distance = image_distance.astype('float32')
+
+    # convert lightray number per particle to int
+    # lightray_number_per_particle = lightray_number_per_particle.astype('int32')
+
+
+    # ctypes pointer to 2D array
+    _floatpp = npct.ndpointer(dtype=np.uintp, flags='C')
+    _floatp = npct.ndpointer(dtype=np.float32,flags='C')
+    _doublep = npct.ndpointer(dtype=np.float64, flags='C')
+    _intp = npct.ndpointer(dtype=np.int32, flags='C')
+
+    # define a class to represent the scattering_data dictionary
+    class scattering_data_struct(ctypes.Structure):
+        _fields_ = [
+            ('inverse_rotation_matrix', ctypes.c_float*9), #_floatpp),
+            ('beam_propogation_vector',  ctypes.c_float*3), #ctypes.POINTER(ctypes.c_float)),
+            ('scattering_angle', _floatp),
+            ('scattering_irradiance', _floatp),
+            ('num_angles', ctypes.c_int),
+            ('num_diameters', ctypes.c_int)
+        ]
+
+    # copy data to structure
+    scattering_data_ctypes = scattering_data_struct()
+    #scattering_data_ctypes.beam_propogation_vector = scattering_data['beam_propogation_vector'].astype('float32').ctypes.data_as(ctypes.POINTER(ctypes.c_float))
+    #scattering_data_ctypes.beam_propogation_vector = scattering_data['beam_propogation_vector']
+    # scattering_data_ctypes.beam_propogation_vector = npct.as_ctypes(
+    #     scattering_data['beam_propogation_vector'].astype('float32'))
+    #scattering_data_ctypes.beam_propogation_vector = scattering_data['beam_propogation_vector'].astype('float32').ctypes.data_as(ctypes.POINTER(ctypes.c_float))
+    # scattering_data['beam_propogation_vector'] = scattering_data['beam_propogation_vector'].astype('float32')
+    # scattering_data_ctypes.beam_propogation_vector = scattering_data['beam_propogation_vector'].__array_interface__['data'][0]
+    # print " scattering_data_ctypes.beam_propogation_vector : "
+    # print scattering_data['beam_propogation_vector'].astype('float32').__array_interface__['data'][0]
+
+    # use a temporary variable to avoid typing the long name several times
+    temp_var = np.asarray(scattering_data['inverse_rotation_matrix']).astype('float32')
+    # temp_var_p = (temp_var.__array_interface__['data'][0]
+    #               + np.arange(temp_var.shape[0]) * temp_var.strides[0]).astype(np.uintp)
+    # temp_var_p = temp_var_p.astype(np.uintp)
+    # scattering_data_ctypes.inverse_rotation_matrix = temp_var_p.__array_interface__['data'][0]
+    # print "scattering_data_ctypes.inverse_rotation_matrix: %d" % temp_var_p.ctypes.data
+    # print "scattering_data_ctypes.inverse_rotation_matrix (rows): " + str(temp_var_p[:])
+    # print "scattering_data_ctypes.inverse_rotation_matrix [1,1]: " + str(id(temp_var[1,1]))
+
+    scattering_data['scattering_angle'] = scattering_data['scattering_angle'].astype('float32')
+    scattering_data_ctypes.scattering_angle = scattering_data['scattering_angle'].__array_interface__['data'][0]
+    # get pointer to the first element of the 2d array
+    irradiance = np.reshape(scattering_data['scattering_irradiance'].astype('float32'),(1,scattering_data['scattering_irradiance'].size))
+    scattering_data_ctypes.scattering_irradiance = irradiance.__array_interface__['data'][0]
+    # # create an array of pointers where each element is a pointer to a row of the array
+    # irradiance_p = irradiance.__array_interface__['data'][0] + np.arange(irradiance.shape[0])*irradiance.strides[0]
+    # irradiance_p = irradiance_p.astype(np.uintp)
+    # # store the pointer to the array of pointers
+    # scattering_data_ctypes.scattering_irradiance = irradiance_p.__array_interface__['data'][0]
+    # get number of angles over which mie scattering data is available
+    scattering_data_ctypes.num_angles = scattering_data['scattering_irradiance'].shape[0]
+    # get number of diameters over which mie scattering data is available
+    scattering_data_ctypes.num_diameters = scattering_data['scattering_irradiance'].shape[1]
+
+    print "scattering_data_ctypes, pointer at %d" % id(scattering_data_ctypes)
+
+    for i in range(0,3):
+        scattering_data_ctypes.beam_propogation_vector[i] = scattering_data['beam_propogation_vector'][i].astype('float32')
+        for j in range(0,3):
+            scattering_data_ctypes.inverse_rotation_matrix[i*3 + j] = scattering_data['inverse_rotation_matrix'][i,j].astype('float32')
+
+    # define a class to represent the scattering_data dictionary
+    # class lightfield_source_struct(ctypes.Structure):
+    #     _fields_ = [
+    #         ('lightray_number_per_particle', ctypes.c_int),
+    #         ('lightray_process_number',ctypes.c_int),
+    #         ('radiance', ctypes.POINTER(ctypes.c_float)),
+    #         ('x', ctypes.POINTER(ctypes.c_float)),
+    #         ('y', ctypes.POINTER(ctypes.c_float)),
+    #         ('z', ctypes.POINTER(ctypes.c_float)),
+    #         ('num_rays', ctypes.c_int)
+    #     ]
+    #
+    # # copy data to structure
+    # lightfield_source_ctypes = lightfield_source_struct()
+    # lightfield_source_ctypes.lightray_number_per_particle = int(lightfield_source['lightray_number_per_particle'])
+    # lightfield_source_ctypes.lightray_process_number = int(lightfield_source['lightray_process_number'])
+    # lightfield_source_ctypes.radiance = lightfield_source['radiance'].astype('float32').ctypes.data_as(ctypes.POINTER(ctypes.c_float))
+    # lightfield_source_ctypes.x = lightfield_source['x'].astype('float32').ctypes.data_as(ctypes.POINTER(ctypes.c_float))
+    # lightfield_source_ctypes.y = lightfield_source['y'].astype('float32').ctypes.data_as(ctypes.POINTER(ctypes.c_float))
+    # lightfield_source_ctypes.z = lightfield_source['z'].astype('float32').ctypes.data_as(ctypes.POINTER(ctypes.c_float))
+    # lightfield_source_ctypes.num_rays = lightfield_source['x'].size
+
+    class lightfield_source_struct(ctypes.Structure):
+        _fields_ = [
+            ('lightray_number_per_particle', ctypes.c_int),
+            ('lightray_process_number', ctypes.c_int),
+            ('diameter_index', _intp),
+            ('radiance', _doublep),
+            ('x', _floatp),
+            ('y', _floatp),
+            ('z', _floatp),
+            ('num_rays', ctypes.c_int),
+            ('num_particles',ctypes.c_int)
+
+        ]
+
+    lightfield_source['x'] = np.asarray(lightfield_source['x'].astype('float32'))
+    lightfield_source['y'] = np.asarray(lightfield_source['y'].astype('float32'))
+    lightfield_source['z'] = np.asarray(lightfield_source['z'].astype('float32'))
+    lightfield_source['diameter_index'] = np.asarray(lightfield_source['diameter_index'].astype('int32'))
+
+    # copy data to structure
+    lightfield_source_ctypes = lightfield_source_struct()
+    lightfield_source_ctypes.lightray_number_per_particle = int(lightfield_source['lightray_number_per_particle'])
+    lightfield_source_ctypes.lightray_process_number = int(lightfield_source['lightray_process_number'])
+    lightfield_source_ctypes.diameter_index = lightfield_source['diameter_index'].__array_interface__['data'][0]
+    lightfield_source_ctypes.radiance = np.asarray(lightfield_source['radiance']).__array_interface__['data'][0]#.astype('float32').ctypes.data
+    lightfield_source_ctypes.x = lightfield_source['x'].__array_interface__['data'][0]
+    lightfield_source_ctypes.y = lightfield_source['y'].__array_interface__['data'][0]
+    lightfield_source_ctypes.z = lightfield_source['z'].__array_interface__['data'][0]
+    lightfield_source_ctypes.num_rays = lightfield_source['x'].size
+    lightfield_source_ctypes.num_particles = lightfield_source['diameter_index'].size
+    # define a class to wrap the lightray_data dictionary
+    class lightfield_data_struct(ctypes.Structure):
+        _fields_ = [
+            ('x', _floatp),
+            ('y', _floatp),
+            ('z', _floatp),
+            ('radiance', _doublep),
+            ('theta', _floatp),
+            ('phi', _floatp),
+            ('num_lightrays',ctypes.c_int)
+        ]
+
+    # class lightfield_data_struct(ctypes.Structure):
+    #     _fields_ = [
+    #         ('x', ctypes.POINTER(ctypes.c_float)),
+    #         ('y', ctypes.POINTER(ctypes.c_float)),
+    #         ('z', ctypes.POINTER(ctypes.c_float)),
+    #         ('radiance', ctypes.POINTER(ctypes.c_float)),
+    #         ('theta', ctypes.POINTER(ctypes.c_float)),
+    #         ('phi', ctypes.POINTER(ctypes.c_float)),
+    #         ('num_lightrays', ctypes.c_int)
+    #     ]
+
+    lightfield_data_ctypes = lightfield_data_struct()
+
+    # % This is the number of points to calculate the lightfield structure for
+    source_point_number = n_max - n_min + 1
+
+    lightfield_data = {}
+    lightfield_data['x'] = np.zeros(source_point_number * lightray_number_per_particle).astype('float32')
+    lightfield_data['y'] = np.zeros(source_point_number * lightray_number_per_particle).astype('float32')
+    lightfield_data['z'] = np.zeros(source_point_number * lightray_number_per_particle).astype('float32')
+    lightfield_data['theta'] = np.zeros(source_point_number * lightray_number_per_particle).astype('float32')
+    lightfield_data['phi'] = np.zeros(source_point_number * lightray_number_per_particle).astype('float32')
+    lightfield_data['radiance'] = np.zeros(source_point_number * lightray_number_per_particle).astype('float64')
+
+    lightfield_data_ctypes.x = lightfield_data['x'].__array_interface__['data'][0]
+    lightfield_data_ctypes.y = lightfield_data['y'].__array_interface__['data'][0]
+    lightfield_data_ctypes.z = lightfield_data['z'].__array_interface__['data'][0]
+    lightfield_data_ctypes.theta = lightfield_data['theta'].__array_interface__['data'][0]
+    lightfield_data_ctypes.phi = lightfield_data['phi'].__array_interface__['data'][0]
+    lightfield_data_ctypes.radiance = lightfield_data['radiance'].__array_interface__['data'][0]
+    lightfield_data_ctypes.num_lightrays = int(source_point_number*lightray_number_per_particle)
+    # -------------------------------------------------------------------------------------------------------------------
+    # call cuda code
+    # -------------------------------------------------------------------------------------------------------------------
+
+    # import cuda code
+    cuda_func = ctypes.CDLL('/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/Debug/libparallel_ray_tracing.so')
+
+    # define input arguments
+    # cuda_func.start_ray_tracing.argtypes = [ctypes.c_float, ctypes.c_float, ctypes.POINTER(scattering_data_struct),
+    #                                         ctypes.c_char_p, ctypes.POINTER(lightfield_source_struct), ctypes.c_int, \
+    #                                         ctypes.c_int, ctypes.c_int, ctypes.POINTER(lightfield_data_struct)]
+    #
+    # # # define return type
+    # # cuda_func.start_ray_tracing.restype = ctypes.POINTER(lightfield_data_struct)
+    # cuda_func.start_ray_tracing.restype = None
+    # #
+    # # # call function in cuda code
+    # cuda_func.start_ray_tracing(lens_pitch, image_distance, scattering_data_ctypes, scattering_type,
+    #                             lightfield_source_ctypes,lightray_number_per_particle,n_min,n_max,lightfield_data_ctypes)
+
+    # cuda_func.save_to_file.argtypes = [ctypes.c_float, ctypes.c_float, ctypes.POINTER(scattering_data_struct),
+    #                                         ctypes.c_char_p, ctypes.POINTER(lightfield_source_struct), ctypes.c_int, \
+    #                                         ctypes.c_int, ctypes.c_int, ctypes.POINTER(lightfield_data_struct)]
+
+    cuda_func.save_to_file.argtypes = [ctypes.c_float, ctypes.c_float, ctypes.POINTER(scattering_data_struct),
+                                       ctypes.c_char_p, ctypes.POINTER(lightfield_source_struct), ctypes.c_int, \
+                                       ctypes.c_int, ctypes.c_int, ctypes.c_float, ctypes.c_float]
+
+    # # define return type
+    # cuda_func.start_ray_tracing.restype = ctypes.POINTER(lightfield_data_struct)
+    cuda_func.save_to_file.restype = None
+    #
+    # # call function in cuda code
+    # cuda_func.save_to_file(lens_pitch, image_distance, scattering_data_ctypes, scattering_type,
+    #                             lightfield_source_ctypes, lightray_number_per_particle, n_min, n_max,
+    #                             lightfield_data_ctypes)  # lightfield_data_struct = cuda_func.start_ray_tracing(lens_pitch,image_distance,scattering_data_ctypes,scattering_type,lightfield_source_struct,
+    #     #                            lightray_number_per_particle,n_min,n_max)
+    cuda_func.save_to_file(lens_pitch, image_distance, scattering_data_ctypes, scattering_type,
+                           lightfield_source_ctypes, lightray_number_per_particle, n_min, n_max,
+                           beam_wavelength, aperture_f_number)  # lightfield_data_struct = cuda_func.start_ray_tracing(lens_pitch,image_distance,scattering_data_ctypes,scattering_type,lightfield_source_struct,
+
+    # -------------------------------------------------------------------------------------------------------------------
+    # copy output to dictionary
+    # -------------------------------------------------------------------------------------------------------------------
+
+    # % This initializes the data structure
+    # lightfield_data = {}
+    lightfield_data['x'] = lightfield_data_ctypes.x
+    lightfield_data['y'] = lightfield_data_ctypes.y
+    lightfield_data['z'] = lightfield_data_ctypes.z
+    lightfield_data['radiance'] = lightfield_data_ctypes.radiance
+    lightfield_data['theta'] = lightfield_data_ctypes.theta
+    lightfield_data['phi'] = lightfield_data_ctypes.phi
+
+    return lightfield_data
+
+
 
 def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain, scattering_data, scattering_type,
                            lightfield_source, field_type):
@@ -1787,11 +2054,11 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     # I = np.zeros([x_pixel_number, y_pixel_number])
     I = np.zeros([x_pixel_number+1, y_pixel_number+1])
 
-    lightray_process_number = 1000000
-    lightray_number_per_particle = 10000
+    # lightray_process_number = 1000000
+    # lightray_number_per_particle = 10000
 
-    # lightray_process_number = 1000
-    # lightray_number_per_particle = 10
+    lightray_process_number = 1000
+    lightray_number_per_particle = 10
 
     # % This generates an array of indices into the source points to calculate the lightfield
     lightfield_N = np.ceil(lightray_process_number*1.0 / lightray_number_per_particle)
@@ -1821,9 +2088,14 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
         # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         #
         # % This generates the lightfield data for the current set of source points
+        lightfield_data = prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, scattering_type,
+                           lightfield_source, lightray_number_per_particle, int(lightfield_vector[m]),
+                           int(lightfield_vector[m + 1]),beam_wavelength,aperture_f_number, element_data, element_center,
+                           element_plane_parameters, element_system_index)
+
         lightfield_data = generate_lightfield_angular_data(lens_pitch, image_distance, scattering_data, scattering_type,
                                                            lightfield_source, lightray_number_per_particle,
-                                                           int(lightfield_vector[m]), int(lightfield_vector[m + 1]))
+                                                           int(lightfield_vector[m]), int(lightfield_vector[m + 1]),)
         # % This extracts the light ray source coordinates
         light_ray_data['ray_source_coordinates'] = np.array(
             [lightfield_data['x'], lightfield_data['y'], lightfield_data['z']]).T
@@ -1908,11 +2180,11 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
         ii_indices[(ii_indices < 0)] = y_pixel_number + 1
         ii_indices[(y_pixel_number <= ii_indices)] = y_pixel_number + 1
 
-        I = c_functions.increment_pixel_radiance(I, pixel_weights, ii_indices.astype('int32'),
-                                                              jj_indices.astype('int32'), \
-                                                              light_ray_data['ray_radiance'], cos_4_alpha, \
-                                                              ray_source_coordinates.shape[0])
-
+#         I = c_functions.increment_pixel_radiance(I, pixel_weights, ii_indices.astype('int32'),
+#                                                               jj_indices.astype('int32'), \
+#                                                               light_ray_data['ray_radiance'], cos_4_alpha, \
+#                                                               ray_source_coordinates.shape[0])
+        
     pbar.finish()
     print "max(I): %f" % I.max()
 
