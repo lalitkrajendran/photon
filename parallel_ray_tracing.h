@@ -14,7 +14,7 @@ typedef struct scattering_data_t
 	// rotation matrix
 	float inverse_rotation_matrix[9];
 	// direction of propagation of the laser beam
-	float beam_propogation_vector[3];
+	float beam_propagation_vector[3];
 	// scattering angle at which Mie scattering info is available
 	float* scattering_angle;
 	// scattering irradiance values for each scattering angle
@@ -52,26 +52,85 @@ typedef struct lightfield_data_t
 	int num_lightrays;
 }lightfield_data_t;
 
+//typedef struct light_ray_data_t
+//{
+//	float3* ray_source_coordinates;
+//	float3* ray_propagation_direction;
+//	float* ray_wavelength;
+//	double* ray_radiance;
+//	int num_lightrays;
+//
+//}light_ray_data_t;
+
 typedef struct light_ray_data_t
 {
-	float3* ray_source_coordinates;
-	float3* ray_propagation_direction;
-	float* ray_wavelength;
-	double* ray_radiance;
+	float3 ray_source_coordinates;
+	float3 ray_propagation_direction;
+	float ray_wavelength;
+	double ray_radiance;
 	int num_lightrays;
 
 }light_ray_data_t;
-__global__ void generate_lightfield_angular_data(float ,float,scattering_data_t* ,
-		int , lightfield_source_t* , int , int , int, float, float);
-__device__ float random_single(unsigned int );
 
-extern "C"{
+typedef struct element_geometry_t
+{
+	float front_surface_radius;
+	char* front_surface_shape;
+	bool front_surface_spherical;
+	float back_surface_radius;
+	char* back_surface_shape;
+	bool back_surface_spherical;
+	float pitch;
+	double vertex_distance;
+}element_geometry_t;
+
+typedef struct element_properties_t
+{
+	float abbe_number;
+	float absorbance_rate;
+	double refractive_index;
+	float thin_lens_focal_length;
+	float transmission_ratio;
+}element_properties_t;
+
+typedef struct element_data_t
+{
+	double axial_offset_distances[2];
+	element_geometry_t element_geometry;
+	float element_number;
+	element_properties_t element_properties;
+	char* element_type;
+	float elements_coplanar;
+	double rotation_angles[3];
+	float z_inter_element_distance;
+
+}element_data_t;
+
+
+
+
+__global__ void generate_lightfield_angular_data(float ,float,scattering_data_t* ,
+		int , lightfield_source_t* , int , int , int, float, float,light_ray_data_t*);
+__global__ void propagate_rays_through_optical_system(element_data_t , float3* , float4* , int*,
+       int , int, light_ray_data_t*);
+__device__ float random_single(unsigned int );
+__device__ light_ray_data_t propagate_rays_through_single_element(element_data_t , float3,
+		   float4, light_ray_data_t );
+__device__ float3 ray_sphere_intersection(float3 , float , float3 , float3 , char );
+
+__device__ float measure_distance_to_optical_axis(float3 , float3 , float );
+
+extern "C"
+{
+
 void save_to_file(float , float ,scattering_data_t* , char* ,lightfield_source_t* ,
-		int ,int , int, float, float );
+		int ,int , int, float, float,int , double (*element_center)[3],element_data_t* ,
+		double (*element_plane_parameters)[4], int* );
 void read_from_file();
 int add(int a, int b);
 void start_ray_tracing(float , float ,scattering_data_t* , char* ,lightfield_source_t* ,
-		int ,int , int, float, float );
+		int ,int , int, float, float, int , double (*element_center)[3],element_data_t*,
+		double (*element_plane_parameters)[4], int* );
 
 }
 

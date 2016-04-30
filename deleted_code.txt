@@ -61,3 +61,114 @@
 	printf("z (last three): %f,%f,%f\n",lightfield_source.z[N-3],lightfield_source.z[N-2],lightfield_source.z[N-1]);
 
 	printf("n_min: %d, n_max: %d\n",n_min,n_max);
+	
+	
+	// display first and last few elements of lightfield_data
+	N = light_ray_data.num_lightrays;
+	
+	//	printf("lightfield_data contents\n");
+//	printf("ray_source_coordinates (1st): %f, %f, %f\n",light_ray_data.ray_source_coordinates[0].x,light_ray_data.ray_source_coordinates[0].y,light_ray_data.ray_source_coordinates[0].z);
+//	printf("ray_source_coordinates (last): %f, %f, %f\n",light_ray_data.ray_source_coordinates[N-1].x,light_ray_data.ray_source_coordinates[N-1].y,light_ray_data.ray_source_coordinates[N-1].z);
+//	printf("ray_propagation_direction (1st): %f, %f, %f\n",light_ray_data.ray_propagation_direction[0].x,light_ray_data.ray_propagation_direction[0].y,light_ray_data.ray_propagation_direction[0].z);
+//	printf("ray_propagation_direction (last): %f, %f, %f\n",light_ray_data.ray_propagation_direction[N-1].x,light_ray_data.ray_propagation_direction[N-1].y,light_ray_data.ray_propagation_direction[N-1].z);
+//	printf("ray_wavelength (1st, last): %f, %f\n",light_ray_data.ray_wavelength[0],light_ray_data.ray_wavelength[N-1]);
+//	printf("ray_radiance (1st, last): %f, %f\n",light_ray_data.ray_radiance[0],light_ray_data.ray_radiance[N-1]);
+
+	
+	
+	
+	
+	/*
+		optical system
+	*/
+	
+	// check if elements have been received correctly
+	
+	
+	
+		int k,l;
+	// number of elements
+	printf("num_elements: %d\n",num_elements);
+
+	// element_center
+	printf("element_center: \n");
+	for(k = 0; k < num_elements; k++)
+	{
+		for(l = 0; l < 3; l++)
+		{
+			printf("%f ",element_center[k][l]);
+		}
+		printf("\n");
+	}
+
+	// element_data
+	printf("element_data\n");
+	for(k = 0; k < num_elements; k++){
+		printf("element_number: %d\n", k+1);
+		// axial offset distance
+		printf("axial_offset_distances: %f, %f\n", element_data_p[k].axial_offset_distances[0],element_data_p[k].axial_offset_distances[1]);
+
+		// element_geometry
+		printf("element_geometry:\n");
+		printf("front_surface_radius: %f\n", element_data_p[k].element_geometry.front_surface_radius);
+//		file_optical_elements.write((char*)&element_data_p[k].element_geometry.front_surface_shape,strlen(element_data_p->element_geometry.front_surface_shape)*sizeof(char));
+		printf("front_surface_shape: %s\n", element_data_p[k].element_geometry.front_surface_shape);
+		printf("front_surface_spherical: %s\n",element_data_p[k].element_geometry.front_surface_spherical ? "true":"false");
+		printf("back_surface_radius: %f\n", element_data_p[k].element_geometry.back_surface_radius);
+//		file_optical_elements.write((char*)&element_data_p[k].element_geometry.back_surface_shape,strlen(element_data_p->element_geometry.back_surface_shape)*sizeof(char));
+		printf("back_surface_shape: %s\n", element_data_p[k].element_geometry.back_surface_shape);
+		printf("back_surface_spherical: %s\n",element_data_p[k].element_geometry.back_surface_spherical ? "true":"false");
+		printf("pitch: %f\n",element_data_p[k].element_geometry.pitch);
+		printf("vertex_distance: %f\n",element_data_p[k].element_geometry.vertex_distance);
+
+		// element_number
+		printf("element_number: %f\n",element_data_p[k].element_number);
+
+		// element_properties
+		printf("element_properties:\n");
+		printf("abbe_number: %f\n",element_data_p[k].element_properties.abbe_number);
+		printf("absorbance_rage: %f\n",element_data_p[k].element_properties.absorbance_rate);
+		printf("refractive_index: %f\n", element_data_p[k].element_properties.refractive_index);
+		printf("thin_lens_focal_length: %f\n",element_data_p[k].element_properties.thin_lens_focal_length);
+		printf("transmission_ratio : %f\n",element_data_p[k].element_properties.transmission_ratio);
+
+		// element_type
+//		file_optical_elements.write((char*)&element_data_p[k].element_type,strlen(element_data_p->element_type)*sizeof(char));
+		printf("element_type: %s\n",element_data_p[k].element_type);
+
+		// elements_coplanar
+		printf("element_coplanar: %f\n",element_data_p[k].elements_coplanar);
+
+		// rotation_angles
+		printf("rotation_angles: ");
+		for(l = 0; l < 3; l++)
+		{
+			printf("%f ",element_data_p[k].rotation_angles[l]);
+		}
+		printf("\n");
+
+		// z_inter_element_distance
+		printf("z_inter_element_distance: %f\n",element_data_p[k].z_inter_element_distance);
+
+	}
+
+	// element plane parameters
+	printf("element_plane_parameters: \n");
+	for(k = 0; k < num_elements; k++)
+	{
+		for(l = 0; l < 4; l++)
+		{
+			printf("%f ", element_plane_parameters[k][l]);
+		}
+
+		printf("\n");
+	}
+
+	// element system index
+	printf("element_system_index:\n");
+	for(k = 0; k < num_elements; k++)
+	{
+		printf("%d ",element_system_index[k]);
+	}
+
+	
