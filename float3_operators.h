@@ -1,8 +1,8 @@
 /*
  * float3_operators.h
  *
- *	This file contains functions that define arithmetic operations on float3 variables
- *	using operator overloading.
+ *	This file contains functions that define arithmetic operations on float3 and float4
+ *	variables using operator overloading.
  *
  *  Created on: Apr 22, 2016
  *      Author: lrajendr
@@ -12,6 +12,7 @@
 #define FLOAT3_OPERATORS_H_
 
 #include <string>
+
 __device__ float3 operator/(const float3 &a, const float &b) {
 
 return make_float3(a.x/b, a.y/b, a.z/b);
@@ -48,6 +49,21 @@ return make_float3(-a.x, -a.y, -a.z);
 
 }
 
+__device__ bool operator==(const float3&a, const float3&b) {
+	if(a.x==b.x && a.y==b.y && a.z==b.z)
+		return true;
+
+	return false;
+}
+
+__device__ bool operator==(const float4&a, const float4&b) {
+	if(a.x==b.x && a.y==b.y && a.z==b.z && a.w==b.w)
+		return true;
+
+	return false;
+}
+
+
 __device__ float3 normalize(const float3&a) {
     float m = sqrt(a.x*a.x+a.y*a.y+a.z*a.z);
     return a/m;
@@ -56,6 +72,7 @@ __device__ float3 normalize(const float3&a) {
 __device__ float3 cross(const float3&a, const float3&b) {
     return make_float3(a.y*b.z-a.z*b.y, a.z*b.x-a.x*b.z, a.x*b.y-a.y*b.x);
 }
+
 
 __device__ float dot(const float3&a, const float3&b) {
     return (a.x*b.x + a.y*b.y + a.z*b.z);

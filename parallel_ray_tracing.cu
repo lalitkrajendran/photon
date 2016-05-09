@@ -23,6 +23,9 @@
 using namespace std;
 //#incldue <cutil_math.h>
 
+#define CUDART_NAN_F            __int_as_float(0x7fffffff)
+#define CUDART_NAN              __longlong_as_double(0xfff8000000000000ULL)
+
 cudaArray *data_array = 0;
 texture<float, 2> mie_scattering_irradiance;
 
@@ -65,7 +68,7 @@ __global__ void generate_lightfield_angular_data(float lens_pitch, float image_d
 	int local_thread_id = threadIdx.x;
 
 	float del_scattering_angle = (scattering_data.scattering_angle[1] - scattering_data.scattering_angle[0])*180.0/M_PI;
-	float min_scattering_angle = scattering_data.scattering_angle[0];
+	//float min_scattering_angle = scattering_data.scattering_angle[0];
 
 	// get id of particle which is the source of light rays
 	int particle_id = blockIdx.x*blockDim.x + local_thread_id;
@@ -206,12 +209,12 @@ __device__ float3 ray_sphere_intersection(float3 pos_c, float R, float3 dir_i, f
 
     // % This calculates the square root argument of the quadratic formula
     float square_root_arguments = beta * beta - 4.0 * alpha * gamma;
-
+//    printf("alpha: %f, beta: %f, gamma: %f, square_root_arguments: %f\n",alpha,beta,gamma,square_root_arguments);
     float3 pos_f;
     // If solution is not real, then exit function
     if(square_root_arguments<0.0)
     {
-    	pos_f = make_float3(nan,nan,nan);
+    	pos_f = make_float3(CUDART_NAN_F,CUDART_NAN_F,CUDART_NAN_F);
     	return pos_f;
     }
 
@@ -273,7 +276,7 @@ __device__ float3 ray_sphere_intersection(float3 pos_c, float R, float3 dir_i, f
     return pos_f;
 }
 
-__device__ float measure_distance_to_optical_axis(float3 pos_i, float3 pos_0, float plane_parameters)
+__device__ float measure_distance_to_optical_axis(float3 pos_i, float3 pos_0, float4 plane_parameters)
 {
     // % This function measures the distance from the point given by the M x 1
     // % vectors 'xi', 'yi', and 'zi' to the optical axis of the optical element
@@ -319,7 +322,7 @@ __device__ light_ray_data_t propagate_rays_through_single_element(element_data_t
 	//# % single optical element.
 
 	//# % This extracts the optical element type
-	char* element_type = optical_element.element_type;
+	char element_type = optical_element.element_type;
 
 	//# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	//# % Extraction of the light ray propagation data                            %
@@ -332,25 +335,29 @@ __device__ light_ray_data_t propagate_rays_through_single_element(element_data_t
 	float3 ray_source_coordinates = light_ray_data.ray_source_coordinates;
 
 	//# % This extracts the wavelength of the light rays
-	ray_wavelength = light_ray_data.ray_wavelength;
+	float ray_wavelength = light_ray_data.ray_wavelength;
 
 	//# % This extracts the light ray radiance
-	ray_radiance = light_ray_data.ray_radiance;
+	float ray_radiance = light_ray_data.ray_radiance;
 
+	float element_pitch;
+	double element_vertex_distance;
+	float a,b,c,d,norm_vector_magnitude, optical_axis_distance,ds;
+	float3 pos_c,pos_intersect;
 	//# % If the element type is 'lens', this extracts the optical properties
 	//# % required to perform the ray propagation
-	if (strcmp(element_type,'lens') == 0)
+	if (element_type == 'l')
 	{
 		//# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 		//# % Extraction of the lens optical properties                           %
 		//# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 		//# % This extracts the pitch of the lens
-		float element_pitch = optical_element.element_geometry.pitch;
+		element_pitch = optical_element.element_geometry.pitch;
 
 		//# % This is the thickness of the optical element from the front optical axis
 		//# % vertex to the back optical axis vertex
-		double element_vertex_distance = optical_element.element_geometry.vertex_distance;
+		element_vertex_distance = optical_element.element_geometry.vertex_distance;
 
 		//# % This extracts the front surface radius of curvature
 		float element_front_surface_curvature = optical_element.element_geometry.front_surface_radius;
@@ -376,20 +383,20 @@ __device__ light_ray_data_t propagate_rays_through_single_element(element_data_t
 		//# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 		//# % This extracts the individual plane parameters
-		float a = element_plane_parameters.x;
-		float b = element_plane_parameters.y;
-		float c = element_plane_parameters.z;
-		float d = element_plane_parameters.w;
+		a = element_plane_parameters.x;
+		b = element_plane_parameters.y;
+		c = element_plane_parameters.z;
+		d = element_plane_parameters.w;
 
 		//# % This extracts the center point coordinates
-		float3 pos_c = element_center;
+		pos_c = element_center;
 
 		//# % This calculates the square of the plane normal vector magnitude
-		float norm_vector_magnitude = sqrt(a*a + b*b + c*c);
+		norm_vector_magnitude = sqrt(a*a + b*b + c*c);
 
 		//# % This is the current offset to the center of the front spherical
 		//# % surface
-		float ds = +element_vertex_distance / 2.0 - element_front_surface_curvature;
+		ds = +element_vertex_distance / 2.0 - element_front_surface_curvature;
 
 		//# % This calculates the center point coordinates of the front surface
 		//# % spherical shell
@@ -397,496 +404,692 @@ __device__ light_ray_data_t propagate_rays_through_single_element(element_data_t
 
 		//# % This calculates the points at which the light rays intersect the
 		//# % front surface of the lens
-		float pos_intersect = ray_sphere_intersection(pos_front_surface,element_front_surface_curvature,
+		pos_intersect = ray_sphere_intersection(pos_front_surface,element_front_surface_curvature,
 							ray_propagation_direction,ray_source_coordinates, 'f');
 
 		//# % This calculates how far the intersection point is from the optical
 		//# % axis of the lens (for determining if the rays hit the lens outside of
 		//# % the pitch and thus would be destroyed)
-		float optical_axis_distance = measure_distance_to_optical_axis(pos_intersect,element_center,element_plane_parameters);
+		optical_axis_distance = measure_distance_to_optical_axis(pos_intersect,element_center,element_plane_parameters);
 
-		//# % This gives the indices of the light rays that actually intersect the
-		//# % lens (ie the rays that are within the lens pitch)
-		//intersect_lens_indices = optical_axis_distance <= (element_pitch / 2.0)
-		//
-		//# % This sets any of the light ray directions outside of the domain of
-		//# % the lens to NaN values
-		//ray_propagation_direction[np.logical_not(intersect_lens_indices)][:] = np.NAN
-		//
-		//# % This sets any of the light ray wavelengths outside of the  domain of
-		//# % the lens to NaN values
-		//ray_wavelength[np.logical_not(intersect_lens_indices)] = np.NAN
-		//
-		//# % This sets any of the light ray radiances outside of the  domain of
-		//# % the lens to NaN values
-		//ray_radiance[np.logical_not(intersect_lens_indices)] = np.NAN
-		//
-		//# % This sets the intersection points of any of the light rays outside of
-		//# % the domain of the lens to NaN values
-		//x_intersect[np.logical_not(intersect_lens_indices)] = np.NAN
-		//y_intersect[np.logical_not(intersect_lens_indices)] = np.NAN
-		//z_intersect[np.logical_not(intersect_lens_indices)] = np.NAN
-		//
+		//# % This checks if the given light ray actually intersects the lens
+		//# % (ie the rays that are within the lens pitch)
+		if(optical_axis_distance > element_pitch/2.0)
+		{
+
+			light_ray_data.ray_source_coordinates = make_float3(CUDART_NAN_F,CUDART_NAN_F,CUDART_NAN_F);
+			//# % This sets any of the light ray directions outside of the domain of
+			//# % the lens to NaN values
+			light_ray_data.ray_propagation_direction = make_float3(CUDART_NAN_F,CUDART_NAN_F,CUDART_NAN_F);
+
+			//# % This sets any of the light ray wavelengths outside of the  domain of
+			//# % the lens to NaN values
+			light_ray_data.ray_wavelength = CUDART_NAN_F;
+
+			//# % This sets any of the light ray radiances outside of the  domain of
+			//# % the lens to NaN values
+			light_ray_data.ray_radiance = CUDART_NAN;
+
+			//# % This sets the intersection points of any of the light rays outside of
+			//# % the domain of the lens to NaN values
+			pos_intersect = make_float3(CUDART_NAN_F,CUDART_NAN_F,CUDART_NAN_F);
+
+			return light_ray_data;
+		}
+
 		//# % This calculates the normal vectors of the lens at the intersection
 		//# % points
-		//lens_normal_vectors = np.array([x_intersect - xc_front_surface, y_intersect - yc_front_surface,
-		//					   z_intersect - zc_front_surface])
-		//
+		float3 lens_normal_vectors = pos_intersect - pos_front_surface;
+
 		//# % This normalizes the lens normal vectors to have unit magnitudes
 		//# %lens_normal_vectors=lens_normal_vectors/norm(lens_normal_vectors,2);
-		//lens_normal_vectors = lens_normal_vectors.T
-		//lens_normal_vectors /= np.sqrt(
-		//	lens_normal_vectors[:,0] ** 2 + lens_normal_vectors[:,1] ** 2 + lens_normal_vectors[:,2] ** 2)[:,np.newaxis]
-		//
+		lens_normal_vectors = normalize(lens_normal_vectors);
+
 		//# % If the refractive index is a constant double value, this directly
 		//# % calculates the refractive index ratio, otherwise the ratio is
 		//# % calculated as a function of the wavelength
-		//if isinstance(element_refractive_index,(int,long,float,complex)):
-		//	# % If the Abbe number is defined, this calculates the Cauchy formula
-		//	# % approxiation to the refractive index, otherwise, the refractive
-		//	# % index is defined to be constant
-		//	if not(np.isnan(element_abbe_number)):
-		//		# % This defines the three optical wavelengths used in defining
-		//		# % the Abbe number
-		//		lambda_D = 589.3
-		//		lambda_F = 486.1
-		//		lambda_C = 656.3
-		//
-		//		# % This is the ratio of the incident refractive index (1 since the
-		//		# % inter-lens media is assummed to be air) to the transmitted
-		//		# % refractive index
-		//		refractive_index_ratio = 1.0 / (
-		//		element_refractive_index + (1. / (ray_wavelength ** 2) - 1 / (lambda_D ** 2)) *
-		//		((element_refractive_index - 1) / (element_abbe_number * (1 / (lambda_F ** 2) - 1 / (lambda_C ** 2)))))
-		//
-		//	else:
-		//		# % This is the ratio of the incident refractive index (1 since the
-		//		# % inter-lens media is assummed to be air) to the transmitted
-		//		# % refractive index
-		//		refractive_index_ratio = 1.0 / element_refractive_index*np.ones(ray_propagation_direction.shape[0])
-		//else:
-		//	# % This defines the wavelength of the light as the variable 'lambda'
-		//	# % for evaluation of the refractive index function
-		//	ray_lambda = ray_wavelength
-		//	# % This evaluates the string defining the refractive index in terms
-		//	# % of the independent variable lambda TODO
-		//	element_refractive_index_double = eval('element_refractive_index_double=' + element_refractive_index)
-		//	# % This is the ratio of the incident refractive index (1 since the
-		//	# % inter-lens media is assummed to be air) to the transmitted
-		//	# % refractive index
-		//	refractive_index_ratio = 1.0 / element_refractive_index_double*np.ones(ray_propagation_direction.shape[0])
-		//
+		// (I DON'T KNOW HOW TO DO STRING EVALUATION IN CUDA. SO I AM ONLY GOING TO
+		// CONSIDER THE FIRST CASE - LKR.)
+		// TODO : implement eval
+
+		//# % If the Abbe number is defined, this calculates the Cauchy formula
+		//# % approxiation to the refractive index, otherwise, the refractive
+		//# % index is defined to be constant
+		float refractive_index_ratio, lambda_D, lambda_F, lambda_C;
+		if(!isnan(element_abbe_number)){
+
+			//# % This defines the three optical wavelengths used in defining
+			//# % the Abbe number
+			lambda_D = 589.3;
+			lambda_F = 486.1;
+			lambda_C = 656.3;
+
+			//# % This is the ratio of the incident refractive index (1 since the
+			//# % inter-lens media is assummed to be air) to the transmitted
+			//# % refractive index
+			refractive_index_ratio = 1.0 /(element_refractive_index + (1. / (ray_wavelength*ray_wavelength)
+					- 1 / (lambda_D*lambda_D)) *((element_refractive_index - 1) / (element_abbe_number * (1 / (lambda_F*lambda_F) - 1 / (lambda_C*lambda_C)))));
+
+		}
+		else{
+		//# % This is the ratio of the incident refractive index (1 since the
+		//# % inter-lens media is assumed to be air) to the transmitted
+		//# % refractive index
+		refractive_index_ratio = 1.0 / element_refractive_index;
+
+		}
+
 		//# % This is the scaled cosine of the angle of the incident light ray
 		//# % vectors and the normal vectors of the lens (ie the dot product of the
 		//# % vectors)
-		//#ray_dot_product = -np.diag(np.dot(ray_propagation_direction, lens_normal_vectors.T))
-		//ray_dot_product = -np.einsum('ij,ij->i',ray_propagation_direction,lens_normal_vectors)
-		//
+		float ray_dot_product = -dot(ray_propagation_direction,lens_normal_vectors);
+
 		//# % This calculates the radicand in the refraction ray propagation
 		//# % direction equation
-		//refraction_radicand = 1.0 - (refractive_index_ratio ** 2) * (1.0 - ray_dot_product ** 2)
-		//# % This calculates the new light ray direction vectors (this is a
-		//# % standard equation in optics relating incident and transmitted light
-		//# % ray vectors)
-		//# ray_propagation_direction = bsxfun(@times,refractive_index_ratio,ray_propagation_direction)+bsxfun(@times,(refractive_index_ratio.*ray_dot_product-sqrt(refraction_radicand)),lens_normal_vectors);
-		//ray_propagation_direction = ray_propagation_direction*refractive_index_ratio[:,np.newaxis]  + \
-		//							(refractive_index_ratio * ray_dot_product - np.sqrt(refraction_radicand))[:,np.newaxis] * lens_normal_vectors
-		//
-		//# % This normalizes the ray propagation direction so that it's magnitude
-		//# % equals one
-		//# ray_propagation_direction=bsxfun(@rdivide,ray_propagation_direction,sqrt(ray_propagation_direction(:,1).^2+ray_propagation_direction(:,2).^2+ray_propagation_direction(:,3).^2));
-		//ray_propagation_direction /= np.sqrt(
-		//	ray_propagation_direction[:,0] ** 2 + ray_propagation_direction[:,1] ** 2 + ray_propagation_direction[:,
-		//		2] ** 2)[:,np.newaxis]
-		//
-		//# % This sets the new light ray origin to the intersection point with the
-		//# % front surface of the lens
-		//ray_source_coordinates = np.array([x_intersect, y_intersect, z_intersect])
-		//ray_source_coordinates = ray_source_coordinates.T
+		float refraction_radicand = 1.0 - (refractive_index_ratio*refractive_index_ratio)
+				* (1.0 - ray_dot_product*ray_dot_product);
+
 		//# % Any rays that have complex values due to the radicand in the above
 		//# % equation being negative experience total internal reflection.  The
 		//# % values of these rays are set to NaN for now.
-		//tir_indices = np.less(refraction_radicand, 0)
-		//
-		//# % This sets any of the light ray directions experiencing total
-		//# % internal reflection to NaN values
-		//ray_propagation_direction[tir_indices,:] = np.NAN
-		//
-		//# % This sets any of the light ray origin coordinates experiencing total
-		//# % internal reflection to NaN values
-		//ray_source_coordinates[tir_indices,:] = np.NAN
-		//
-		//# % This sets any of the light ray wavelengths experiencing total
-		//# % internal reflection to NaN values
-		//ray_wavelength[tir_indices] = np.NAN
-		//
-		//# % This sets any of the light ray radiances experiencing total internal
-		//# % reflection to NaN values
-		//ray_radiance[tir_indices] = np.NAN
-		//
+		if(refraction_radicand < 0.0){
+
+			//# % This sets any of the light ray directions experiencing total
+			//# % internal reflection to NaN values
+			light_ray_data.ray_propagation_direction = make_float3(CUDART_NAN_F,CUDART_NAN_F,CUDART_NAN_F);
+
+			//# % This sets any of the light ray origin coordinates experiencing total
+			//# % internal reflection to NaN values
+			light_ray_data.ray_source_coordinates = make_float3(CUDART_NAN_F,CUDART_NAN_F,CUDART_NAN_F);
+
+			//# % This sets any of the light ray wavelengths experiencing total
+			//# % internal reflection to NaN values
+			light_ray_data.ray_wavelength = CUDART_NAN_F;
+
+			//# % This sets any of the light ray radiances experiencing total internal
+			//# % reflection to NaN values
+			light_ray_data.ray_radiance = CUDART_NAN;
+
+			return light_ray_data;
+		}
+
+		//# % This calculates the new light ray direction vectors (this is a
+		//# % standard equation in optics relating incident and transmitted light
+		//# % ray vectors)
+		ray_propagation_direction = ray_propagation_direction*refractive_index_ratio + (refractive_index_ratio*ray_dot_product - sqrt(refraction_radicand))*lens_normal_vectors;
+
+		//# % This normalizes the ray propagation direction so that it's magnitude
+		//# % equals one
+		ray_propagation_direction = normalize(ray_propagation_direction);
+
+		//# % This sets the new light ray origin to the intersection point with the
+		//# % front surface of the lens
+		ray_source_coordinates = pos_intersect;
+
 		//# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 		//# % propagation of the light rays through the lens back surface         %
 		//# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-		//#
+
 		//# % This is the current offset to the center of the back spherical
 		//# % surface
-		//ds = -element_vertex_distance / 2 - element_back_surface_curvature
-		//
+		ds = -element_vertex_distance / 2 - element_back_surface_curvature;
+
 		//# % This calculates the center point coordinates of the back surface
 		//# % spherical shell
-		//xc_back_surface = xc + a * ds / norm_vector_magnitude
-		//yc_back_surface = yc + b * ds / norm_vector_magnitude
-		//zc_back_surface = zc + c * ds / norm_vector_magnitude
-		//
+		float3 pos_back_surface = pos_c + make_float3(a,b,c)*ds/norm_vector_magnitude;
+
 		//# % This calculates the points at which the light rays intersect the
 		//# % back surface of the lens
-		//[x_intersect, y_intersect, z_intersect] = ray_sphere_intersection(xc_back_surface, yc_back_surface,
-		//																  zc_back_surface,
-		//																  element_back_surface_curvature,
-		//																  ray_propagation_direction[:,0],
-		//																  ray_propagation_direction[:,1],
-		//																  ray_propagation_direction[:,2],
-		//																  ray_source_coordinates[:,0],
-		//																  ray_source_coordinates[:,1],
-		//																  ray_source_coordinates[:,2], 'back')
-		//
-		//
+
+		pos_intersect = ray_sphere_intersection(pos_back_surface,element_back_surface_curvature,
+							  ray_propagation_direction,ray_source_coordinates, 'b');
+
 		//# % This calculates how far the intersection point is from the optical
 		//# % axis of the lens (for determining if the rays hit the lens outside of
 		//# % the pitch and thus would be destroyed)
-		//optical_axis_distance = measure_distance_to_optical_axis(x_intersect, y_intersect, z_intersect,
-		//														 element_center.T, element_plane_parameters.T)
-		//
+		optical_axis_distance = measure_distance_to_optical_axis(pos_intersect,element_center,element_plane_parameters);
+
 		//# % This gives the indices of the light rays that actually intersect the
 		//# % lens (ie the rays that are within the lens pitch)
 		//intersect_lens_indices = np.less_equal(optical_axis_distance,(element_pitch / 2))
-		//
-		//# % This sets any of the light ray directions outside of the domain of
-		//# % the lens to NaN values
-		//ray_propagation_direction[np.logical_not(intersect_lens_indices),:] = np.NAN
-		//
-		//# % This sets any of the light ray origin coordinates outside of the
-		//# % domain of the lens to NaN values
-		//ray_source_coordinates[np.logical_not(intersect_lens_indices),:] = np.NAN
-		//
-		//# % This sets any of the light ray wavelengths outside of the  domain of
-		//# % the lens to NaN values
-		//ray_wavelength[np.logical_not(intersect_lens_indices)] = np.NAN
-		//
-		//# % This sets any of the light ray radiances outside of the  domain of
-		//# % the lens to NaN values
-		//ray_radiance[np.logical_not(intersect_lens_indices)] = np.NAN
-		//
-		//# % This sets the intersection points of any of the light rays outside of
-		//# % the domain of the lens to NaN values
-		//x_intersect[np.logical_not(intersect_lens_indices)] = np.NAN
-		//y_intersect[np.logical_not(intersect_lens_indices)] = np.NAN
-		//z_intersect[np.logical_not(intersect_lens_indices)] = np.NAN
-		//
+
+		//# % This checks if the given light ray actually intersects the lens
+		//# % (ie the rays that are within the lens pitch)
+		if(optical_axis_distance > element_pitch/2.0){
+
+			light_ray_data.ray_source_coordinates = make_float3(CUDART_NAN_F,CUDART_NAN_F,CUDART_NAN_F);
+			//# % This sets any of the light ray directions outside of the domain of
+			//# % the lens to NaN values
+			light_ray_data.ray_propagation_direction = make_float3(CUDART_NAN_F,CUDART_NAN_F,CUDART_NAN_F);
+
+			//# % This sets any of the light ray wavelengths outside of the  domain of
+			//# % the lens to NaN values
+			light_ray_data.ray_wavelength = CUDART_NAN_F;
+
+			//# % This sets any of the light ray radiances outside of the  domain of
+			//# % the lens to NaN values
+			light_ray_data.ray_radiance = CUDART_NAN;
+
+			//# % This sets the intersection points of any of the light rays outside of
+			//# % the domain of the lens to NaN values
+			pos_intersect = make_float3(CUDART_NAN_F,CUDART_NAN_F,CUDART_NAN_F);
+
+			return light_ray_data;
+		}
+
 		//# % This calculates the normal vectors of the lens at the intersection
 		//# % points
-		//lens_normal_vectors = -1 * np.array(
-		//	[x_intersect - xc_back_surface, y_intersect - yc_back_surface, z_intersect - zc_back_surface])
-		//lens_normal_vectors = lens_normal_vectors.T
-		//
+		lens_normal_vectors = pos_intersect - pos_front_surface;
+
 		//# % This normalizes the lens normal vectors to have unit magnitudes
-		//lens_normal_vectors /= np.sqrt(
-		//	lens_normal_vectors[:,0] ** 2 + lens_normal_vectors[:,1] ** 2 + lens_normal_vectors[:,2] ** 2)[:,np.newaxis]
-		//
+		lens_normal_vectors = normalize(lens_normal_vectors);
+
 		//# % If the refractive index is a constant double value, this directly
 		//# % calculates the refractive index ratio, otherwise the ratio is
 		//# % calculated as a function of the wavelength
-		//if isinstance(element_refractive_index,(int,long,float,complex)):
-		//	# % If the Abbe number is defined, this calculates the Cauchy formula
-		//	# % approxiation to the refractive index, otherwise, the refractive
-		//	# % index is defined to be constant
-		//	if not(np.isnan(element_abbe_number)):
-		//		# % This defines the three optical wavelengths used in defining
-		//		# % the Abbe number
-		//		lambda_D = 589.3
-		//		lambda_F = 486.1
-		//		lambda_C = 656.3
-		//		# % This is the ratio of the incident refractive index to the transmitted
-		//		# % refractive index (1 since the  inter-lens media is assummed to be
-		//		# % air)
-		//		refractive_index_ratio = element_refractive_index + (1. / (ray_wavelength ** 2) - 1 / (
-		//		lambda_D ** 2)) * ((element_refractive_index - 1) / (
-		//		element_abbe_number * (1 / (lambda_F ** 2) - 1 / (lambda_C ** 2))))
-		//	else:
-		//		# % This is the ratio of the incident refractive index to the transmitted
-		//		# % refractive index (1 since the  inter-lens media is assummed to be
-		//		# % air)
-		//		refractive_index_ratio = element_refractive_index*np.ones(ray_propagation_direction.shape[0])
-		//else:
-		//	# % This defines the wavelength of the light as the variable 'lambda'
-		//	# % for evaluation of the refractive index function
-		//	ray_lambda = ray_wavelength
-		//	# % This evaluates the string defining the refractive index in terms
-		//	# % of the independent variable lambda TODO
-		//	element_refractive_index_double = eval('element_refractive_index_double=' + element_refractive_index)
-		//		# % This is the ratio of the incident refractive index (1 since the
-		//	# % inter-lens media is assummed to be air) to the transmitted
-		//	# % refractive index
-		//	refractive_index_ratio = element_refractive_index_double*np.ones(ray_propagation_direction.shape[0])
-		//
+		// (I DON'T KNOW HOW TO DO STRING EVALUATION IN CUDA. SO I AM ONLY GOING TO
+		// CONSIDER THE FIRST CASE - LKR.)
+		// TODO : implement eval
+		//# % If the Abbe number is defined, this calculates the Cauchy formula
+		//# % approxiation to the refractive index, otherwise, the refractive
+		//# % index is defined to be constant
+		if (!isnan(element_abbe_number)){
+			//	# % This defines the three optical wavelengths used in defining
+			//	# % the Abbe number
+			lambda_D = 589.3;
+			lambda_F = 486.1;
+			lambda_C = 656.3;
+
+			//	# % This is the ratio of the incident refractive index to the transmitted
+			//	# % refractive index (1 since the  inter-lens media is assummed to be
+			//	# % air)
+			refractive_index_ratio = element_refractive_index + (1.0 / (ray_wavelength*ray_wavelength)
+					- 1.0/(lambda_D*lambda_D)) * ((element_refractive_index - 1)/(element_abbe_number * (1 / (lambda_F*lambda_F) - 1 / (lambda_C*lambda_C))));
+		}
+		else{
+			//# % This is the ratio of the incident refractive index to the transmitted
+			//# % refractive index (1 since the  inter-lens media is assummed to be
+			//# % air)
+			refractive_index_ratio = element_refractive_index;
+		}
+
 		//# % This is the scaled cosine of the angle of the incident light ray
 		//# % vectors and the normal vectors of the lens (ie the dot product of the
 		//# % vectors)
-		//#ray_dot_product = -np.diag(np.dot(ray_propagation_direction, lens_normal_vectors.T))
-		//ray_dot_product = -np.einsum('ij,ij->i',ray_propagation_direction,lens_normal_vectors)
-		//
+		ray_dot_product = -dot(ray_propagation_direction,lens_normal_vectors);
+
 		//# % This calculates the radicand in the refraction ray propagation
 		//# % direction equation
-		//refraction_radicand = 1.0 - (refractive_index_ratio ** 2) * (1.0 - ray_dot_product ** 2)
-		//# % This calculates the new light ray direction vectors (this is a
-		//# % standard equation in optics relating incident and transmitted light
-		//# % ray vectors)
-		//ray_propagation_direction = refractive_index_ratio[:,np.newaxis] * ray_propagation_direction + (
-		//																				 refractive_index_ratio * ray_dot_product - np.sqrt(
-		//																					 refraction_radicand))[:,np.newaxis] * lens_normal_vectors
-		//# % This normalizes the ray propagation direction so that it's magnitude
-		//# % equals one
-		//ray_propagation_direction /= np.sqrt(
-		//	ray_propagation_direction[:,0] ** 2 + ray_propagation_direction[:,1] ** 2 + ray_propagation_direction[:,
-		//		2] ** 2)[:,np.newaxis]
-		//
-		//# % If the absorbance rate is non-zero, this calculates how much of the
-		//# % radiance is absorbed by the lens, otherwise the output radiance is
-		//# % just scaled by the transmission ratio
-		//if element_absorbance_rate:
-		//	# % This calculates the distance that the rays traveled through
-		//	# % the lens
-		//	propagation_distance = np.sqrt((x_intersect - ray_source_coordinates[:,0]) ** 2 + (
-		//	y_intersect - ray_source_coordinates[:,1]) ** 2 + (z_intersect - ray_source_coordinates[:,2]) ** 2)
-		//
-		//	# % If the absorbance rate is a simple constant, this
-		//	if isinstance(element_absorbance_rate,(int,long,float,complex)):
-		//		# % This calculates the new light ray radiance values
-		//		ray_radiance = (1.0 - element_absorbance_rate) * ray_radiance * propagation_distance
-		//
-		//	else:
-		//		# % These are the initial coordinates of the light ray passing
-		//		# % through the lens in world coordinates
-		//		x1 = ray_source_coordinates[:,0]
-		//		y1 = ray_source_coordinates[:,1]
-		//		z1 = ray_source_coordinates[:,2]
-		//
-		//		# % These are the final coordinates of the light ray passing
-		//		# % through the lens in world coordinates
-		//		x2 = x_intersect
-		//		y2 = y_intersect
-		//		z2 = z_intersect
-		//
-		//		# % This converts the initial light ray coordinates from the
-		//		# % world coordinate system to the lens coordinate system
-		//		[xL1, yL1, zL1] = convert_world_coordinates_to_lens_coordinates(x1, y1, z1, xc, yc, zc, a, b, c)
-		//
-		//		# % This converts the final light ray coordinates from the
-		//		# % world coordinate system to the lens coordinate system
-		//		[xL2, yL2, zL2] = convert_world_coordinates_to_lens_coordinates(x2, y2, z2, xc, yc, zc, a, b, c)
-		//
-		//		# % This calculates the radial lens coordinates for the initial
-		//		# % light ray coordinates
-		//		rL1 = np.sqrt(xL1 ** 2 + yL1 ** 2)
-		//		# % This calculates the radial lens coordinates for the final
-		//		# % light ray coordinates
-		//		rL2 = np.sqrt(xL2 ** 2 + yL2 ** 2)
-		//
-		//		# % This defines the independent variables that may be used in
-		//		# % the definition of the absorbance function
-		//		x_substitution = '(xL1+(xL2-xL1)*t)'
-		//		y_substitution = '(yL1+(yL2-yL1)*t)'
-		//		z_substitution = '(zL1+(zL2-zL1)*t)'
-		//		r_substitution = '(rL1+(rL2-rL1)*t)'
-		//
-		//		# % This replaces any instances of the string 'x' in the
-		//		# % absorbance function string with the string 'x_substitution'
-		//		element_absorbance_rate = element_absorbance_rate.replace('x', x_substitution)
-		//		# % This replaces any instances of the string 'y' in the
-		//		# % absorbance function string with the string 'y_substitution'
-		//		element_absorbance_rate = element_absorbance_rate.replace('y', y_substitution)
-		//		# % This replaces any instances of the string 'z' in the
-		//		# % absorbance function string with the string 'z_substitution'
-		//		element_absorbance_rate = element_absorbance_rate.replace('z', z_substitution)
-		//		# % This replaces any instances of the string 'r' in the
-		//		# % absorbance function string with the string 'r_substitution'
-		//		element_absorbance_rate = element_absorbance_rate.replace('r', r_substitution)
-		//
-		//		# % This defines the function handle to the absorbance function
-		//		absorbance_function_handle = eval(
-		//			"lambda " + x_substitution + "," + y_substitution + "," + z_substitution + "," +
-		//			r_substitution + ": " + element_absorbance_rate)
-		//
-		//		# % This calculates the integral of the absorbance function
-		//		# % across the lens
-		//		element_transmission_ratio = 1 - propagation_distance * siint.quad(absorbance_function_handle, 0.0, 1.0)
-		//
-		//		# % This rescales the output radiance by the transmission ratio
-		//		ray_radiance = element_transmission_ratio * ray_radiance
-		//
-		//else:
-		//	# % This rescales the output radiance by the transmission ratio
-		//	ray_radiance = element_transmission_ratio * ray_radiance
-		//
-		//# % This sets the new light ray origin to the intersection point with the
-		//# % front surface of the lens
-		//ray_source_coordinates = np.array([x_intersect, y_intersect, z_intersect])
-		//ray_source_coordinates = ray_source_coordinates.T
+		refraction_radicand = 1.0-(refractive_index_ratio*refractive_index_ratio)*(1.0-ray_dot_product*ray_dot_product);
+
 		//# % Any rays that have complex values due to the radicand in the above
 		//# % equation being negative experience total internal reflection.  The
 		//# % values of these rays are set to NaN for now.
-		//tir_indices = np.less(refraction_radicand,0)
-		//#
-		//# % This sets any of the light ray directions experiencing total
-		//# % internal reflection to NaN values
-		//ray_propagation_direction[tir_indices,:] = np.NAN
-		//# % This sets any of the light ray origin coordinates experiencing total
-		//# % internal reflection to NaN values
-		//ray_source_coordinates[tir_indices,:] = np.NAN
-		//# % This sets any of the light ray wavelengths experiencing total
-		//# % internal reflection to NaN values
-		//ray_wavelength[tir_indices] = np.NAN
-		//# % This sets any of the light ray radiances experiencing total internal
-		//# % reflection to NaN values
-		//ray_radiance[tir_indices] = np.NAN
+		if(refraction_radicand < 0.0){
+
+			//# % This sets any of the light ray directions experiencing total
+			//# % internal reflection to NaN values
+			light_ray_data.ray_propagation_direction = make_float3(CUDART_NAN_F,CUDART_NAN_F,CUDART_NAN_F);
+
+			//# % This sets any of the light ray origin coordinates experiencing total
+			//# % internal reflection to NaN values
+			light_ray_data.ray_source_coordinates = make_float3(CUDART_NAN_F,CUDART_NAN_F,CUDART_NAN_F);
+
+			//# % This sets any of the light ray wavelengths experiencing total
+			//# % internal reflection to NaN values
+			light_ray_data.ray_wavelength = CUDART_NAN_F;
+
+			//# % This sets any of the light ray radiances experiencing total internal
+			//# % reflection to NaN values
+			light_ray_data.ray_radiance = CUDART_NAN;
+
+			return light_ray_data;
+		}
+
+
+		//# % This calculates the new light ray direction vectors (this is a
+		//# % standard equation in optics relating incident and transmitted light
+		//# % ray vectors)
+		ray_propagation_direction = refractive_index_ratio*ray_propagation_direction + (refractive_index_ratio
+				*ray_dot_product - sqrt(refraction_radicand))*lens_normal_vectors;
+
+		//# % This normalizes the ray propagation direction so that it's magnitude
+		//# % equals one
+		ray_propagation_direction = normalize(ray_propagation_direction);
+
+		//# % If the absorbance rate is non-zero, this calculates how much of the
+		//# % radiance is absorbed by the lens, otherwise the output radiance is
+		//# % just scaled by the transmission ratio
+		if (element_absorbance_rate!=0){
+
+			//	# % This calculates the distance that the rays traveled through
+			//	# % the lens
+			float propagation_distance = sqrt(dot(pos_intersect - ray_source_coordinates,pos_intersect - ray_source_coordinates));
+			//# % If the absorbance rate is a simple constant, this
+			//# % This calculates the new light ray radiance values
+			ray_radiance = (1.0 - element_absorbance_rate) * ray_radiance * propagation_distance;
+
+			// TODO: implement eval
+		}
+
+		else{
+			//# % This rescales the output radiance by the transmission ratio
+			ray_radiance = element_transmission_ratio * ray_radiance;
+		}
+
+		//# % This sets the new light ray origin to the intersection point with the
+		//# % front surface of the lens
+		ray_source_coordinates = pos_intersect;
+
 	}
+
 	//# % If the element type is 'aperture', this extracts the optical properties
 	//# % required to perform the ray propagation
-	//elif element_type == 'aperture':
-	//
-	//    # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	//    # % Extraction of the aperture optical properties                       %
-	//    # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	//    #
-	//    # % This extracts the pitch of the aperture stop
-	//    element_pitch = optical_element['element_geometry']['pitch']
-	//
-	//    # % This is the thickness of the optical element from the front optical axis
-	//    # % vertex to the back optical axis vertex
-	//    element_vertex_distance = optical_element['element_geometry']['vertex_distance']
-	//
-	//    # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	//    # % propagation of the light rays through the aperture front surface    %
-	//    # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	//    #
-	//    # % This extracts the individual plane parameters
-	//    a = element_plane_parameters[0]
-	//    b = element_plane_parameters[1]
-	//    c = element_plane_parameters[2]
-	//    d = element_plane_parameters[3]
-	//
-	//    # % This calculates the square of the plane normal vector magnitude
-	//    norm_vector_magnitude = np.sqrt(a ** 2 + b ** 2 + c ** 2)
-	//
-	//    # % This is the current offset to the center of the front spherical
-	//    # % surface
-	//    ds = -element_vertex_distance / 2.0
-	//
-	//    # % This calculates the transformed plane parameters (only d changes)
-	//    d_temp = d - ds * norm_vector_magnitude
-	//
-	//    # % This is the independent intersection time between the light rays and
-	//    # % the first plane of the aperture stop
-	//    intersection_time = -(
-	//    a * ray_source_coordinates[:,0] + b * ray_source_coordinates[:,1] + c * ray_source_coordinates[:,
-	//        2] + d_temp) / (a * ray_propagation_direction[:,0] + b * ray_propagation_direction[:,1] + c *
-	//                        ray_propagation_direction[:,2])
-	//
-	//    # % This calculates the intersection points
-	//    x_intersect = ray_source_coordinates[:,0] + ray_propagation_direction[:,0] * intersection_time
-	//    y_intersect = ray_source_coordinates[:,1] + ray_propagation_direction[:,1] * intersection_time
-	//    z_intersect = ray_source_coordinates[:,2] + ray_propagation_direction[:,2] * intersection_time
-	//
-	//    # % This calculates how far the intersection point is from the optical
-	//    # % axis of the lens (for determining if the rays hit the lens outside of
-	//    # % the pitch and thus would be destroyed)
-	//    optical_axis_distance = measure_distance_to_optical_axis(x_intersect, y_intersect, z_intersect,
-	//                                                             element_center.T, element_plane_parameters.T)
-	//
-	//    # % This gives the indices of the light rays that actually intersect the
-	//    # % aperture stop (ie the rays that are within the aperture pitch)
-	//    intersect_aperture_indices = (optical_axis_distance <= (element_pitch / 2))
-	//
-	//    # % This sets any of the light ray directions outside of the domain of
-	//    # % the lens to NaN values
-	//    ray_propagation_direction[np.logical_not(intersect_aperture_indices),:] = np.NAN
-	//    # % This sets any of the light ray origin coordinates outside of the
-	//    # % domain of the lens to NaN values
-	//    ray_source_coordinates[np.logical_not(intersect_aperture_indices),:] = np.NAN
-	//    # % This sets any of the light ray wavelengths outside of the  domain of
-	//    # % the lens to NaN values
-	//    ray_wavelength[np.logical_not(intersect_aperture_indices)] = np.NAN
-	//    # % This sets any of the light ray radiances outside of the  domain of
-	//    # % the lens to NaN values
-	//    ray_radiance[np.logical_not(intersect_aperture_indices)] = np.NAN
-	//
-	//    # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	//    # % propagation of the light rays through the aperture back surface     %
-	//    # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	//
-	//    # % This is the current offset to the center of the front spherical
-	//    # % surface
-	//    ds = +element_vertex_distance / 2
-	//
-	//    # % This calculates the transformed plane parameters (only d changes)
-	//    d_temp = d - ds * norm_vector_magnitude
-	//
-	//    # % This is the independent intersection time between the light rays and
-	//    # % the first plane of the aperture stop
-	//    intersection_time = -(
-	//    a * ray_source_coordinates[:,0] + b * ray_source_coordinates[:,1] + c * ray_source_coordinates[:,
-	//        2] + d_temp) / (a * ray_propagation_direction[:,0] + b * ray_propagation_direction[:,1] + c *
-	//                        ray_propagation_direction[:,2])
-	//
-	//    # % This calculates the intersection points
-	//    x_intersect = ray_source_coordinates[:,0] + ray_propagation_direction[:,0] * intersection_time
-	//    y_intersect = ray_source_coordinates[:,1] + ray_propagation_direction[:,1] * intersection_time
-	//    z_intersect = ray_source_coordinates[:,2] + ray_propagation_direction[:,2] * intersection_time
-	//
-	//    # % This calculates how far the intersection point is from the optical
-	//    # % axis of the lens (for determining if the rays hit the lens outside of
-	//    # % the pitch and thus would be destroyed)
-	//    optical_axis_distance = measure_distance_to_optical_axis(x_intersect, y_intersect, z_intersect,
-	//                                                             element_center.T, element_plane_parameters.T)
-	//
-	//    # % This gives the indices of the light rays that actually intersect the
-	//    # % aperture stop (ie the rays that are within the aperture pitch)
-	//    intersect_aperture_indices = (optical_axis_distance <= (element_pitch / 2))
-	//
-	//    # % This sets any of the light ray directions outside of the domain of
-	//    # % the lens to NaN values
-	//    ray_propagation_direction[np.logical_not(intersect_aperture_indices),:] = np.NAN
-	//    # % This sets any of the light ray origin coordinates outside of the
-	//    # % domain of the lens to NaN values
-	//    ray_source_coordinates[np.logical_not(intersect_aperture_indices),:] = np.NAN
-	//    # % This sets any of the light ray wavelengths outside of the  domain of
-	//    # % the lens to NaN values
-	//    ray_wavelength[np.logical_not(intersect_aperture_indices)] = np.NAN
-	//    # % This sets any of the light ray radiances outside of the  domain of
-	//    # % the lens to NaN values
-	//    ray_radiance[np.logical_not(intersect_aperture_indices)] = np.NAN
-	//
+	else
+	{
+
+		//# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+		//# % Extraction of the aperture optical properties                       %
+		//# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+		//# % This extracts the pitch of the aperture stop
+		element_pitch = optical_element.element_geometry.pitch;
+
+		//# % This is the thickness of the optical element from the front optical axis
+		//# % vertex to the back optical axis vertex
+		element_vertex_distance = optical_element.element_geometry.vertex_distance;
+		//
+		//# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+		//# % propagation of the light rays through the aperture front surface    %
+		//# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+		//#
+		//# % This extracts the individual plane parameters
+		a = element_plane_parameters.x;
+		b = element_plane_parameters.y;
+		c = element_plane_parameters.z;
+		d = element_plane_parameters.w;
+
+		//# % This calculates the square of the plane normal vector magnitude
+		norm_vector_magnitude = sqrt(a*a + b*b + c*c);
+
+		//# % This is the current offset to the center of the front spherical
+		//# % surface
+		ds = -element_vertex_distance / 2.0;
+
+		//# % This calculates the transformed plane parameters (only d changes)
+		float d_temp = d - ds * norm_vector_magnitude;
+
+		//# % This is the independent intersection time between the light rays and
+		//# % the first plane of the aperture stop
+		float intersection_time = -(dot(make_float3(a,b,c),ray_source_coordinates) + d_temp)
+										/ dot(make_float3(a,b,c),ray_propagation_direction);
+
+		//# % This calculates the intersection points
+		pos_intersect = ray_source_coordinates + ray_propagation_direction*intersection_time;
+
+		//# % This calculates how far the intersection point is from the optical
+		//# % axis of the lens (for determining if the rays hit the lens outside of
+		//# % the pitch and thus would be destroyed)
+		optical_axis_distance = measure_distance_to_optical_axis(pos_intersect,element_center,element_plane_parameters);
+
+		//# % This checks if the given light ray actually intersects the lens
+		//# % (ie the rays that are within the lens pitch)
+		if(optical_axis_distance > element_pitch/2.0){
+
+			light_ray_data.ray_source_coordinates = make_float3(CUDART_NAN_F,CUDART_NAN_F,CUDART_NAN_F);
+			//# % This sets any of the light ray directions outside of the domain of
+			//# % the lens to NaN values
+			light_ray_data.ray_propagation_direction = make_float3(CUDART_NAN_F,CUDART_NAN_F,CUDART_NAN_F);
+
+			//# % This sets any of the light ray wavelengths outside of the  domain of
+			//# % the lens to NaN values
+			light_ray_data.ray_wavelength = CUDART_NAN_F;
+
+			//# % This sets any of the light ray radiances outside of the  domain of
+			//# % the lens to NaN values
+			light_ray_data.ray_radiance = CUDART_NAN;
+
+			//# % This sets the intersection points of any of the light rays outside of
+			//# % the domain of the lens to NaN values
+			pos_intersect = make_float3(CUDART_NAN_F,CUDART_NAN_F,CUDART_NAN_F);
+
+			return light_ray_data;
+		}
+
+		//# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+		//# % propagation of the light rays through the aperture back surface     %
+		//# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+		//# % This is the current offset to the center of the front spherical
+		//# % surface
+		ds = +element_vertex_distance / 2;
+
+		//# % This calculates the transformed plane parameters (only d changes)
+		d_temp = d - ds * norm_vector_magnitude;
+
+		//# % This is the independent intersection time between the light rays and
+		//# % the first plane of the aperture stop
+		//intersection_time = -(
+		//a * ray_source_coordinates[:,0] + b * ray_source_coordinates[:,1] + c * ray_source_coordinates[:,
+		//	2] + d_temp) / (a * ray_propagation_direction[:,0] + b * ray_propagation_direction[:,1] + c *
+		//					ray_propagation_direction[:,2])
+		intersection_time = -(dot(make_float3(a,b,c),ray_source_coordinates) + d_temp) /
+				dot(make_float3(a,b,c),ray_propagation_direction);
+
+		//# % This calculates the intersection points
+		pos_intersect = ray_source_coordinates + ray_propagation_direction * intersection_time;
+
+		//# % This calculates how far the intersection point is from the optical
+		//# % axis of the lens (for determining if the rays hit the lens outside of
+		//# % the pitch and thus would be destroyed)
+		optical_axis_distance = measure_distance_to_optical_axis(pos_intersect,element_center,element_plane_parameters);
+
+		//# % This checks if the given light ray actually intersects the lens
+		//# % (ie the rays that are within the lens pitch)
+		if(optical_axis_distance > element_pitch/2.0){
+
+			light_ray_data.ray_source_coordinates = make_float3(CUDART_NAN_F,CUDART_NAN_F,CUDART_NAN_F);
+			//# % This sets any of the light ray directions outside of the domain of
+			//# % the lens to NaN values
+			light_ray_data.ray_propagation_direction = make_float3(CUDART_NAN_F,CUDART_NAN_F,CUDART_NAN_F);
+
+			//# % This sets any of the light ray wavelengths outside of the  domain of
+			//# % the lens to NaN values
+			light_ray_data.ray_wavelength = CUDART_NAN_F;
+
+			//# % This sets any of the light ray radiances outside of the  domain of
+			//# % the lens to NaN values
+			light_ray_data.ray_radiance = CUDART_NAN;
+
+			//# % This sets the intersection points of any of the light rays outside of
+			//# % the domain of the lens to NaN values
+			pos_intersect = make_float3(CUDART_NAN_F,CUDART_NAN_F,CUDART_NAN_F);
+
+			return light_ray_data;
+		}
+	}
+
 	//# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	//# % Saving the light ray propagation data                                   %
 	//# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	//
-	//# % This extracts the propagation direction of the light rays
-	//light_ray_data['ray_propagation_direction'] = ray_propagation_direction
-	//#
-	//# % This extracts the light ray source coordinates
-	//light_ray_data['ray_source_coordinates'] = ray_source_coordinates
-	//#
-	//# % This extracts the wavelength of the light rays
-	//light_ray_data['ray_wavelength'] = ray_wavelength
-	//#
-	//# % This extracts the light ray radiance
-	//light_ray_data['ray_radiance'] = ray_radiance
 
+	//# % This extracts the propagation direction of the light rays
+	light_ray_data.ray_propagation_direction = ray_propagation_direction;
+
+	//# % This extracts the light ray source coordinates
+	light_ray_data.ray_source_coordinates = ray_source_coordinates;
+
+	//# % This extracts the wavelength of the light rays
+	light_ray_data.ray_wavelength = ray_wavelength;
+
+	//# % This extracts the light ray radiance
+	light_ray_data.ray_radiance = ray_radiance;
+
+	return light_ray_data;
+}
+
+__device__ void argsort(float* array, int num_elements, int* arg_array)
+{
+	/*
+	 * 	This function implements the bubble sort routine, and returns an array containing
+	 * 	the indices that would sort the original array
+	 * 	(taken from http://www.programmingsimplified.com/c/source-code/c-program-bubble-sort)
+	 */
+
+	int c, d;
+	int n = num_elements;
+	float swap; int arg_swap;
+	// initialize index array
+	for(c = 0; c < n; c++)
+		arg_array[c] = c;
+
+	// perform sorting
+	for (c = 0 ; c < ( n - 1 ); c++)
+	{
+		for (d = 0 ; d < n - c - 1; d++)
+		{
+		  if (array[d] > array[d+1]) /* For decreasing order use < */
+		  {
+			swap       = array[d];
+			array[d]   = array[d+1];
+			array[d+1] = swap;
+
+			arg_swap       = arg_array[d];
+			arg_array[d]   = arg_array[d+1];
+			arg_array[d+1] = arg_swap;
+
+		  }
+		}
+	}
 
 }
 
-__global__ void propagate_rays_through_optical_system(element_data_t element_data, float3* element_center, float4* element_plane_parameters,
-		int* element_system_index,int num_elements, int num_rays, light_ray_data_t* light_ray_data)
+__device__ light_ray_data_t propagate_rays_through_multiple_elements(element_data_t* optical_element, float3* element_center,
+		float4* element_plane_parameters, int simultaneous_element_number, light_ray_data_t light_ray_data)
+{
+	//# % This function calculates the propagation of a set of light rays through
+	//# % multiple optical elements.
+
+	//# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	//# % Extraction of the light ray propagation data                            %
+	//# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+	//# % This extracts the propagation direction of the light rays
+	float3 ray_propagation_direction = light_ray_data.ray_propagation_direction;
+	//# % This extracts the light ray source coordinates
+	float3 ray_source_coordinates = light_ray_data.ray_source_coordinates;
+	//# % This extracts the wavelength of the light rays
+	float ray_wavelength = light_ray_data.ray_wavelength;
+	//# % This extracts the light ray radiance
+	double ray_radiance = light_ray_data.ray_radiance;
+
+	//# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	//# % Determination of optical element light ray intersection matching        %
+	//# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+	//# % This finds the unique set of planes defining the lens elements to
+	//# % intersect the light rays with
+	int num_unique_planes = 0;
+	float4* unique_plane_element_parameters = (float4*) malloc(simultaneous_element_number*sizeof(float4));
+	int k,l;
+
+	// take each plane parameter set and scan through the whole array. if there is no match,
+	// then add it to unique_plane array. else, continue
+	int flag = 0;
+	for(k = 0; k < simultaneous_element_number; k++)
+	{
+		for(l = 0; l < simultaneous_element_number; l++)
+		{
+			// if the indices are the same, then go to the next iteration
+			if(k==l)
+				continue;
+			// if a duplicate is found, then update the flag and quit this loop
+			if(element_plane_parameters[k]==element_plane_parameters[l])
+			{
+				flag++;
+				break;
+			}
+
+		}
+
+		// if flag is still zero, then this element is unique. add the plane parameters
+		// to the unique array, and update the number of unique planes.
+		if(flag==0)
+		{
+			unique_plane_element_parameters[num_unique_planes] = element_plane_parameters[k];
+			num_unique_planes++;
+		}
+
+		// re-initialize flag to zero
+		flag = 0;
+
+	}
+
+	//# % This is the number of unique planes that the light rays intersect
+	int unique_plane_number = num_unique_planes;
+
+	//# % This initializes a vector of intersection times to calculate the order in
+	//# % which the light rays intersect the various optical elements
+	float* unique_plane_intersection_time = (float *) malloc(unique_plane_number*sizeof(float));
+	memset(unique_plane_intersection_time,0.0,unique_plane_number*sizeof(float));
+
+	//# % This initializes the light ray plane intersection point arrays
+	float3* pos_intersect_approximate = (float3 *) malloc(unique_plane_number * sizeof(float3));
+	memset(pos_intersect_approximate,0,unique_plane_number * sizeof(float3));
+
+	//# % This iterates through the unique planes and calculates when the light
+	//# % rays hit each plane since the light rays must be sequentially propagated
+	//# % through the optical elements, but the ordering of the elements may be a
+	//# % bit more poorly defined for multiple elements (although in practice, this
+	//# % probably won't happen very often)
+	int plane_parameters_index;
+	for(plane_parameters_index = 0; plane_parameters_index < unique_plane_number; plane_parameters_index++)
+	{
+		//# % This extracts the individual plane parameters
+		float a = unique_plane_element_parameters[plane_parameters_index].x;
+		float b = unique_plane_element_parameters[plane_parameters_index].y;
+		float c = unique_plane_element_parameters[plane_parameters_index].z;
+		float d = unique_plane_element_parameters[plane_parameters_index].w;
+
+		//# % This is the independent intersection time between the light rays and
+		//# % the current plane of optical elements
+		unique_plane_intersection_time[plane_parameters_index] = -(dot(make_float3(a,b,c),ray_source_coordinates) + d)/
+				dot(make_float3(a,b,c),ray_propagation_direction);
+
+		//# % This calculates the intersection points of the light rays with the
+		//# % optical element planes
+		pos_intersect_approximate[plane_parameters_index] = ray_source_coordinates +
+				ray_propagation_direction*unique_plane_intersection_time[plane_parameters_index];
+
+	}
+
+	//# % This sorts the plane intersection times to determine which planes should
+	//# % be tested first
+	int* unique_plane_index_order = (int *) malloc(unique_plane_number*sizeof(int));
+	argsort(unique_plane_intersection_time,unique_plane_number,unique_plane_index_order);
+
+	//# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	//# % Light ray propagation through multiple elements                         %
+	//# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+	//# % This initializes the structure to contain the light ray data for
+	//# % the current optical element
+	light_ray_data_t light_ray_data_temp;
+	float3 pos_intersect_approximate_current;
+
+	//# % This iterates through the different planes, calculating the location of
+	//# % the optical elements that the light rays intersect
+
+	// initialize array to hold optical_element_indices
+	int* optical_element_indices = (int *) malloc(sizeof(int)*simultaneous_element_number);
+	int num_optical_element_indices = 0;
+
+	for(plane_parameters_index = 0; plane_parameters_index < unique_plane_number; plane_parameters_index++)
+	{
+		//# % These are the current intersection points
+		pos_intersect_approximate_current = pos_intersect_approximate[unique_plane_index_order[plane_parameters_index]];
+
+		// find the indices of elements that have the same plane parameters as the current
+		// unique plane element
+		for(k = 0; k < simultaneous_element_number; k++)
+		{
+			// if the plane parameters of the current unique plane element matches that of the
+			// plane with index k, then add the index to the optical_element_indices array
+			if(unique_plane_element_parameters[plane_parameters_index] == element_plane_parameters[k])
+			{
+//				// expand the array to store additional elements
+//				if(num_optical_element_indices!=0)
+//				{
+//					optical_element_indices = (int *) realloc(optical_element_indices,num_optical_element_indices*sizeof(int));
+//				}
+
+				optical_element_indices[num_optical_element_indices] = k;
+				num_optical_element_indices++;
+			}
+		}
+
+		//# % These are the centers of the optical elements on the current plane
+		float3* pos_c_current = (float3 *) malloc(num_optical_element_indices * sizeof(float3));
+		for(k = 0; k < num_optical_element_indices; k++)
+			pos_c_current[k] = element_center[optical_element_indices[k]];
+
+		//TODO: Implement knnsearch
+		//# % This finds the closest lens center to each approximate intersection
+		//# % point (there are a small number of cases where this may give an
+		//# % incorrect match since the intersection points used here are based
+		//# % upon the center points of the lenses and not the front surfaces, but
+		//# % this should work well for the large majority of possible systems)
+		//nbrs = NearestNeighbors(n_neighbors=1, metric='euclidean').fit([xc_current, yc_current, zc_current])
+		//distances, indices = nbrs.kneighbors(
+		//	[x_intersect_approxiate_current, y_intersect_approxiate_current, z_intersect_approxiate_current])
+		//
+		//nearest_neighbor_index = np.squeeze(indices)
+		//# nearest_neighbor_index=knnsearch([xc_current,yc_current,zc_current],[x_intersect_approxiate_current,y_intersect_approxiate_current,z_intersect_approxiate_current],'K',1,'Distance','euclidean');
+		//
+		//# % This iterates through the individual optical elements extracting the
+		//# % set of light rays that likely intersect the element and propagating
+		//# % them through the element
+		//for element_index in range(0, optical_element_indices.size):
+		//	# % This is the set of indices into the light rays to propagate
+		//	# % through the current optical element
+		//	light_ray_indices = (nearest_neighbor_index == element_index)
+		//
+		//	# % This extracts the propagation direction of the light rays
+		//	light_ray_data_temp['ray_propagation_direction'] = ray_propagation_direction[light_ray_indices][:]
+		//	# % This extracts the light ray source coordinates
+		//	light_ray_data_temp['ray_source_coordinates'] = ray_source_coordinates[light_ray_indices][:]
+		//	# % This extracts the wavelength of the light rays
+		//	light_ray_data_temp['ray_wavelength'] = ray_wavelength[light_ray_indices]
+		//	# % This extracts the light ray radiance
+		//	light_ray_data_temp['ray_radiance'] = ray_radiance[light_ray_indices]
+		//
+		//	# % This extracts the current optical element data
+		//	current_optical_element = optical_element[optical_element_indices[element_index]]
+		//	# % This extracts the current optical element plane parameters
+		//	current_plane_parameters = element_plane_parameters[optical_element_indices[element_index]][:]
+		//	# % This extracts the current center of the optical element
+		//	current_element_center = element_center[optical_element_indices[element_index]][:]
+		//
+		//	# % This propagates the light rays through the single optical element
+		//	light_ray_data_temp = propagate_rays_through_single_element(current_optical_element, current_element_center,
+		//																current_plane_parameters, light_ray_data_temp)
+		//
+		//	# % This extracts the propagation direction of the light rays
+		//	ray_propagation_direction[light_ray_indices][:] = light_ray_data_temp['ray_propagation_direction']
+		//	# % This extracts the light ray source coordinates
+		//	ray_source_coordinates[light_ray_indices][:] = light_ray_data_temp['ray_source_coordinates']
+		//	# % This extracts the wavelength of the light rays
+		//	ray_wavelength[light_ray_indices] = light_ray_data_temp['ray_wavelength']
+		//	# % This extracts the light ray radiance
+		//	ray_radiance[light_ray_indices] = light_ray_data_temp['ray_radiance']
+
+		free(pos_c_current);
+	}
+	// free pointers
+	free(unique_plane_intersection_time);
+	free(unique_plane_element_parameters);
+	free(pos_intersect_approximate);
+	free(unique_plane_index_order);
+
+
+	//# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	//# % Saving the light ray propagation data                                   %
+	//# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+	//# % This extracts the propagation direction of the light rays
+	light_ray_data.ray_propagation_direction = ray_propagation_direction;
+	//# % This extracts the light ray source coordinates
+	light_ray_data.ray_source_coordinates = ray_source_coordinates;
+	//# % This extracts the wavelength of the light rays
+	light_ray_data.ray_wavelength = ray_wavelength;
+	//# % This extracts the light ray radiance
+	light_ray_data.ray_radiance = ray_radiance;
+
+	return light_ray_data;
+}
+
+__global__ void propagate_rays_through_optical_system(element_data_t* element_data, float3* element_center, float4* element_plane_parameters,
+		int* element_system_index,int num_elements, int num_rays, int lightray_number_per_particle, light_ray_data_t* light_ray_data)
 {
 	// % This function propagates the light ray data defined by the structure
 	// % 'light_ray_data' through the optical system defined by the input
@@ -898,9 +1101,6 @@ __global__ void propagate_rays_through_optical_system(element_data_t element_dat
 
 	// find global thread ID
 	int local_thread_id = threadIdx.x;
-
-	float del_scattering_angle = (scattering_data.scattering_angle[1] - scattering_data.scattering_angle[0])*180.0/M_PI;
-	float min_scattering_angle = scattering_data.scattering_angle[0];
 
 	// get id of particle which is the source of light rays
 	int particle_id = blockIdx.x*blockDim.x + local_thread_id;
@@ -934,12 +1134,15 @@ __global__ void propagate_rays_through_optical_system(element_data_t element_dat
 	// % light rays through each successive element (or system of coplanar
 	// % elements)
 	int element_index;
+	int* current_element_indices = (int *) malloc(num_elements*sizeof(int));
+	memset(current_element_indices,0,num_elements*sizeof(int));
+
 	for(element_index = 0; element_index < sequential_element_number; element_index++)
 	{
 		// These are the indices of the current element or elements to propagate
 		// the light rays through
 //		current_element_indices = np.squeeze(np.argwhere(element_system_index == element_index))
-		int current_element_indices[num_elements] = {0};
+
 		int element_ctr = 0;
 		for(k = 0; k < num_elements; k++)
 		{
@@ -952,46 +1155,67 @@ __global__ void propagate_rays_through_optical_system(element_data_t element_dat
 
 		// % This is the number of elements that the light rays need to be
 		// % simultaneously propagated through
-		simultaneous_element_number = element_ctr;
+		int simultaneous_element_number = element_ctr;
+
+		element_data_t* current_optical_element = (element_data_t *) malloc(simultaneous_element_number*sizeof(element_data_t));
+		float4* current_plane_parameters = (float4 *) malloc(simultaneous_element_number*sizeof(float4));
+		float3* current_element_center = (float3 *) malloc(simultaneous_element_number*sizeof(float3));
 
 		// % If there is only a single element that the rays are to be propagated
 		// % through, this propagates the rays through the single element;
 		// % otherwise the light rays are simultaneously propagated through the
 		// % multiple elements
 		if(simultaneous_element_number == 1)
+		{
 
 			// % This extracts the current optical element data
-			element_data_t current_optical_element = element_data[current_element_indices[0]];
+			current_optical_element[0] = element_data[current_element_indices[0]];
 			// % This extracts the current optical element plane parameters
-			float4 current_plane_parameters = element_plane_parameters[current_element_indices[0]];
+			current_plane_parameters[0] = element_plane_parameters[current_element_indices[0]];
 			// % This extracts the current center of the optical element
-			float3 current_element_center = element_center[current_element_indices[0]];
+			current_element_center[0] = element_center[current_element_indices[0]];
 
 			// % This propagates the light rays through the single optical element
-			light_ray_data[global_ray_id] = propagate_rays_through_single_element(current_optical_element, current_element_center,
-																   current_plane_parameters, light_ray_data[global_ray_id]);
+			light_ray_data[global_ray_id] = propagate_rays_through_single_element(current_optical_element[0], current_element_center[0],
+																   current_plane_parameters[0], light_ray_data[global_ray_id]);
+		}
+		else
+		{
 
-		else:
+			//# % This initializes a cell array to contain the optical element data
+//			element_data_t current_optical_element[simultaneous_element_number];
+			//# % This iterates through the individual optical elements extracting
+			//# % the optical element data
+			int simultaneous_element_index;
+			for(simultaneous_element_index = 0; simultaneous_element_index <= simultaneous_element_number;simultaneous_element_index++)
+			{
+				// % This extracts the current optical element data
+				current_optical_element[simultaneous_element_index] = element_data[
+					current_element_indices[simultaneous_element_index]];
+				//# % This extracts the current optical element plane parameters
+				current_plane_parameters[simultaneous_element_index] = element_plane_parameters[current_element_indices[simultaneous_element_index]];
+				//# % This extracts the current center of the optical element
+				current_element_center[simultaneous_element_index] = element_center[current_element_indices[simultaneous_element_index]];
 
-			# % This initializes a cell array to contain the optical element data
-			current_optical_element = np.zeros((1, 1), dtype=np.object)
-			# % This iterates through the individual optical elements extracting
-			# % the optical element data
-			for simultaneous_element_index in range(1, simultaneous_element_number + 1):
-				# % This extracts the current optical element data
-				current_optical_element[simultaneous_element_index - 1][:] = element_data[
-					current_element_indices[simultaneous_element_index - 1]]
-			# % This extracts the current optical element plane parameters
-			current_plane_parameters = element_plane_parameters[current_element_indices][:]
-			# % This extracts the current center of the optical element
-			current_element_center = element_center[current_element_indices][:]
+			}
 
-			# % This propagates the light rays through the multiple optical
-			# % elements
-			light_ray_data = propagate_rays_through_multiple_elements(current_optical_element, current_element_center,
-																	  current_plane_parameters, light_ray_data)
+			//# % This propagates the light rays through the multiple optical
+			//# % elements
+			light_ray_data[global_ray_id] = propagate_rays_through_multiple_elements(current_optical_element, current_element_center,
+																	  current_plane_parameters, simultaneous_element_number,light_ray_data[global_ray_id]);
+		}
+
+		// free allocated memory
+		free(current_optical_element);
+		free(current_plane_parameters);
+		free(current_element_center);
+
 
 	}
+
+	// free allocated memory
+	free(current_element_indices);
+
 }
 
 
@@ -1000,9 +1224,9 @@ extern "C"{
 void read_from_file()
 {
 	float lens_pitch, image_distance, beam_wavelength, aperture_f_number;
-	scattering_data_t scattering_data_p;
+	scattering_data_t scattering_data;
 	int scattering_type;
-	lightfield_source_t lightfield_source_p;
+	lightfield_source_t lightfield_source;
 	int lightray_number_per_particle;
 	int n_min; int n_max;
 
@@ -1057,28 +1281,28 @@ void read_from_file()
 			std::ios::binary);
 	// inverse rotation matrix
 	for(k = 0; k < 9; k++)
-		file_scattering.read ((char*)&scattering_data_p.inverse_rotation_matrix[k], sizeof(float));
+		file_scattering.read ((char*)&scattering_data.inverse_rotation_matrix[k], sizeof(float));
 
 
 	// beam_propagation_vector
 	for(k = 0; k < 3; k++)
-		file_scattering.read ((char*)&scattering_data_p.beam_propagation_vector[k], sizeof(float));
+		file_scattering.read ((char*)&scattering_data.beam_propagation_vector[k], sizeof(float));
 
 	// num_angles
-	file_scattering.read ((char*)&scattering_data_p.num_angles, sizeof(int));
+	file_scattering.read ((char*)&scattering_data.num_angles, sizeof(int));
 
 	// num_diameters
-	file_scattering.read ((char*)&scattering_data_p.num_diameters, sizeof(int));
+	file_scattering.read ((char*)&scattering_data.num_diameters, sizeof(int));
 
 	// scattering_angle
-	scattering_data_p.scattering_angle = (float *) malloc(scattering_data_p.num_angles*sizeof(float));
-	for(k = 0; k < scattering_data_p.num_angles; k++)
-			file_scattering.read ((char*)&scattering_data_p.scattering_angle[k], sizeof(float));
+	scattering_data.scattering_angle = (float *) malloc(scattering_data.num_angles*sizeof(float));
+	for(k = 0; k < scattering_data.num_angles; k++)
+			file_scattering.read ((char*)&scattering_data.scattering_angle[k], sizeof(float));
 
 	// scattering_irradiance
-	scattering_data_p.scattering_irradiance = (float *) malloc(scattering_data_p.num_angles * scattering_data_p.num_diameters*sizeof(float));
-	for(k = 0; k < scattering_data_p.num_angles * scattering_data_p.num_diameters; k++)
-			file_scattering.read ((char*)&scattering_data_p.scattering_irradiance[k], sizeof(float));
+	scattering_data.scattering_irradiance = (float *) malloc(scattering_data.num_angles * scattering_data.num_diameters*sizeof(float));
+	for(k = 0; k < scattering_data.num_angles * scattering_data.num_diameters; k++)
+			file_scattering.read ((char*)&scattering_data.scattering_irradiance[k], sizeof(float));
 
 	file_scattering.close();
 
@@ -1092,41 +1316,41 @@ void read_from_file()
 			std::ios::binary);
 
 	// lightray_number_per_particle
-	file_lightfield_source.read ((char*)&lightfield_source_p.lightray_number_per_particle, sizeof(int));
+	file_lightfield_source.read ((char*)&lightfield_source.lightray_number_per_particle, sizeof(int));
 
 	// lightray_process_number
-	file_lightfield_source.read ((char*)&lightfield_source_p.lightray_process_number, sizeof(int));
+	file_lightfield_source.read ((char*)&lightfield_source.lightray_process_number, sizeof(int));
 
 	// num_particles
-	file_lightfield_source.read ((char*)&lightfield_source_p.num_particles, sizeof(int));
+	file_lightfield_source.read ((char*)&lightfield_source.num_particles, sizeof(int));
 
 	// num_rays
-	file_lightfield_source.read ((char*)&lightfield_source_p.num_rays, sizeof(int));
+	file_lightfield_source.read ((char*)&lightfield_source.num_rays, sizeof(int));
 
 	// diameter_index
-	lightfield_source_p.diameter_index = (int *) malloc(lightfield_source_p.num_particles * sizeof(int));
-	for(k = 0; k < lightfield_source_p.num_particles; k++)
-		file_lightfield_source.read ((char*)&lightfield_source_p.diameter_index[k], sizeof(int));
+	lightfield_source.diameter_index = (int *) malloc(lightfield_source.num_particles * sizeof(int));
+	for(k = 0; k < lightfield_source.num_particles; k++)
+		file_lightfield_source.read ((char*)&lightfield_source.diameter_index[k], sizeof(int));
 
 	// radiance
-	lightfield_source_p.radiance = (double *) malloc(lightfield_source_p.num_particles * sizeof(double));
-	for(k = 0; k < lightfield_source_p.num_particles; k++)
-		file_lightfield_source.read ((char*)&lightfield_source_p.radiance[k], sizeof(double));
+	lightfield_source.radiance = (double *) malloc(lightfield_source.num_particles * sizeof(double));
+	for(k = 0; k < lightfield_source.num_particles; k++)
+		file_lightfield_source.read ((char*)&lightfield_source.radiance[k], sizeof(double));
 
 	// x
-	lightfield_source_p.x = (float *) malloc(lightfield_source_p.num_particles*sizeof(float));
-	for(k = 0; k < lightfield_source_p.num_particles; k++)
-		file_lightfield_source.read ((char*)&lightfield_source_p.x[k], sizeof(float));
+	lightfield_source.x = (float *) malloc(lightfield_source.num_particles*sizeof(float));
+	for(k = 0; k < lightfield_source.num_particles; k++)
+		file_lightfield_source.read ((char*)&lightfield_source.x[k], sizeof(float));
 
 	// y
-	lightfield_source_p.y = (float *) malloc(lightfield_source_p.num_particles*sizeof(float));
-	for(k = 0; k < lightfield_source_p.num_particles; k++)
-		file_lightfield_source.read ((char*)&lightfield_source_p.y[k], sizeof(float));
+	lightfield_source.y = (float *) malloc(lightfield_source.num_particles*sizeof(float));
+	for(k = 0; k < lightfield_source.num_particles; k++)
+		file_lightfield_source.read ((char*)&lightfield_source.y[k], sizeof(float));
 
 	// z
-	lightfield_source_p.z = (float *) malloc(lightfield_source_p.num_particles*sizeof(float));
-	for(k = 0; k < lightfield_source_p.num_particles; k++)
-		file_lightfield_source.read ((char*)&lightfield_source_p.z[k], sizeof(float));
+	lightfield_source.z = (float *) malloc(lightfield_source.num_particles*sizeof(float));
+	for(k = 0; k < lightfield_source.num_particles; k++)
+		file_lightfield_source.read ((char*)&lightfield_source.z[k], sizeof(float));
 
 	file_lightfield_source.close();
 
@@ -1191,6 +1415,7 @@ void read_from_file()
 
 //		// element_type
 //		file_optical_elements.read((char*)&element_data[k].element_type,strlen(element_data[k].element_type)*sizeof(char));
+		file_optical_elements.read((char*)&element_data[k].element_type,sizeof(char));
 
 		// elements_coplanar
 		file_optical_elements.read((char*)&element_data[k].elements_coplanar,sizeof(float));
@@ -1204,28 +1429,28 @@ void read_from_file()
 
 	}
 
-	std::string temp_string_1 = "-np.sqrt((100000.000000)**2-(x**2+y**2))";
-
-////	int len = strlen(temp_string);
-////	element_data[0].element_geometry.front_surface_shape = "-np.sqrt((100000.000000)**2-(x**2+y**2))";
-//	//	element_data[0].element_geometry.front_surface_shape = (char *) malloc(strlen(temp_string)*sizeof(char));
-//	strcpy(element_data[0].element_geometry.front_surface_shape,temp_string.c_str());//"-np.sqrt((100000.000000)**2-(x**2+y**2))");
-	element_data[0].element_geometry.front_surface_shape = &temp_string_1[0];
-	printf("front_surface_shape: %s\n",element_data[0].element_geometry.front_surface_shape);
-////	element_data[0].element_geometry.front_surface_shape[strlen(element_data[0].element_geometry.front_surface_shape)] = '\0';
+//	std::string temp_string_1 = "-np.sqrt((100000.000000)**2-(x**2+y**2))";
 //
-	std::string temp_string_2 = "+np.sqrt((100000.000000)**2-(x**2+y**2))";
-//	strcpy(element_data[0].element_geometry.back_surface_shape,temp_string.c_str());//"+np.sqrt((100000.000000)**2-(x**2+y**2))");
-////	element_data[0].element_geometry.back_surface_shape = (char *) malloc(strlen(temp_string_2)*sizeof(char));
-////	strcpy(element_data[0].element_geometry.back_surface_shape,temp_string_2.c_str());
-	element_data[0].element_geometry.back_surface_shape = &temp_string_2[0];
-	printf("back_surface_shape: %s\n",element_data[0].element_geometry.back_surface_shape);
-
-	// element_type
-	temp_string = "lens";
-//	strcpy(element_data[0].element_type,"lens");//"lens");
-	element_data[0].element_type = &temp_string[0];
-	printf("element_type: %s\n", element_data[0].element_type);
+//////	int len = strlen(temp_string);
+//////	element_data[0].element_geometry.front_surface_shape = "-np.sqrt((100000.000000)**2-(x**2+y**2))";
+////	//	element_data[0].element_geometry.front_surface_shape = (char *) malloc(strlen(temp_string)*sizeof(char));
+////	strcpy(element_data[0].element_geometry.front_surface_shape,temp_string.c_str());//"-np.sqrt((100000.000000)**2-(x**2+y**2))");
+//	element_data[0].element_geometry.front_surface_shape = &temp_string_1[0];
+//	printf("front_surface_shape: %s\n",element_data[0].element_geometry.front_surface_shape);
+//////	element_data[0].element_geometry.front_surface_shape[strlen(element_data[0].element_geometry.front_surface_shape)] = '\0';
+////
+//	std::string temp_string_2 = "+np.sqrt((100000.000000)**2-(x**2+y**2))";
+////	strcpy(element_data[0].element_geometry.back_surface_shape,temp_string.c_str());//"+np.sqrt((100000.000000)**2-(x**2+y**2))");
+//////	element_data[0].element_geometry.back_surface_shape = (char *) malloc(strlen(temp_string_2)*sizeof(char));
+//////	strcpy(element_data[0].element_geometry.back_surface_shape,temp_string_2.c_str());
+//	element_data[0].element_geometry.back_surface_shape = &temp_string_2[0];
+//	printf("back_surface_shape: %s\n",element_data[0].element_geometry.back_surface_shape);
+//
+//	// element_type
+//	temp_string = "lens";
+////	strcpy(element_data[0].element_type,"lens");//"lens");
+//	element_data[0].element_type = &temp_string[0];
+//	printf("element_type: %s\n", element_data[0].element_type);
 
 	// element plane parameters
 	double element_plane_parameters[num_elements][4];
@@ -1243,10 +1468,58 @@ void read_from_file()
 	// convert 2d array to array of pointers
 	double (*element_center_p)[3] = element_center;
 	double (*element_plane_parameters_p)[4] = element_plane_parameters;
+
+	//--------------------------------------------------------------------------------------
+	// read camera_design data
+	//--------------------------------------------------------------------------------------
+
+	// declare structure to hold the data
+	camera_design_t camera_design;
+
+	// open file
+	filename = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/camera_design.bin";
+	std::ifstream file_camera_design(filename.c_str(), std::ios::in |
+			std::ios::binary);
+	printf("\n");
+
+	// pixel bit depth
+	file_camera_design.read((char*)&camera_design.pixel_bit_depth,sizeof(int));
+//	printf("pixel bit depth: %d\n",camera_design.pixel_bit_depth);
+
+	// pixel gain
+	file_camera_design.read((char*)&camera_design.pixel_gain,sizeof(float));
+//	printf("pixel gain: %f\n",camera_design.pixel_gain);
+
+	// pixel pitch
+	file_camera_design.read((char*)&camera_design.pixel_pitch,sizeof(float));
+//	printf("pixel pitch: %f\n",camera_design.pixel_pitch);
+
+	// x_camera_angle
+	file_camera_design.read((char*)&camera_design.x_camera_angle,sizeof(float));
+//	printf("x camera angle: %f\n",camera_design.x_camera_angle);
+
+	// y_camera_angle
+	file_camera_design.read((char*)&camera_design.y_camera_angle,sizeof(float));
+//	printf("y camera angle: %f\n",camera_design.y_camera_angle);
+
+	// x_pixel_number
+	file_camera_design.read((char*)&camera_design.x_pixel_number,sizeof(int));
+//	printf("x pixel number: %d\n",camera_design.x_pixel_number);
+
+	// y_pixel_number
+	file_camera_design.read((char*)&camera_design.y_pixel_number,sizeof(int));
+//	printf("y pixel number: %d\n",camera_design.y_pixel_number);
+
+	// z sensor
+	file_camera_design.read((char*)&camera_design.z_sensor,sizeof(float));
+//	printf("z sensor: %f\n",camera_design.z_sensor);
+
+	file_camera_design.close();
+
 	// call the ray tracing function
-	start_ray_tracing(lens_pitch, image_distance,&scattering_data_p, scattering_type_str,&lightfield_source_p,
+	start_ray_tracing(lens_pitch, image_distance,&scattering_data, scattering_type_str,&lightfield_source,
 			lightray_number_per_particle,n_min, n_max,beam_wavelength,aperture_f_number,
-			num_elements, element_center_p,element_data,element_plane_parameters_p,element_system_index);
+			num_elements, element_center_p,element_data,element_plane_parameters_p,element_system_index,&camera_design);
 
 }
 
@@ -1255,7 +1528,7 @@ void save_to_file(float lens_pitch, float image_distance,
 		lightfield_source_t* lightfield_source_p, int lightray_number_per_particle,
 		int n_min, int n_max,float beam_wavelength, float aperture_f_number,
 		int num_elements, double (*element_center)[3],element_data_t* element_data_p,
-		double (*element_plane_parameters)[4], int *element_system_index)
+		double (*element_plane_parameters)[4], int *element_system_index, camera_design_t* camera_design_p)
 {
 	/*
 	 * 	This function saves the data passed from python to a file.
@@ -1412,13 +1685,13 @@ void save_to_file(float lens_pitch, float image_distance,
 		file_optical_elements.write((char*)&element_data_p[k].element_geometry.front_surface_radius,sizeof(float));
 		printf("front_surface_radius: %f\n", element_data_p[k].element_geometry.front_surface_radius);
 //		file_optical_elements.write((char*)&element_data_p[k].element_geometry.front_surface_shape,strlen(element_data_p->element_geometry.front_surface_shape)*sizeof(char));
-		printf("front_surface_shape: %s\n", element_data_p[k].element_geometry.front_surface_shape);
+//		printf("front_surface_shape: %s\n", element_data_p[k].element_geometry.front_surface_shape);
 		file_optical_elements.write((char*)&element_data_p[k].element_geometry.front_surface_spherical,sizeof(bool));
 		printf("front_surface_spherical: %s\n",element_data_p[k].element_geometry.front_surface_spherical ? "true":"false");
 		file_optical_elements.write((char*)&element_data_p[k].element_geometry.back_surface_radius,sizeof(float));
 		printf("back_surface_radius: %f\n", element_data_p[k].element_geometry.back_surface_radius);
 //		file_optical_elements.write((char*)&element_data_p[k].element_geometry.back_surface_shape,strlen(element_data_p->element_geometry.back_surface_shape)*sizeof(char));
-		printf("back_surface_shape: %s\n", element_data_p[k].element_geometry.back_surface_shape);
+//		printf("back_surface_shape: %s\n", element_data_p[k].element_geometry.back_surface_shape);
 		file_optical_elements.write((char*)&element_data_p[k].element_geometry.back_surface_spherical,sizeof(bool));
 		printf("back_surface_spherical: %s\n",element_data_p[k].element_geometry.back_surface_spherical ? "true":"false");
 		file_optical_elements.write((char*)&element_data_p[k].element_geometry.pitch,sizeof(float));
@@ -1445,7 +1718,8 @@ void save_to_file(float lens_pitch, float image_distance,
 
 		// element_type
 //		file_optical_elements.write((char*)&element_data_p[k].element_type,strlen(element_data_p->element_type)*sizeof(char));
-		printf("element_type: %s\n",element_data_p[k].element_type);
+		printf("element_type: %c\n",element_data_p[k].element_type);
+		file_optical_elements.write((char*)&element_data_p[k].element_type,sizeof(char));
 
 		// elements_coplanar
 		file_optical_elements.write((char*)&element_data_p[k].elements_coplanar,sizeof(float));
@@ -1489,6 +1763,48 @@ void save_to_file(float lens_pitch, float image_distance,
 
 	file_optical_elements.close();
 
+	//--------------------------------------------------------------------------------------
+	// save camera_design data
+	//--------------------------------------------------------------------------------------
+	// open file
+	filename = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/camera_design.bin";
+	std::ofstream file_camera_design(filename.c_str(), std::ios::out |
+			std::ios::binary);
+	printf("\n");
+
+	// pixel bit depth
+	file_camera_design.write((char*)&camera_design_p->pixel_bit_depth,sizeof(int));
+	printf("pixel bit depth: %d\n",camera_design_p->pixel_bit_depth);
+
+	// pixel gain
+	file_camera_design.write((char*)&camera_design_p->pixel_gain,sizeof(float));
+	printf("pixel gain: %f\n",camera_design_p->pixel_gain);
+
+	// pixel pitch
+	file_camera_design.write((char*)&camera_design_p->pixel_pitch,sizeof(float));
+	printf("pixel pitch: %f\n",camera_design_p->pixel_pitch);
+
+	// x_camera_angle
+	file_camera_design.write((char*)&camera_design_p->x_camera_angle,sizeof(float));
+	printf("x camera angle: %f\n",camera_design_p->x_camera_angle);
+
+	// y_camera_angle
+	file_camera_design.write((char*)&camera_design_p->y_camera_angle,sizeof(float));
+	printf("y camera angle: %f\n",camera_design_p->y_camera_angle);
+
+	// x_pixel_number
+	file_camera_design.write((char*)&camera_design_p->x_pixel_number,sizeof(int));
+	printf("x pixel number: %d\n",camera_design_p->x_pixel_number);
+
+	// y_pixel_number
+	file_camera_design.write((char*)&camera_design_p->y_pixel_number,sizeof(int));
+	printf("y pixel number: %d\n",camera_design_p->y_pixel_number);
+
+	// z sensor
+	file_camera_design.write((char*)&camera_design_p->z_sensor,sizeof(float));
+	printf("z sensor: %f\n",camera_design_p->z_sensor);
+
+	file_camera_design.close();
 }
 
 int add(int a, int b)
@@ -1501,7 +1817,8 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 		lightfield_source_t* lightfield_source_p, int lightray_number_per_particle,
 		int n_min, int n_max,float beam_wavelength, float aperture_f_number,
 		int num_elements, double (*element_center)[3],element_data_t* element_data_p,
-				double (*element_plane_parameters)[4], int *element_system_index)
+				double (*element_plane_parameters)[4], int *element_system_index,
+				camera_design_t* camera_design_p)
 {
 	// create instance of structure using the pointers
 	scattering_data_t scattering_data = *scattering_data_p;
@@ -1527,10 +1844,10 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 
 	// allocate space for device arrays on GPU
 	//cudaMalloc((void **)&gpuData, sizeof(float)*size);
-	float *gpuData;
-	int size = 10;
+//	float *gpuData;
+//	int size = 10;
 	cudaThreadSynchronize();
-	cudaMalloc((void **)&gpuData, sizeof(float)*size);
+//	cudaMalloc((void **)&gpuData, sizeof(float)*size);
 	cudaMalloc((void **)&d_source_x,sizeof(float)*num_particles);
 	cudaMalloc((void **)&d_source_y,num_particles*sizeof(float));
 	cudaMalloc((void **)&d_source_z,num_particles*sizeof(float));
@@ -1545,7 +1862,7 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	cudaMemcpy(d_source_diameter_index,lightfield_source.diameter_index,num_particles*sizeof(int),cudaMemcpyHostToDevice);
 
 	// make copy of host structure
-	lightfield_source_t  lightfield_source_copy = lightfield_source;
+	//lightfield_source_t  lightfield_source_copy = lightfield_source;
 
 	// point host structure to device array
 	lightfield_source.x = d_source_x;
@@ -1573,7 +1890,7 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 		,cudaMemcpyHostToDevice);
 
 	// make copy of host structure
-	scattering_data_t scattering_data_copy = scattering_data;
+	//scattering_data_t scattering_data_copy = scattering_data;
 
 	// point host structure to device array
 	scattering_data.scattering_angle = d_scattering_angle;
@@ -1634,7 +1951,7 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 
 	cudaMalloc((void**)&d_light_ray_data,num_rays*sizeof(light_ray_data_t));
 	// allocate threads per block
-	dim3 block(10,1,1);
+	dim3 block(100,1,1);
 	// allocate blocks per grid
 	dim3 grid(source_point_number/block.x,1,lightray_number_per_particle);
 
@@ -1651,18 +1968,21 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 
 	cudaThreadSynchronize();
 
-	// display first and last few elements of lightfield_data
+	// display first and last few elements of light_ray_data
 
-//	printf("lightfield_data contents\n");
-//	printf("ray_source_coordinates (1st): %f, %f, %f\n",light_ray_data[0].ray_source_coordinates.x,light_ray_data[0].ray_source_coordinates.y,light_ray_data[0].ray_source_coordinates.z);
-//	printf("ray_source_coordinates (last): %f, %f, %f\n",light_ray_data[num_rays-1].ray_source_coordinates.x,light_ray_data[num_rays-1].ray_source_coordinates.y,light_ray_data[N-1].ray_source_coordinates.z);
-//	printf("ray_propagation_direction (1st): %f, %f, %f\n",light_ray_data[0].ray_propagation_direction.x,light_ray_data[0].ray_propagation_direction[0].y,light_ray_data.ray_propagation_direction[0].z);
-//	printf("ray_propagation_direction (last): %f, %f, %f\n",light_ray_data.ray_propagation_direction[N-1].x,light_ray_data.ray_propagation_direction[N-1].y,light_ray_data.ray_propagation_direction[N-1].z);
-//	printf("ray_wavelength (1st, last): %f, %f\n",light_ray_data.ray_wavelength[0],light_ray_data.ray_wavelength[N-1]);
-//	printf("ray_radiance (1st, last): %f, %f\n",light_ray_data.ray_radiance[0],light_ray_data.ray_radiance[N-1]);
+	printf("finished generating light rays\n");
+	printf("light_ray_data contents\n");
+	printf("source point number: %d\n",source_point_number);
+	printf("ray_source_coordinates (1st): %f, %f, %f\n",light_ray_data[0].ray_source_coordinates.x,light_ray_data[0].ray_source_coordinates.y,light_ray_data[0].ray_source_coordinates.z);
+	printf("ray_source_coordinates (last): %f, %f, %f\n",light_ray_data[num_rays-1].ray_source_coordinates.x,light_ray_data[num_rays-1].ray_source_coordinates.y,light_ray_data[N-1].ray_source_coordinates.z);
+	printf("ray_propagation_direction (1st): %f, %f, %f\n",light_ray_data[0].ray_propagation_direction.x,light_ray_data[0].ray_propagation_direction.y,light_ray_data[0].ray_propagation_direction.z);
+	printf("ray_propagation_direction (last): %f, %f, %f\n",light_ray_data[num_rays-1].ray_propagation_direction.x,light_ray_data[num_rays-1].ray_propagation_direction.y,light_ray_data[num_rays-1].ray_propagation_direction.z);
+	printf("ray_wavelength (1st, last): %f, %f\n",light_ray_data[0].ray_wavelength,light_ray_data[num_rays-1].ray_wavelength);
+	printf("ray_radiance (1st, last): %f, %f\n",light_ray_data[0].ray_radiance,light_ray_data[num_rays-1].ray_radiance);
+
 
 	// free pointers
-	cudaFree(gpuData);
+//	cudaFree(gpuData);
 	cudaFree(d_source_x);
 	cudaFree(d_source_y);
 	cudaFree(d_source_z);
@@ -1678,17 +1998,18 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	 */
 
 	/*
-	 *  convert co-ordinate arrays to float3 and float4 arrays so that they can
+	 *  convert coordinate arrays to float3 and float4 arrays so that they can
 	 *  be represented by a 1D array.
 	 */
 
 	float3* element_center_2 = (float3 *) malloc(num_elements*sizeof(float3));
 	float4* element_plane_parameters_2 = (float4 *) malloc(num_elements*sizeof(float4));
 
+	int k;
 	for(k = 0; k < num_elements; k++)
 	{
 		element_center_2[k] = make_float3(element_center[k][0],element_center[k][1],element_center[k][2]);
-		element_plane_parameters_2 = make_float4(element_plane_parameters[k][0],element_plane_parameters[k][1],element_plane_parameters[k][2],element_plane_parameters[k][3],element_plane_parameters[k][4]);
+		element_plane_parameters_2[k] = make_float4(element_plane_parameters[k][0],element_plane_parameters[k][1],element_plane_parameters[k][2],element_plane_parameters[k][3]);
 	}
 
 	// allocate space on GPU for coordinate arrays
@@ -1705,15 +2026,59 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	cudaMemcpy(d_element_plane_parameters,element_plane_parameters_2,num_elements*sizeof(float4),cudaMemcpyHostToDevice);
 	cudaMemcpy(d_element_system_index,element_system_index,num_elements*sizeof(int),cudaMemcpyHostToDevice);
 
-	element_data_t element_data = *element_data_p;
+//	element_data_t element_data[num_elements] = *element_data_p;
+	element_data_t* d_element_data;
+	cudaMalloc((void**)&d_element_data,num_elements*sizeof(element_data_t));
+	cudaMemcpy(d_element_data,element_data_p,num_elements*sizeof(element_data_t),cudaMemcpyHostToDevice);
 
-	propagate_rays_through_optical_system<<<grid,block>>>>(element_data,d_element_center,d_element_plane_parameters,d_element_system_index,num_elements,num_rays,d_light_ray_data);
+	propagate_rays_through_optical_system<<<grid,block>>>(d_element_data,d_element_center,d_element_plane_parameters,d_element_system_index,num_elements,num_rays,lightray_number_per_particle,d_light_ray_data);
 
-	cudaFree(d_light_ray_data);
-	udaFree(d_element_center);
+	cudaThreadSynchronize();
+
+	// copy light_ray_data back to host
+	cudaMemcpy(light_ray_data,d_light_ray_data,num_rays*sizeof(light_ray_data_t),cudaMemcpyDeviceToHost);
+
+	cudaThreadSynchronize();
+
+	// calculate number of rays that went through the lens
+	int ctr_propagated_rays = 0;
+	float3 pos;
+	for(k = 0; k < num_rays; k++)
+	{
+		pos = light_ray_data[k].ray_source_coordinates;
+		if(!isnan(pos.x) && !isnan(pos.y) && !isnan(pos.z))
+			ctr_propagated_rays++;
+	}
+
+	// display first and last few elements of light_ray_data
+
+	printf("finished propagating rays through the optical system\n");
+	printf("light_ray_data contents\n");
+	printf("number of rays: %d, %d\n",num_rays,N);
+	printf("number of rays that made it through: %d\n",ctr_propagated_rays);
+	printf("ray_source_coordinates (1st): %f, %f, %f\n",light_ray_data[0].ray_source_coordinates.x,light_ray_data[0].ray_source_coordinates.y,light_ray_data[0].ray_source_coordinates.z);
+	printf("ray_source_coordinates (last): %f, %f, %f\n",light_ray_data[num_rays-1].ray_source_coordinates.x,light_ray_data[num_rays-1].ray_source_coordinates.y,light_ray_data[N-1].ray_source_coordinates.z);
+	printf("ray_propagation_direction (1st): %f, %f, %f\n",light_ray_data[0].ray_propagation_direction.x,light_ray_data[0].ray_propagation_direction.y,light_ray_data[0].ray_propagation_direction.z);
+	printf("ray_propagation_direction (last): %f, %f, %f\n",light_ray_data[num_rays-1].ray_propagation_direction.x,light_ray_data[num_rays-1].ray_propagation_direction.y,light_ray_data[num_rays-1].ray_propagation_direction.z);
+	printf("ray_wavelength (1st, last): %f, %f\n",light_ray_data[0].ray_wavelength,light_ray_data[num_rays-1].ray_wavelength);
+	printf("ray_radiance (1st, last): %f, %f\n",light_ray_data[0].ray_radiance,light_ray_data[num_rays-1].ray_radiance);
+
+
+	// free arrays
+	cudaFree(d_element_center);
 	cudaFree(d_element_plane_parameters);
 	cudaFree(d_element_system_index);
+	cudaFree(d_element_data);
 
+	//--------------------------------------------------------------------------------------
+	// intersect rays with sensor
+	//--------------------------------------------------------------------------------------
+
+	// allocate space for arrays on GPU
+
+
+	// free arrays
+	cudaFree(d_light_ray_data);
 
 }
 
