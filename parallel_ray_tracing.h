@@ -92,8 +92,17 @@ typedef struct light_ray_data_t
 	float ray_wavelength;
 	// radiance of the light ray
 	double ray_radiance;
+	// row locations of pixels where the light ray strikes
+//	int ii_indices[4];
+	// column locations of pixels where the light ray strikes
+//	int jj_indices[4];
+	// intensity weights corresponding to the pixels
+//	double pixel_weights[4];
+	// the contribution of the incident light rays onto the measured energy in the sensor
+//	double cos_4_alpha;
+
 	// total number of light rays
-	int num_lightrays;
+//	int num_lightrays;
 }light_ray_data_t;
 
 // this structure contains the geometrical properties of an optical element
@@ -150,6 +159,8 @@ __global__ void generate_lightfield_angular_data(float ,float,scattering_data_t*
 __global__ void propagate_rays_through_optical_system(element_data_t* , float3* , float4* ,
 		int* , int , int , int , light_ray_data_t*);
 
+__global__ void intersect_sensor(light_ray_data_t* ,camera_design_t* , double* , int, int);
+
 __device__ float random_single(unsigned int );
 
 __device__ light_ray_data_t propogate_rays_through_multiple_elements(element_data_t* , float3*,
@@ -160,17 +171,23 @@ __device__ float3 ray_sphere_intersection(float3 , float , float3 , float3 , cha
 
 __device__ float measure_distance_to_optical_axis(float3 , float3 , float );
 __device__ void argsort(float* , int , int*);
+__device__ double atomicAdd(double* , double);
+
+
+
+
+
 extern "C"
 {
 
 void save_to_file(float , float ,scattering_data_t* , char* ,lightfield_source_t* ,
 		int ,int , int, float, float,int , double (*element_center)[3],element_data_t* ,
-		double (*element_plane_parameters)[4], int* ,camera_design_t* );
+		double (*element_plane_parameters)[4], int* ,camera_design_t* , double*);
 void read_from_file();
 int add(int a, int b);
 void start_ray_tracing(float , float ,scattering_data_t* , char* ,lightfield_source_t* ,
 		int ,int , int, float, float, int , double (*element_center)[3],element_data_t*,
-		double (*element_plane_parameters)[4], int* ,camera_design_t* );
+		double (*element_plane_parameters)[4], int* ,camera_design_t* , double*);
 
 }
 
