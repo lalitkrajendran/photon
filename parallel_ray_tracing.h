@@ -71,16 +71,6 @@ typedef struct lightfield_data_t
 	int num_lightrays;
 }lightfield_data_t;
 
-//typedef struct light_ray_data_t
-//{
-//	float3* ray_source_coordinates;
-//	float3* ray_propagation_direction;
-//	float* ray_wavelength;
-//	double* ray_radiance;
-//	int num_lightrays;
-//
-//}light_ray_data_t;
-
 // this structure represents a single light ray and contains its properties
 typedef struct light_ray_data_t
 {
@@ -92,29 +82,24 @@ typedef struct light_ray_data_t
 	float ray_wavelength;
 	// radiance of the light ray
 	double ray_radiance;
-	// row locations of pixels where the light ray strikes
-//	int ii_indices[4];
-	// column locations of pixels where the light ray strikes
-//	int jj_indices[4];
-	// intensity weights corresponding to the pixels
-//	double pixel_weights[4];
-	// the contribution of the incident light rays onto the measured energy in the sensor
-//	double cos_4_alpha;
-
-	// total number of light rays
-//	int num_lightrays;
 }light_ray_data_t;
 
-// this structure contains the geometrical properties of an optical element
+// this structure contains the geometric properties of an optical element
 typedef struct element_geometry_t
 {
+	// radius of the front surface of the lens/aperture
 	float front_surface_radius;
 	//char* front_surface_shape;
+	// truth value that indicates whether the surface is spherical
 	bool front_surface_spherical;
+	// radius of the back surface of the lens/aperture
 	float back_surface_radius;
 	//char* back_surface_shape;
+	// truth value that indicates whether the surface is spherical
 	bool back_surface_spherical;
+	// diameter of the element
 	float pitch;
+	// distance between the
 	double vertex_distance;
 }element_geometry_t;
 
@@ -131,32 +116,51 @@ typedef struct element_properties_t
 // this structure contains all the information about a given optical element
 typedef struct element_data_t
 {
+	// offset of this element from the optical axis
 	double axial_offset_distances[2];
+
 	element_geometry_t element_geometry;
 	float element_number;
 	element_properties_t element_properties;
 	//char* element_type;
 	char element_type;
+	// Boolean value stating whether the current elements are co-planar
+    // (this value may only be true for an element type of 'system' and will be
+	// Null for single optical elements)
 	float elements_coplanar;
+	// the rotation angles for the current optical element
 	double rotation_angles[3];
+	// distance between the current element and the next element along the z axis
 	float z_inter_element_distance;
 }element_data_t;
 
+// this structure contains the data that characterizes the camera
 typedef struct camera_design_t
 {
+	// number of bits used to quantize and store the intensity
 	int pixel_bit_depth;
+	// conversion factor between the photon count of a pixel and its intensity
 	float pixel_gain;
+	// length of one side of a square pixel (microns)
 	float pixel_pitch;
+	// angle that the camera z makes with the global x axis
 	float x_camera_angle;
+	// angle that the camera z makes with the global y axis
 	float y_camera_angle;
+	// number of pixels along the camera x axis
 	int x_pixel_number;
+	// number of pixels along the camera y axis
 	int y_pixel_number;
+	// distance between the lens and the sensor in the camera coordinate system
 	float z_sensor;
 }camera_design_t;
 
+
 __global__ void generate_lightfield_angular_data(float ,float,scattering_data_t* ,
-		int , lightfield_source_t* , int , int , int, float, float,light_ray_data_t*);
-__global__ void propagate_rays_through_optical_system(element_data_t* , float3* , float4* ,
+		int , lightfield_source_t* , int , int , int, float, float,light_ray_data_t*,int,
+		float*, float*);
+
+__global__ void propagate_rays_through_optical_system(element_data_t*, float3* , float4* ,
 		int* , int , int , int , light_ray_data_t*);
 
 __global__ void intersect_sensor(light_ray_data_t* ,camera_design_t* , double* , int, int);
