@@ -66,7 +66,7 @@ __device__ float random_single(unsigned int seed, int id)
 __device__ light_ray_data_t generate_lightfield_angular_data(float lens_pitch, float image_distance,
 		scattering_data_t scattering_data, int scattering_type, lightfield_source_single_t lightfield_source,
                                      int lightray_number_per_particle, int n_min, int n_max, float beam_wavelength,
-                                     float aperture_f_number, light_ray_data_t light_ray_data,int num_rays,
+                                     float aperture_f_number, int num_rays,
                                      float* rand_array_1,float* rand_array_2)
 
 {
@@ -198,11 +198,8 @@ __device__ light_ray_data_t generate_lightfield_angular_data(float lens_pitch, f
 
 
 
-	// save the light rays to the light field data structure
-//	light_ray_data[global_ray_id].ray_source_coordinates = make_float3(x_current,y_current,z_current);
-//	light_ray_data[global_ray_id].ray_propagation_direction = normalize(make_float3(theta_temp,phi_temp,-1.0));
-//	light_ray_data[global_ray_id].ray_wavelength = beam_wavelength;
-//	light_ray_data[global_ray_id].ray_radiance = 1/(aperture_f_number*aperture_f_number)*irradiance_current;
+	// save the light rays to the light ray data structure
+	light_ray_data_t light_ray_data;
 
 	light_ray_data.ray_source_coordinates = make_float3(x_current,y_current,z_current);
 	light_ray_data.ray_propagation_direction = normalize(make_float3(theta_temp,phi_temp,-1.0));
@@ -1485,7 +1482,7 @@ __device__ pixel_data_t intersect_sensor(light_ray_data_t light_ray_data,camera_
 __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 		scattering_data_t scattering_data, int scattering_type, lightfield_source_t lightfield_source,
 		 int lightray_number_per_particle, int n_min, int n_max, float beam_wavelength,
-		 float aperture_f_number, light_ray_data_t* light_ray_data,int num_rays,
+		 float aperture_f_number, int num_rays,
 		 float* rand_array_1,float* rand_array_2,element_data_t* element_data,
 		 float3* element_center, float4* element_plane_parameters,
 		int* element_system_index,int num_elements,
@@ -1522,18 +1519,19 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 	lightfield_source_current.radiance = lightfield_source.radiance[current_source_point_number];
 	lightfield_source_current.diameter_index = lightfield_source.diameter_index[current_source_point_number];
 
-	light_ray_data[global_ray_id] = generate_lightfield_angular_data(lens_pitch, image_distance,scattering_data,
-				scattering_type, lightfield_source_current,lightray_number_per_particle, n_min, n_max,
-				beam_wavelength,aperture_f_number,light_ray_data[global_ray_id],num_rays,rand_array_1,rand_array_2);
 
-	light_ray_data[global_ray_id] = propagate_rays_through_optical_system(element_data, element_center,
+	light_ray_data_t light_ray_data = generate_lightfield_angular_data(lens_pitch, image_distance,scattering_data,
+				scattering_type, lightfield_source_current,lightray_number_per_particle, n_min, n_max,
+				beam_wavelength,aperture_f_number,num_rays,rand_array_1,rand_array_2);
+
+	light_ray_data = propagate_rays_through_optical_system(element_data, element_center,
 			element_plane_parameters,element_system_index,num_elements,num_rays,
-			lightray_number_per_particle,light_ray_data[global_ray_id]);
+			lightray_number_per_particle,light_ray_data);
 
 	camera_design_t camera_design = *camera_design_p;
 	// perform ray intersection with the sensor and the radiance integration on the gpu
 
-	pixel_data_t pixel_data = intersect_sensor(light_ray_data[global_ray_id],camera_design,
+	pixel_data_t pixel_data = intersect_sensor(light_ray_data,camera_design,
 			lightray_number_per_particle,num_rays);
 
 	//# % This is the number of pixels in the x-direction
@@ -1554,7 +1552,7 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 			continue;
 
 		image_index = (ii_indices[k]-1)*x_pixel_number + jj_indices[k]-1;
-		pixel_increment = pixel_weights[k]*light_ray_data[global_ray_id].ray_radiance*cos_4_alpha;
+		pixel_increment = pixel_weights[k]*light_ray_data.ray_radiance*cos_4_alpha;
 
 //		// dangerous way to do it (possible race condition)
 //		image_array[image_index] += pixel_increment;
@@ -2325,10 +2323,10 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 
 	// declare a pointer to an array of structures that will hold the light ray data
 	// on the GPU
-	light_ray_data_t* d_light_ray_data = 0;
-
-	// allocate space on the GPU for light ray data
-	cudaMalloc((void**)&d_light_ray_data,num_rays*sizeof(light_ray_data_t));
+//	light_ray_data_t* d_light_ray_data = 0;
+//
+//	// allocate space on the GPU for light ray data
+//	cudaMalloc((void**)&d_light_ray_data,num_rays*sizeof(light_ray_data_t));
 
 	//--------------------------------------------------------------------------------------
 	// read random numbers from file
@@ -2420,11 +2418,11 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	// print the number of rays
 	printf("num_rays: %d\n",num_rays);
 
-	// allocate space for the array of structures to store the light ray data on the cpu
-	light_ray_data_t* light_ray_data = (light_ray_data_t*) calloc(num_rays,sizeof(light_ray_data_t));
-
-	// copy light_ray_data to the cpu
-	cudaMemcpy(light_ray_data,d_light_ray_data,num_rays*sizeof(light_ray_data_t),cudaMemcpyDeviceToHost);
+//	// allocate space for the array of structures to store the light ray data on the cpu
+//	light_ray_data_t* light_ray_data = (light_ray_data_t*) calloc(num_rays,sizeof(light_ray_data_t));
+//
+//	// copy light_ray_data to the cpu
+//	cudaMemcpy(light_ray_data,d_light_ray_data,num_rays*sizeof(light_ray_data_t),cudaMemcpyDeviceToHost);
 
 	// display first and last few elements of light_ray_data
 //	printf("finished generating light rays\n");
@@ -2494,116 +2492,6 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 
 	}
 
-	// copy light_ray_data to GPU
-	// declare a pointer to an array of structures that will hold the light ray data
-	// on the GPU
-//	light_ray_data_t* d_light_ray_data = 0;
-
-//	// allocate space on the GPU for light ray data
-//	cudaMalloc((void**)&d_light_ray_data,num_rays*sizeof(light_ray_data_t));
-//
-//	// copy light_ray_data to GPU
-//	cudaMemcpy(d_light_ray_data,light_ray_data,num_rays*sizeof(light_ray_data_t),cudaMemcpyHostToDevice);
-
-//	propagate_rays_through_optical_system<<<grid,block>>>(d_element_data, d_element_center,d_element_plane_parameters,d_element_system_index,num_elements,num_rays,lightray_number_per_particle,d_light_ray_data);
-
-//	// wait for all the threads to finish computation before proceeding to the next step
-//	cudaDeviceSynchronize();
-
-//	// copy light_ray_data back to host
-//	cudaMemcpy(light_ray_data,d_light_ray_data,num_rays*sizeof(light_ray_data_t),cudaMemcpyDeviceToHost);
-
-	// calculate number of rays that went through the lens
-//	int ctr_propagated_rays = 0;
-//	float3 pos;
-//	for(k = 0; k < num_rays; k++)
-//	{
-//		pos = light_ray_data[k].ray_source_coordinates;
-//		if(!isnan(pos.x) && !isnan(pos.y) && !isnan(pos.z))
-//			ctr_propagated_rays++;
-//	}
-
-	// display first and last few elements of light_ray_data
-
-//	printf("finished propagating rays through the optical system\n");
-//	printf("light_ray_data contents\n");
-//	printf("number of rays: %d, %d\n",num_rays,num_rays);
-////	printf("number of rays that made it through: %d\n",ctr_propagated_rays);
-//	printf("ray_source_coordinates (1st): %f, %f, %f\n",light_ray_data[0].ray_source_coordinates.x,light_ray_data[0].ray_source_coordinates.y,light_ray_data[0].ray_source_coordinates.z);
-//	printf("ray_source_coordinates (last): %f, %f, %f\n",light_ray_data[num_rays-1].ray_source_coordinates.x,light_ray_data[num_rays-1].ray_source_coordinates.y,light_ray_data[num_rays-1].ray_source_coordinates.z);
-//	printf("ray_propagation_direction (1st): %f, %f, %f\n",light_ray_data[0].ray_propagation_direction.x,light_ray_data[0].ray_propagation_direction.y,light_ray_data[0].ray_propagation_direction.z);
-//	printf("ray_propagation_direction (last): %f, %f, %f\n",light_ray_data[num_rays-1].ray_propagation_direction.x,light_ray_data[num_rays-1].ray_propagation_direction.y,light_ray_data[num_rays-1].ray_propagation_direction.z);
-//	printf("ray_wavelength (1st, last): %f, %f\n",light_ray_data[0].ray_wavelength,light_ray_data[num_rays-1].ray_wavelength);
-//	printf("ray_radiance (1st, last): %G, %G\n",light_ray_data[0].ray_radiance,light_ray_data[num_rays-3].ray_radiance);
-
-
-//	// free arrays
-//	cudaFree(d_element_center);
-//	cudaFree(d_element_plane_parameters);
-//	cudaFree(d_element_system_index);
-//	cudaFree(d_element_data);
-//
-//	free(element_center_2);
-//	free(element_plane_parameters_2);
-
-
-//	// save light_ray_data direction to file
-//	filename = "/home/barracuda/a/lrajendr/Projects/camera_simulation/light_ray_dir.bin";
-//	std::ofstream file_light_ray_data_0(filename.c_str(),ios::out | ios::binary);
-//	int k1;
-//	for(k1 = 0; k1 < num_rays; k1++)
-//	{
-//		file_light_ray_data_0.write((char*)&light_ray_data[k1].ray_propagation_direction.x,sizeof(float));
-//		file_light_ray_data_0.write((char*)&light_ray_data[k1].ray_propagation_direction.y,sizeof(float));
-//		file_light_ray_data_0.write((char*)&light_ray_data[k1].ray_propagation_direction.z,sizeof(float));
-//	}
-
-//	file_light_ray_data_0.close();
-//	//--------------------------------------------------------------------------------------
-//	// save light_ray_data to file
-//	//--------------------------------------------------------------------------------------
-//
-//	printf("saving light ray data to file\n");
-//	// position
-//	filename = "/home/barracuda/a/lrajendr/Projects/camera_simulation/LRD_pos.bin";
-//	std::ofstream file_light_ray_data(filename.c_str(),ios::out | ios::binary);
-//	int k1;
-//	for(k1 = 0; k1 < num_rays; k1++)
-//	{
-//		file_light_ray_data.write((char*)&light_ray_data[k1].ray_source_coordinates.x,sizeof(float));
-//		file_light_ray_data.write((char*)&light_ray_data[k1].ray_source_coordinates.y,sizeof(float));
-//		file_light_ray_data.write((char*)&light_ray_data[k1].ray_source_coordinates.z,sizeof(float));
-//	}
-//
-//	file_light_ray_data.close();
-//
-//	// direction
-//	filename = "/home/barracuda/a/lrajendr/Projects/camera_simulation/LRD_dir.bin";
-//	std::ofstream file_light_ray_data_2(filename.c_str(),ios::out | ios::binary);
-//	for(k1 = 0; k1 < num_rays; k1++)
-//	{
-//		file_light_ray_data_2.write((char*)&light_ray_data[k1].ray_propagation_direction.x,sizeof(float));
-//		file_light_ray_data_2.write((char*)&light_ray_data[k1].ray_propagation_direction.y,sizeof(float));
-//		file_light_ray_data_2.write((char*)&light_ray_data[k1].ray_propagation_direction.z,sizeof(float));
-//	}
-//
-//	file_light_ray_data_2.close();
-//
-//	// wavelength
-//	filename = "/home/barracuda/a/lrajendr/Projects/camera_simulation/LRD_wavelength.bin";
-//	std::ofstream file_light_ray_data_3(filename.c_str(),ios::out | ios::binary);
-//	for(k1 = 0; k1 < num_rays; k1++)
-//		file_light_ray_data_3.write((char*)&light_ray_data[k1].ray_wavelength,sizeof(float));
-//
-//	file_light_ray_data_3.close();
-//
-//	// radiance
-//	filename = "/home/barracuda/a/lrajendr/Projects/camera_simulation/LRD_radiance.bin";
-//	std::ofstream file_light_ray_data_4(filename.c_str(),ios::out | ios::binary);
-//	for(k1 = 0; k1 < num_rays; k1++)
-//		file_light_ray_data_4.write((char*)&light_ray_data[k1].ray_radiance,sizeof(double));
-//
-//	file_light_ray_data_4.close();
 
 	//--------------------------------------------------------------------------------------
 	// intersect rays with sensor
@@ -2630,87 +2518,9 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	// number of pixels in the image
 	int num_pixels = camera_design_p->x_pixel_number * camera_design_p->y_pixel_number;
 
-//	// print image array contents before intersecting the rays with the sensor
-//	printf("before intersecting rays with sensor\n");
-//	printf("image array\n");
-//	printf("first three: %g, %g, %g\n",image_array[0],image_array[1],image_array[2]);
-//	printf("last three: %g, %g, %g\n",image_array[num_pixels-3],image_array[num_pixels-2],image_array[num_pixels-1]);
-//
-//	// perform ray intersection with the sensor and the radiance integration on the gpu
-//	intersect_sensor<<<grid,block>>>(d_light_ray_data,d_camera_design, d_image_array, lightray_number_per_particle,num_rays);
-//
-//	// wait for all the threads to finish computation before proceeding to the next step
-//	cudaDeviceSynchronize();
-
-//	// copy image data to CPU
-//	cudaMemcpy(image_array,d_image_array,sizeof(double)*camera_design_p->x_pixel_number*camera_design_p->y_pixel_number,cudaMemcpyDeviceToHost);
-//
-//	// display image array contents after intersecting the rays with the sensor
-//	printf("finished intersecting rays with sensor\n");
-//	printf("image array\n");
-//	printf("first three: %G, %G, %G\n",image_array[0],image_array[1],image_array[2]);
-//	printf("last three: %G, %G, %G\n",image_array[num_pixels-3],image_array[num_pixels-2],image_array[num_pixels-1]);
-//
-//	// save image array to file
-//	filename = "/home/barracuda/a/lrajendr/Projects/camera_simulation/image_array.bin";
-//	std::ofstream file_image_array(filename.c_str(), ios::out | ios::binary);
-//	for(k = 0; k < num_pixels;k++)
-//		file_image_array.write((char*)&image_array[k],sizeof(double));
-//
-//	file_image_array.close();
-
-//	// copy light ray data to CPU
-//	cudaMemcpy(light_ray_data,d_light_ray_data,sizeof(light_ray_data_t)*num_rays,cudaMemcpyDeviceToHost);
-//
-//
-//	 // increment sensor pixel irradiance
-//	int image_index;
-//	double pixel_increment;
-//	int n;
-//	int x_pixel_number = camera_design_p->x_pixel_number;
-//	int y_pixel_number = camera_design_p->y_pixel_number;
-//	int ii_indices[4];
-//	int jj_indices[4];
-//	double pixel_weights[4];
-//	int num_pixels = 4;
-//	for(n = 0; n < num_rays; n++)
-//	{
-////		int* ii_indices = light_ray_data[n].ii_indices;
-////		int* jj_indices = light_ray_data[n].jj_indices;
-////		double* pixel_weights = light_ray_data[n].pixel_weights;
-//
-//		memcpy(ii_indices,light_ray_data[n].ii_indices,sizeof(int)*num_pixels);
-//		memcpy(jj_indices,light_ray_data[n].jj_indices,sizeof(int)*num_pixels);
-//		memcpy(pixel_weights,light_ray_data[n].pixel_weights,sizeof(double)*num_pixels);
-//
-//
-//		pixel_increment = 0.0;
-//
-//		for(k = 0; k < num_pixels; k++)
-//		{
-//			if(ii_indices[k]<0 || ii_indices[k]>=y_pixel_number || jj_indices[k]<0 || jj_indices[k]>=x_pixel_number)
-//				continue;
-//
-//			image_index = ii_indices[k]*x_pixel_number + jj_indices[k];
-//			pixel_increment = pixel_weights[k]*light_ray_data[n].ray_radiance*light_ray_data[n].cos_4_alpha;
-//
-//	//		// dangerous way to do it (possible race condition)
-//			image_array[image_index] += pixel_increment;
-//	//
-//			// dumb way to do it
-//			// if pixel_increment is less than 10^-7, then float value will be zero, and can't do
-//			// atomics
-//	//		pixel_increment*=1e10;
-//
-//		}
-//
-//	}
-//
-//
-
 	parallel_ray_tracing<<<grid,block>>>(lens_pitch, image_distance,scattering_data,
 						scattering_type, lightfield_source,lightray_number_per_particle, n_min, n_max,
-						beam_wavelength,aperture_f_number,d_light_ray_data,num_rays,d_rand1,d_rand2,
+						beam_wavelength,aperture_f_number,num_rays,d_rand1,d_rand2,
 						d_element_data, d_element_center,d_element_plane_parameters,
 						d_element_system_index,num_elements,
 						d_camera_design, d_image_array);
@@ -2724,6 +2534,13 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	printf("first three: %G, %G, %G\n",image_array[0],image_array[1],image_array[2]);
 	printf("last three: %G, %G, %G\n",image_array[num_pixels-3],image_array[num_pixels-2],image_array[num_pixels-1]);
 
+	printf("saving image array to file");
+	filename = "/home/barracuda/a/lrajendr/Projects/camera_simulation/image_array.bin";
+	std::ofstream file_image_array(filename.c_str(),ios::out | ios::binary);
+	for(k = 0; k < num_pixels; k++)
+		file_image_array.write((char*)&image_array[k],sizeof(double));
+
+	file_image_array.close();
 
 	// Destroy pointers to arrays
 	free(h_rand1);
@@ -2756,8 +2573,6 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	cudaFree(d_image_array);
 
 
-	cudaFree(d_light_ray_data);
-	free(light_ray_data);
 }
 
 
