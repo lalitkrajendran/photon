@@ -68,7 +68,7 @@ __device__ light_ray_data_t generate_lightfield_angular_data(float lens_pitch, f
 		scattering_data_t scattering_data, int scattering_type, lightfield_source_single_t lightfield_source,
                                      int lightray_number_per_particle, int n_min, int n_max, float beam_wavelength,
                                      float aperture_f_number, int num_rays,
-                                     float* rand_array_1,float* rand_array_2)
+                                     float rand_num_1,float rand_num_2)
 
 {
 	/*
@@ -78,34 +78,10 @@ __device__ light_ray_data_t generate_lightfield_angular_data(float lens_pitch, f
 		source point.
 	*/
 
-	//--------------------------------------------------------------------------------------
-	// compute indices to access in lightfield_source and lightfield_data
-	//--------------------------------------------------------------------------------------
-	// find global thread ID
-	int local_thread_id = threadIdx.x;
-
+	// get difference in scattering angle
 	float del_scattering_angle = (scattering_data.scattering_angle[1] - scattering_data.scattering_angle[0])*180.0/M_PI;
-	//float min_scattering_angle = scattering_data.scattering_angle[0];
-
-	// get id of particle which is the source of light rays
-	int local_particle_id = blockIdx.y;
-
-	// get id of ray emitted by the particle
-	int local_ray_id = blockIdx.x*blockDim.x + local_thread_id;
-	int global_ray_id = local_ray_id + local_particle_id*lightray_number_per_particle;
-
-//	// if the ray id is greater than the total number of rays to be simulated, exit.
-//	if(global_ray_id >= num_rays)
-//		return;
-
-	// particle id in the light field source array
-	int current_source_point_number = n_min + local_particle_id;
 
 	// get source coordinates of the light ray
-//	float x_current = lightfield_source.x[current_source_point_number];
-//	float y_current = lightfield_source.y[current_source_point_number];
-//	float z_current = lightfield_source.z[current_source_point_number];
-
 	float x_current = lightfield_source.x;
 	float y_current = lightfield_source.y;
 	float z_current = lightfield_source.z;
@@ -122,13 +98,13 @@ __device__ light_ray_data_t generate_lightfield_angular_data(float lens_pitch, f
 //	float random_number_1 = random_single(seed1,local_ray_id); //global_ray_id);
 //	float random_number_2 = random_single(seed2,local_ray_id); //global_ray_id);
 
-	// read random numbers from file
-	float random_number_1 = rand_array_1[local_ray_id];
-	float random_number_2 = rand_array_2[local_ray_id];
+//	// generate random points on the lens where the rays should intersect
+//	float x_lens = 0.5*lens_pitch*sqrt(random_number_1)*cos(2*M_PI*random_number_2);
+//	float y_lens = 0.5*lens_pitch*sqrt(random_number_1)*sin(2*M_PI*random_number_2);
 
 	// generate random points on the lens where the rays should intersect
-	float x_lens = 0.5*lens_pitch*sqrt(random_number_1)*cos(2*M_PI*random_number_2);
-	float y_lens = 0.5*lens_pitch*sqrt(random_number_1)*sin(2*M_PI*random_number_2);
+	float x_lens = 0.5*lens_pitch*sqrt(rand_num_1)*cos(2*M_PI*rand_num_2);
+	float y_lens = 0.5*lens_pitch*sqrt(rand_num_1)*sin(2*M_PI*rand_num_2);
 
 	// calculate the x angles for the light rays
 	float theta_temp = -(x_lens - x_current) / (image_distance - z_current);
@@ -1141,24 +1117,6 @@ __device__ light_ray_data_t propagate_rays_through_optical_system(element_data_t
 	// % 'light_ray_data' through the optical system defined by the input
 	// % arguments.
 
-	//--------------------------------------------------------------------------------------
-	// compute indices to access in light_ray_data
-	//--------------------------------------------------------------------------------------
-
-	// find global thread ID
-	int local_thread_id = threadIdx.x;
-
-	// get id of particle which is the source of light rays
-	int particle_id = blockIdx.y;
-
-	// get id of ray emitted by the particle
-	int local_ray_id = blockIdx.x*blockDim.x + local_thread_id;
-	int global_ray_id = local_ray_id + particle_id*lightray_number_per_particle;
-
-	// if the current ray ID is greater than the total number of rays, then exit
-//	if(global_ray_id >= num_rays)
-//		return;
-
 	int k;
 	// % This is the number of sequential optical elements within the total
 	// % optical system that the light rays must be iteratively passed through
@@ -1524,15 +1482,15 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 
 	light_ray_data_t light_ray_data = generate_lightfield_angular_data(lens_pitch, image_distance,scattering_data,
 				scattering_type, lightfield_source_shared,lightray_number_per_particle, n_min, n_max,
-				beam_wavelength,aperture_f_number,num_rays,rand_array_1,rand_array_2);
+				beam_wavelength,aperture_f_number,num_rays,rand_array_1[local_ray_id],rand_array_2[local_ray_id]);
 
 	light_ray_data = propagate_rays_through_optical_system(element_data, element_center,
 			element_plane_parameters,element_system_index,num_elements,num_rays,
 			lightray_number_per_particle,light_ray_data);
 
 	camera_design_t camera_design = *camera_design_p;
-	// perform ray intersection with the sensor and the radiance integration on the gpu
 
+	// perform ray intersection with the sensor and the radiance integration on the gpu
 	pixel_data_t pixel_data = intersect_sensor(light_ray_data,camera_design,
 			lightray_number_per_particle,num_rays);
 
