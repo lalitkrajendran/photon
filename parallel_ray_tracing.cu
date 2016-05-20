@@ -33,6 +33,7 @@ cudaArray *data_array = 0;
 texture<float, 2> mie_scattering_irradiance;
 
 __shared__ lightfield_source_single_t lightfield_source_shared;
+
 __device__ float random_single(unsigned int seed, int id)
 {
 	/*
@@ -59,11 +60,6 @@ __device__ float random_single(unsigned int seed, int id)
   return rand_num;
 }
 
-//__global__ void generate_lightfield_angular_data(float lens_pitch, float image_distance,
-//		scattering_data_t scattering_data, int scattering_type, lightfield_source_t lightfield_source,
-//                                     int lightray_number_per_particle, int n_min, int n_max, float beam_wavelength,
-//                                     float aperture_f_number, light_ray_data_t* light_ray_data,int num_rays,
-//                                     float* rand_array_1,float* rand_array_2)
 __device__ light_ray_data_t generate_lightfield_angular_data(float lens_pitch, float image_distance,
 		scattering_data_t scattering_data, int scattering_type, lightfield_source_single_t lightfield_source,
                                      int lightray_number_per_particle, int n_min, int n_max, float beam_wavelength,
@@ -1107,8 +1103,6 @@ __device__ light_ray_data_t propagate_rays_through_multiple_elements(element_dat
 	return light_ray_data;
 }
 
-//__global__ void propagate_rays_through_optical_system(element_data_t* element_data, float3* element_center, float4* element_plane_parameters,
-//		int* element_system_index,int num_elements, int num_rays, int lightray_number_per_particle, light_ray_data_t* light_ray_data)
 __device__ light_ray_data_t propagate_rays_through_optical_system(element_data_t* element_data, float3* element_center, float4* element_plane_parameters,
 		int* element_system_index,int num_elements, int num_rays, int lightray_number_per_particle, light_ray_data_t light_ray_data)
 
@@ -1127,15 +1121,10 @@ __device__ light_ray_data_t propagate_rays_through_optical_system(element_data_t
 			sequential_element_number = element_system_index[k];
 	}
 
-//	if(sequential_element_number==0)
-//		printf("sequential_element_number: %d, element_system_index[0]: %d\n",element_system_index[0]);
 	// % Since the the optical is defined from the sensor moving outward (i.e. the
 	// % opposite direction in which the light will enter a camera system), this
 	// % reverses the indexing of the optical elements so that the first element
 	// % index corresponds to the first optical element that the light will hit
-	int* element_system_index_local = new int[num_elements];
-	for(k = 0; k < num_elements; k++)
-		element_system_index_local[k] = sequential_element_number - element_system_index[k]; // subtracted 1
 
 	// % This iterates through the sequential optical elements propagating the
 	// % light rays through each successive element (or system of coplanar
@@ -1152,11 +1141,11 @@ __device__ light_ray_data_t propagate_rays_through_optical_system(element_data_t
 		int element_ctr = 0;
 		for(k = 0; k < num_elements; k++)
 		{
-			if(element_system_index_local[k]==element_index)
+//			if(element_system_index_local[k]==element_index)
+			if(sequential_element_number - element_system_index[k]==element_index)
 			{
 				current_element_indices[k] = k;
 				element_ctr++;
-//				printf("element_ctr: %d\n",element_ctr);
 			}
 		}
 
@@ -1165,9 +1154,6 @@ __device__ light_ray_data_t propagate_rays_through_optical_system(element_data_t
 		int simultaneous_element_number = element_ctr;
 //		printf("simultaneous_element_number: %d\n",simultaneous_element_number);
 
-		element_data_t* current_optical_element = (element_data_t *) malloc(simultaneous_element_number*sizeof(element_data_t));
-		float4* current_plane_parameters = (float4 *) malloc(simultaneous_element_number*sizeof(float4));
-		float3* current_element_center = (float3 *) malloc(simultaneous_element_number*sizeof(float3));
 
 		// % If there is only a single element that the rays are to be propagated
 		// % through, this propagates the rays through the single element;
@@ -1177,19 +1163,23 @@ __device__ light_ray_data_t propagate_rays_through_optical_system(element_data_t
 		if(simultaneous_element_number == 1)
 		{
 
-			// % This extracts the current optical element data
-			element_data_t current_optical_element_single = element_data[current_element_indices[0]];
-			// % This extracts the current optical element plane parameters
-			float4 current_plane_parameters_single = element_plane_parameters[current_element_indices[0]];
-			// % This extracts the current center of the optical element
-			float3 current_element_center_single = element_center[current_element_indices[0]];
+//			// % This extracts the current optical element data
+//			element_data_t current_optical_element_single = element_data[current_element_indices[0]];
+//			// % This extracts the current optical element plane parameters
+//			float4 current_plane_parameters_single = element_plane_parameters[current_element_indices[0]];
+//			// % This extracts the current center of the optical element
+//			float3 current_element_center_single = element_center[current_element_indices[0]];
 
-			// % This propagates the light rays through the single optical element
-			light_ray_data = propagate_rays_through_single_element(current_optical_element_single, current_element_center_single,
-																   current_plane_parameters_single, light_ray_data);
+			light_ray_data = propagate_rays_through_single_element(element_data[current_element_indices[0]], element_center[current_element_indices[0]],
+																			   element_plane_parameters[current_element_indices[0]],light_ray_data);
+
 		}
 		else
 		{
+
+			element_data_t* current_optical_element = (element_data_t *) malloc(simultaneous_element_number*sizeof(element_data_t));
+			float4* current_plane_parameters = (float4 *) malloc(simultaneous_element_number*sizeof(float4));
+			float3* current_element_center = (float3 *) malloc(simultaneous_element_number*sizeof(float3));
 
 			//# % This initializes a cell array to contain the optical element data
 //			element_data_t current_optical_element[simultaneous_element_number];
@@ -1210,23 +1200,23 @@ __device__ light_ray_data_t propagate_rays_through_optical_system(element_data_t
 
 			//# % This propagates the light rays through the multiple optical
 			//# % elements
-//			light_ray_data[global_ray_id] = propagate_rays_through_multiple_elements(current_optical_element, current_element_center,
-//																	  current_plane_parameters, simultaneous_element_number,light_ray_data[global_ray_id]);
 			light_ray_data = propagate_rays_through_multiple_elements(current_optical_element, current_element_center,
 																	current_plane_parameters, simultaneous_element_number,light_ray_data);
+
+			// free allocated memory
+			free(current_optical_element);
+			free(current_plane_parameters);
+			free(current_element_center);
+
 		}
 
-		// free allocated memory
-		free(current_optical_element);
-		free(current_plane_parameters);
-		free(current_element_center);
 
 
 	}
 
 	// free allocated memory
 	free(current_element_indices);
-	free(element_system_index_local);
+//	free(element_system_index_local);
 
 	return light_ray_data;
 
@@ -1247,31 +1237,8 @@ __device__ double atomicAdd(double* address, double val)
     return __longlong_as_double(old);
 }
 
-//__global__ void intersect_sensor(light_ray_data_t* light_ray_data,camera_design_t* camera_design_p, double* image_array, int lightray_number_per_particle, int num_rays)
 __device__ pixel_data_t intersect_sensor(light_ray_data_t light_ray_data,camera_design_t camera_design, int lightray_number_per_particle, int num_rays)
 {
-	//--------------------------------------------------------------------------------------
-	// compute indices to access in light_ray_data
-	//--------------------------------------------------------------------------------------
-
-	// find global thread ID
-	int local_thread_id = threadIdx.x;
-
-	// get id of particle which is the source of light rays
-	int particle_id = blockIdx.y;
-
-	// get id of ray emitted by the particle
-	int local_ray_id = blockIdx.x*blockDim.x + local_thread_id;
-	int global_ray_id = local_ray_id + particle_id*lightray_number_per_particle;
-
-	// if the current ray ID is greater than the total number of rays, then exit
-//	if(global_ray_id >= num_rays)
-//		return;
-
-	int k;
-
-	// get contents of camera_design struct
-//	camera_design_t camera_design = *camera_design_p;
 
 	//# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	//# % Propagation of the light rays to the sensor                         %
@@ -1317,13 +1284,7 @@ __device__ pixel_data_t intersect_sensor(light_ray_data_t light_ray_data,camera_
 
 	//# % This calculates the indices of the pixel on the sensor that the ray
 	//# % intersects and the relative weighting between the pixels
-	//[ii_indices, jj_indices, pixel_weights] = intersect_sensor_better(piv_simulation_parameters['camera_design'],
-	//                                                                  ray_source_coordinates[:,0],
-	//                                                                  ray_source_coordinates[:,1])
 
-	//# % This function determines the indices of the pixel on the sensor at which
-	//# % the ray intersects.
-	//
 	//# % This is the pixel pitch [micron]
 	float pixel_pitch = camera_design.pixel_pitch;
 	//# % This is the number of pixels in the x-direction
@@ -1409,33 +1370,6 @@ __device__ pixel_data_t intersect_sensor(light_ray_data_t light_ray_data,camera_
 
 	return pixel_data;
 
-////	//# % This is a vector of the ii coordinates
-//	int ii_indices[4] = {ii_ul,ii_ur,ii_ll,ii_lr};
-////	//# % This is a vector of the jj coordinates
-//	int jj_indices[4] = {jj_ul,jj_ur,jj_ll,jj_lr};
-////
-////	//# % This is a vector of pixel weights
-//	double pixel_weights[4] = {w_ul, w_ur, w_ll, w_lr};
-//
-
-//	int image_index;
-//	double pixel_increment;
-//	for(k = 0; k < 4; k++)
-//	{
-//		if(ii_indices[k]<0 || ii_indices[k]>=y_pixel_number || jj_indices[k]<0 || jj_indices[k]>=x_pixel_number)
-//			continue;
-//
-//		image_index = (ii_indices[k]-1)*x_pixel_number + jj_indices[k]-1;
-//		pixel_increment = pixel_weights[k]*light_ray_data[global_ray_id].ray_radiance*cos_4_alpha;
-//
-////		// dangerous way to do it (possible race condition)
-////		image_array[image_index] += pixel_increment;
-//
-//		// dumb way to do it
-//		atomicAdd(&image_array[image_index],pixel_increment);
-//	}
-
-
 }
 
 __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
@@ -1514,7 +1448,7 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 		image_index = (ii_indices[k]-1)*x_pixel_number + jj_indices[k]-1;
 		pixel_increment = pixel_weights[k]*light_ray_data.ray_radiance*cos_4_alpha;
 
-//		// dangerous way to do it (possible race condition)
+//		// (possible race condition)
 //		image_array[image_index] += pixel_increment;
 
 		// dumb way to do it
