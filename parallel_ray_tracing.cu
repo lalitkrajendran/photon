@@ -32,6 +32,7 @@ using namespace std;
 cudaArray *data_array = 0;
 texture<float, 2> mie_scattering_irradiance;
 
+__shared__ lightfield_source_single_t lightfield_source_shared;
 __device__ float random_single(unsigned int seed, int id)
 {
 	/*
@@ -1508,20 +1509,21 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 	// particle id in the light field source array
 	int current_source_point_number = n_min + local_particle_id;
 
-	// create an instance of the light field array that contains information
-	// about one particle
-	lightfield_source_single_t lightfield_source_current;
-
-	// copy data to temporary array
-	lightfield_source_current.x = lightfield_source.x[current_source_point_number];
-	lightfield_source_current.y = lightfield_source.y[current_source_point_number];
-	lightfield_source_current.z = lightfield_source.z[current_source_point_number];
-	lightfield_source_current.radiance = lightfield_source.radiance[current_source_point_number];
-	lightfield_source_current.diameter_index = lightfield_source.diameter_index[current_source_point_number];
-
+	// populate shared memory
+	if(local_thread_id == 0)
+	{
+		/* since all the threads in a given block correspond to rays from the same source
+		 * point, store the source point information in shared memory
+		 */
+		lightfield_source_shared.x = lightfield_source.x[current_source_point_number];
+		lightfield_source_shared.y = lightfield_source.y[current_source_point_number];
+		lightfield_source_shared.z = lightfield_source.z[current_source_point_number];
+		lightfield_source_shared.radiance = lightfield_source.radiance[current_source_point_number];
+		lightfield_source_shared.diameter_index = lightfield_source.diameter_index[current_source_point_number];
+	}
 
 	light_ray_data_t light_ray_data = generate_lightfield_angular_data(lens_pitch, image_distance,scattering_data,
-				scattering_type, lightfield_source_current,lightray_number_per_particle, n_min, n_max,
+				scattering_type, lightfield_source_shared,lightray_number_per_particle, n_min, n_max,
 				beam_wavelength,aperture_f_number,num_rays,rand_array_1,rand_array_2);
 
 	light_ray_data = propagate_rays_through_optical_system(element_data, element_center,
