@@ -1428,18 +1428,18 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 	density_grad_params_t params = *density_grad_params_p;
 	light_ray_data = trace_rays_through_density_gradients(light_ray_data,params);
 
-//	if(isnan(light_ray_data.ray_propagation_direction.x) || isnan(light_ray_data.ray_propagation_direction.y)
-//			|| isnan(light_ray_data.ray_propagation_direction.z))
-//		return;
+	if(isnan(light_ray_data.ray_propagation_direction.x) || isnan(light_ray_data.ray_propagation_direction.y)
+			|| isnan(light_ray_data.ray_propagation_direction.z))
+		return;
 
 	// trace rays through the optical train
 	light_ray_data = propagate_rays_through_optical_system(element_data, element_center,
 			element_plane_parameters,element_system_index,num_elements,num_rays,
 			lightray_number_per_particle,light_ray_data);
 
-//	if(isnan(light_ray_data.ray_propagation_direction.x) || isnan(light_ray_data.ray_propagation_direction.y)
-//				|| isnan(light_ray_data.ray_propagation_direction.z))
-//			return;
+	if(isnan(light_ray_data.ray_propagation_direction.x) || isnan(light_ray_data.ray_propagation_direction.y)
+				|| isnan(light_ray_data.ray_propagation_direction.z))
+			return;
 
 	// perform ray intersection with the sensor and the radiance integration on the gpu
 	camera_design_t camera_design = *camera_design_p;
@@ -1823,6 +1823,7 @@ void read_from_file()
 
 	// specify name of the file containing density gradient data
 	char density_grad_filename[] = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/const_grad.nrrd";
+//	char density_grad_filename[] = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/test.nrrd";
 
 	// call the ray tracing function
 	start_ray_tracing(lens_pitch, image_distance,&scattering_data, scattering_type_str,&lightfield_source,
@@ -2537,7 +2538,7 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 			d_camera_design, d_image_array,d_params_p);
 
 		cudaDeviceSynchronize();
-		break;
+//		break;
 	}
 
 	// copy image data to CPU
