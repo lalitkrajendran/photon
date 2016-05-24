@@ -33,7 +33,12 @@
 								<option id="nvcc.compiler.pic.7668004" name="Position Independent Code (-fPIC)" superClass="nvcc.compiler.pic" value="true" valueType="boolean"/>
 								<option id="nvcc.compiler.include.paths.1077436147" name="Include paths (-I)" superClass="nvcc.compiler.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="/home/barracuda/a/lrajendr/usr/include"/>
+									<listOptionValue builtIn="false" value="/usr/include"/>
+									<listOptionValue builtIn="false" value="/usr/lib64"/>
+									<listOptionValue builtIn="false" value="/usr/local/lib"/>
 									<listOptionValue builtIn="false" value="../"/>
+									<listOptionValue builtIn="false" value="/home/barracuda/a/lrajendr/usr/lib"/>
+									<listOptionValue builtIn="false" value="/home/barracuda/a/lrajendr/usr/"/>
 								</option>
 								<inputType id="nvcc.compiler.input.cu.1779611780" superClass="nvcc.compiler.input.cu"/>
 								<inputType id="nvcc.compiler.input.cpp.1796251513" superClass="nvcc.compiler.input.cpp"/>
@@ -41,8 +46,21 @@
 							</tool>
 							<tool id="nvcc.linker.base.105361983" name="NVCC Linker" superClass="nvcc.linker.base">
 								<option defaultValue="true" id="nvcc.linker.option.shared.608604556" name="Shared (-shared)" superClass="nvcc.linker.option.shared" valueType="boolean"/>
-								<option id="nvcc.linker.option.paths.968646275" name="Library search path (-L)" superClass="nvcc.linker.option.paths"/>
-								<option id="nvcc.linker.option.libs.1107279226" name="Libraries (-l)" superClass="nvcc.linker.option.libs"/>
+								<option id="nvcc.linker.option.paths.968646275" name="Library search path (-L)" superClass="nvcc.linker.option.paths" valueType="libPaths">
+									<listOptionValue builtIn="false" value="/usr/include/"/>
+									<listOptionValue builtIn="false" value="/export/home/a/lrajendr/Software/misc/SchlierenRay/teem/teem-1.11.0-build/bin/"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/"/>
+									<listOptionValue builtIn="false" value="/usr/lib64/"/>
+								</option>
+								<option id="nvcc.linker.option.libs.1107279226" name="Libraries (-l)" superClass="nvcc.linker.option.libs" valueType="libs">
+									<listOptionValue builtIn="false" value="bz2"/>
+									<listOptionValue builtIn="false" value="png"/>
+									<listOptionValue builtIn="false" value="teem"/>
+								</option>
+								<option id="nvcc.linker.option.other.229828285" name="Other options (-Xlinker [option])" superClass="nvcc.linker.option.other" valueType="stringList">
+									<listOptionValue builtIn="false" value="-fPIC"/>
+									<listOptionValue builtIn="false" value="-lteem"/>
+								</option>
 								<inputType id="nvcc.linker.input.1046208344" superClass="nvcc.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
@@ -53,6 +71,8 @@
 								<option id="gnu.both.asm.option.include.paths.2136936727" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="../"/>
 									<listOptionValue builtIn="false" value="/home/barracuda/a/lrajendr/usr/include"/>
+									<listOptionValue builtIn="false" value="/home/barracuda/a/lrajendr/usr/lib"/>
+									<listOptionValue builtIn="false" value="/home/barracuda/a/lrajendr/usr/"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.717802242" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 							</tool>
@@ -104,6 +124,8 @@
 								<option id="nvcc.compiler.include.paths.1104964276" name="Include paths (-I)" superClass="nvcc.compiler.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="../"/>
 									<listOptionValue builtIn="false" value="/home/barracuda/a/lrajendr/usr/include"/>
+									<listOptionValue builtIn="false" value="/home/barracuda/a/lrajendr/usr/lib"/>
+									<listOptionValue builtIn="false" value="/home/barracuda/a/lrajendr/usr/"/>
 								</option>
 								<inputType id="nvcc.compiler.input.cu.58295553" superClass="nvcc.compiler.input.cu"/>
 								<inputType id="nvcc.compiler.input.cpp.203924285" superClass="nvcc.compiler.input.cpp"/>
@@ -118,6 +140,12 @@
 							</tool>
 							<tool id="nvcc.archiver.base.945100647" name="NVCC Archiver" superClass="nvcc.archiver.base"/>
 							<tool id="com.nvidia.host.assembler.676737244" name="Host Assembler" superClass="com.nvidia.host.assembler">
+								<option id="gnu.both.asm.option.include.paths.1036568181" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="../"/>
+									<listOptionValue builtIn="false" value="/home/barracuda/a/lrajendr/usr/include"/>
+									<listOptionValue builtIn="false" value="/home/barracuda/a/lrajendr/usr/lib"/>
+									<listOptionValue builtIn="false" value="/home/barracuda/a/lrajendr/usr/"/>
+								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.1592976189" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 							</tool>
 						</toolChain>
@@ -179,10 +207,10 @@
 		<scannerConfigBuildInfo instanceId="com.nvidia.cuda.ide.configuration.so.debug.1095736804;com.nvidia.cuda.ide.configuration.so.debug.1095736804.;nvcc.compiler.base.1077345921;nvcc.compiler.input.cu.1779611780">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="com.nvidia.cuda.ide.build.NVCCPerProjectProfile"/>
 		</scannerConfigBuildInfo>
-		<scannerConfigBuildInfo instanceId="com.nvidia.cuda.ide.configuration.so.debug.1356475313;com.nvidia.cuda.ide.configuration.so.debug.1356475313.;nvcc.compiler.base.1359733233;nvcc.compiler.input.cpp.1221868735">
+		<scannerConfigBuildInfo instanceId="com.nvidia.cuda.ide.configuration.so.debug.1095736804">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="com.nvidia.cuda.ide.build.NVCCPerProjectProfile"/>
 		</scannerConfigBuildInfo>
-		<scannerConfigBuildInfo instanceId="com.nvidia.cuda.ide.configuration.so.debug.1095736804">
+		<scannerConfigBuildInfo instanceId="com.nvidia.cuda.ide.configuration.so.debug.1356475313;com.nvidia.cuda.ide.configuration.so.debug.1356475313.;nvcc.compiler.base.1359733233;nvcc.compiler.input.cpp.1221868735">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="com.nvidia.cuda.ide.build.NVCCPerProjectProfile"/>
 		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="com.nvidia.cuda.ide.configuration.so.release.582358932;com.nvidia.cuda.ide.configuration.so.release.582358932.;nvcc.compiler.base.604876087;nvcc.compiler.input.cu.58295553">

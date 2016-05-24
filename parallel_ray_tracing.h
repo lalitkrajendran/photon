@@ -180,10 +180,26 @@ struct pixel_data_t
 	double4 pixel_weights;
 	double cos_4_alpha;
 };
+
+struct density_grad_params_t
+{
+	float3 min_bound;
+	float3 max_bound;
+	int data_width;
+	int data_height;
+	int data_depth;
+	float step_size;
+	float data_min;
+	float data_max;
+	float4* data;
+};
+
+
+
 __device__ void parallel_ray_tracing(float , float , scattering_data_t* , int ,
 		lightfield_source_t* ,int , int , int , float , float , light_ray_data_t* , int ,
 		 float* ,float* ,element_data_t* , float3* , float4* , int* ,int , camera_design_t* ,
-		 double* );
+		 double* ,density_grad_params_t* );
 
 __device__ light_ray_data_t generate_lightfield_angular_data(float ,float,scattering_data_t* ,
 		int , lightfield_source_single_t , int , int , int, float, float,light_ray_data_t,int,
@@ -193,15 +209,6 @@ __device__ light_ray_data_t propagate_rays_through_optical_system(element_data_t
 		int* , int , int , int , light_ray_data_t);
 
 __device__ pixel_data_t intersect_sensor(light_ray_data_t ,camera_design_t , int, int);
-
-//__global__ void generate_lightfield_angular_data(float ,float,scattering_data_t* ,
-//		int , lightfield_source_t* , int , int , int, float, float,light_ray_data_t*,int,
-//		float*, float*);
-//
-//__global__ void propagate_rays_through_optical_system(element_data_t*, float3* , float4* ,
-//		int* , int , int , int , light_ray_data_t*);
-//
-//__global__ void intersect_sensor(light_ray_data_t* ,camera_design_t* , double* , int, int);
 
 __device__ float random_single(unsigned int );
 
@@ -215,21 +222,19 @@ __device__ float measure_distance_to_optical_axis(float3 , float3 , float );
 __device__ void argsort(float* , int , int*);
 __device__ double atomicAdd(double* , double);
 
-
-
-
-
 extern "C"
 {
 
 void save_to_file(float , float ,scattering_data_t* , char* ,lightfield_source_t* ,
 		int ,int , int, float, float,int , double (*element_center)[3],element_data_t* ,
-		double (*element_plane_parameters)[4], int* ,camera_design_t* , double*);
+		double (*element_plane_parameters)[4], int* ,camera_design_t* , double*,
+		char* );
 void read_from_file();
 int add(int a, int b);
 void start_ray_tracing(float , float ,scattering_data_t* , char* ,lightfield_source_t* ,
 		int ,int , int, float, float, int , double (*element_center)[3],element_data_t*,
-		double (*element_plane_parameters)[4], int* ,camera_design_t* , double*);
+		double (*element_plane_parameters)[4], int* ,camera_design_t* , double*,
+		char* );
 
 }
 
