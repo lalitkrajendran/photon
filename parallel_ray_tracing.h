@@ -152,6 +152,14 @@ typedef struct element_data_t
 	float z_inter_element_distance;
 }element_data_t;
 
+typedef struct optical_element_t
+{
+	element_data_t element_data;
+	float3 element_center;
+	float4 element_plane_parameters;
+	int element_system_index;
+}optical_element_t;
+
 // this structure contains the data that characterizes the camera
 typedef struct camera_design_t
 {
