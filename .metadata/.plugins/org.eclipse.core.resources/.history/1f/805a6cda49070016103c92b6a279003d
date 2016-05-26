@@ -1,0 +1,18 @@
+/*
+ * parallel_ray_tracing.h
+ *
+ *  Created on: Apr 20, 2016
+ *      Author: lrajendr
+ */
+
+#ifndef PARALLEL_RAY_TRACING_H_
+#define PARALLEL_RAY_TRACING_H_
+
+extern "C"{
+
+
+}
+
+
+
+#endif /* PARALLEL_RAY_TRACING_H_ */

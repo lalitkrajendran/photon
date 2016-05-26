@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section name="Workbench">
+	<section name="org.eclipse.ui.texteditor.FindReplaceDialog_dialogBounds">
+		<item value="313" key="DIALOG_WIDTH"/>
+		<item value="504" key="DIALOG_Y_ORIGIN"/>
+		<item value="420" key="DIALOG_HEIGHT"/>
+		<item value="701" key="DIALOG_X_ORIGIN"/>
+		<item value="1|Sans|10.0|0|GTK|1|" key="DIALOG_FONT_NAME"/>
+	</section>
+	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
+		<item value="true" key="wrap"/>
+		<item value="false" key="isRegEx"/>
+		<item value="false" key="casesensitive"/>
+		<item value="false" key="incremental"/>
+		<item value="false" key="wholeword"/>
+		<item value="lightfield_data_p" key="selection"/>
+		<list key="findhistory">
+			<item value="lightfield_data_p"/>
+			<item value="lightfield_"/>
+			<item value="tex_data"/>
+			<item value="dot("/>
+			<item value="+"/>
+			<item value="float3"/>
+			<item value="curand"/>
+			<item value="PI"/>
+		</list>
+		<list key="replacehistory">
+			<item value="mie_scattering_irradiance"/>
+		</list>
+	</section>
+</section>

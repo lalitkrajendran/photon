@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename resource &apos;parallel_ray_tracing/utility.cpp&apos; to &apos;float3_operators.cpp&apos;" description="Rename resource &apos;utility.cpp&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="utility.cpp" name="float3_operators.cpp" stamp="1461371291897" updateReferences="true"/>
+</session>

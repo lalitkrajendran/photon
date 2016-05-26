@@ -1,0 +1,63 @@
+/*
+ * parallel_ray_tracing.cu
+ *
+ *  Created on: Apr 20, 2016
+ *      Author: lrajendr
+ */
+#include <stdio>
+#include "parallel_ray_tracing.h"
+
+extern "C"{
+
+void start_ray_tracing(float lens_pitch, float image_distance,
+		scattering_data_t* scattering_data_p, char* scattering_type,
+		lightfield_source_t* lightfield_source_p, int lightray_number_per_particle,
+		int n_min, int n_max)
+{
+	// create instance of structure using the pointers
+	scattering_data_t scattering_data = *scattering_data_p;
+	lightfield_source_t lightfield_source = *lightfield_source_p;
+	lightfield_data_t lightfield_data;
+
+	// initialize looping variables
+	int i, j;
+
+	// display contents of all data structures to ensure that you are able to access
+	// them
+
+	printf("lens_pitch: %f, image_distance: %f\n",lens_pitch,image_distance);
+
+	printf("scattering_data\n");
+	printf("beam_propogation_vector: %f, %f, %f\n", scattering_data.beam_propogation_vector[0],
+			scattering_data.beam_propogation_vector[1],scattering_data.beam_propogation_vector[2]);
+	printf("inverse_rotation_matrix: [");
+	for(i = 0; i < 3; i++)
+	{
+		for(j = 0; j < 3; j++)
+			printf("%f, ",scattering_data.inverse_rotation_matrix[i][j]);
+		printf(";");
+	}
+	printf("\n");
+	printf("num_angles: %d\n",scattering_data.num_angles);
+	printf("scattering_angles: 1:3 - %f,%f,%f\n",scattering_data.scattering_angle[0],scattering_data.scattering_angle[1],
+			scattering_data.scattering_angle[2]);
+	printf("scattering_angles: last three - %f,%f,%f\n",scattering_data.scattering_angle[scattering_data.num_angles-3],
+				scattering_data.scattering_angle[scattering_data.num_angles-2],
+				scattering_data.scattering_angle[scattering_data.num_angles-1]);
+
+	printf("scattering_irradiance: 1:3 - %f,%f,%f\n",scattering_data.scattering_irradiance[0],scattering_data.scattering_irradiance[1],
+				scattering_data.scattering_irradiance[2]);
+	printf("scattering_irradiance: last three - %f,%f,%f\n",scattering_data.scattering_irradiance[scattering_data.num_angles-3],
+					scattering_data.scattering_irradiance[scattering_data.num_angles-2],
+					scattering_data.scattering_irradiance[scattering_data.num_angles-1]);
+
+
+	printf("scattering_type: %s\n", scattering_type);
+
+//	return &lightfield_data;
+}
+
+
+}
+
+

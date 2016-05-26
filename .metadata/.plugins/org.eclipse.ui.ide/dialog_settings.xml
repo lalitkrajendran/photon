@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section name="Workbench">
+	<list key="installedFeatures">
+		<item value="com.nvidia.cuda.ide.feature:7.0.0.201502181012"/>
+		<item value="org.eclipse.cdt.build.crossgcc:8.1.2.nvidia-qualifier"/>
+		<item value="org.eclipse.cdt.gdb:7.0.0.201302132326"/>
+		<item value="org.eclipse.cdt.launch.remote:6.0.0.201302132326"/>
+		<item value="org.eclipse.cdt:8.1.2.nvidia-qualifier"/>
+		<item value="org.eclipse.cvs:1.3.201.v20130116-085741-7B79FJKAkF7BG7NGE4IAJT"/>
+		<item value="org.eclipse.egit:3.0.3.201309161630-r"/>
+		<item value="org.eclipse.help:1.4.1.v20120912-145617-8R7xFOXFLWUl7PpMEeZNIGkb4"/>
+		<item value="org.eclipse.jgit:3.0.3.201309161630-r"/>
+		<item value="org.eclipse.platform:3.8.1.v20130118-180812-9jF7oIBFG8eU2pim-VbIlTuQjY0RWWK3x-bv4I"/>
+		<item value="org.eclipse.rcp:3.8.2.v20130118-180157-96BuGOZFxwOAeG8Ofmqicz0tPK"/>
+		<item value="org.eclipse.rse.core:3.4.1.nvidia-qualifier"/>
+		<item value="org.eclipse.rse.ftp:3.1.0.201302062102"/>
+		<item value="org.eclipse.rse.local:2.1.400.201302062104"/>
+		<item value="org.eclipse.rse.ssh:3.0.500.201305201712"/>
+		<item value="org.eclipse.rse.telnet:2.3.0.201205241511"/>
+		<item value="org.eclipse.rse.terminals:1.2.1.201301071106"/>
+		<item value="org.eclipse.tm.terminal:3.2.2.201301071106"/>
+		<item value="org.python.pydev.feature.source:4.5.5.201603221110"/>
+		<item value="org.python.pydev.feature:4.5.5.201603221110"/>
+	</list>
+	<section name="NewWizardAction">
+	</section>
+</section>

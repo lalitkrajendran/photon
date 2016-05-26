@@ -55,12 +55,12 @@ data['y'] = np.linspace(-15e4,15e4,ny).astype('float32') - Y_Velocity/2
 # data['z'] = np.linspace(-15e3,15e3,nz).astype('float32') + z_object - Z_Velocity/2
 #data['z'] = np.linspace(8.7e5,9.5e5,nz).astype('float32')
 data['z'] = np.linspace(Z_Min,Z_Max,nz).astype('float32') + z_object
-
+'''
 # convert co-ordinates from microns to meters
 data['x']/=1.0e6
 data['y']/=1.0e6
 data['z']/=1.0e6
-
+'''
 # specify gradients for x and y directions
 grad_x = 2.0
 grad_y = 0.0

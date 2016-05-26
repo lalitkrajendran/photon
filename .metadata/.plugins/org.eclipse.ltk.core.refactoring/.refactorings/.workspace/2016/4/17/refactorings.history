@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">&#x0A;<refactoring comment="Delete resource &apos;parallel_ray_tracing&apos;" deleteContents="false" description="Delete resource &apos;parallel_ray_tracing&apos;" element1="/parallel_ray_tracing" flags="7" id="org.eclipse.ltk.core.refactoring.delete.resources" resources="1" stamp="1461185297789"/>&#x0A;<refactoring comment="Delete resource &apos;parallel_ray_tracing/float3_operators.cpp&apos;" deleteContents="false" description="Delete resource &apos;parallel_ray_tracing/float3_operators.cpp&apos;" element1="/parallel_ray_tracing/float3_operators.cpp" flags="7" id="org.eclipse.ltk.core.refactoring.delete.resources" resources="1" stamp="1461371334416"/>
+</session>
