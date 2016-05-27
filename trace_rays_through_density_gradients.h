@@ -222,13 +222,13 @@ __device__ light_ray_data_t trace_rays_through_density_gradients(light_ray_data_
 // 			printf("normal: %f, %f, %f\n",normal.x,normal.y,normal.z);
  		//#if !LINE_OF_SIGHT
  		dir = dir + params.step_size*normal;
- 		dir = normalize(dir);
+// 		dir = normalize(dir);
 	    pos = pos + dir*params.step_size; ///old_index;
 
        }
 
  	light_ray_data.ray_source_coordinates = pos;
- 	light_ray_data.ray_propagation_direction = dir;
+ 	light_ray_data.ray_propagation_direction = normalize(dir);
 
  	return light_ray_data;
 }
