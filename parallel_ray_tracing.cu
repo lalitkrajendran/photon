@@ -1347,23 +1347,22 @@ __device__ light_ray_data_t propagate_rays_through_optical_system(element_data_t
 //}
 
 
+//__device__ double atomicAdd(double* address, double val)
+//{
+//    unsigned long long int* address_as_ull =
+//                                          (unsigned long long int*)address;
+//    unsigned long long int old = *address_as_ull, assumed;
+//    do {
+//        assumed = old;
+//        old = atomicCAS(address_as_ull, assumed,
+//                        __double_as_longlong(val +
+//                        __longlong_as_double(assumed)));
+//    } while (assumed != old);
+//    return __longlong_as_double(old);
+//}
 
-
-__device__ double atomicAdd(double* address, double val)
-{
-    unsigned long long int* address_as_ull =
-                                          (unsigned long long int*)address;
-    unsigned long long int old = *address_as_ull, assumed;
-    do {
-        assumed = old;
-        old = atomicCAS(address_as_ull, assumed,
-                        __double_as_longlong(val +
-                        __longlong_as_double(assumed)));
-    } while (assumed != old);
-    return __longlong_as_double(old);
-}
-
-__device__ pixel_data_t intersect_sensor(light_ray_data_t light_ray_data,camera_design_t camera_design, int lightray_number_per_particle, int num_rays)
+__device__ pixel_data_t intersect_sensor(light_ray_data_t light_ray_data,camera_design_t camera_design,
+		int lightray_number_per_particle, int num_rays)
 {
 
 	//# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1502,6 +1501,9 @@ __device__ pixel_data_t intersect_sensor(light_ray_data_t light_ray_data,camera_
 	//	//# % This is a vector of pixel weights
 	pixel_data.pixel_weights = make_double4(w_ul, w_ur, w_ll, w_lr);
 	pixel_data.cos_4_alpha = cos_4_alpha;
+	pixel_data.final_pos.x = ray_source_coordinates.x;
+	pixel_data.final_pos.y = ray_source_coordinates.y;
+
 
 	return pixel_data;
 
@@ -1515,7 +1517,8 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 		 float3* element_center, float4* element_plane_parameters,
 		int* element_system_index,int num_elements,
 		camera_design_t* camera_design_p, double* image_array,
-		density_grad_params_t* density_grad_params_p)//,optical_element_t* optical_element)
+		bool simulate_density_gradients, density_grad_params_t* density_grad_params_p,
+		float* image_float)//,optical_element_t* optical_element)
 
 {
 	// declare element to store optical system information
@@ -1539,6 +1542,8 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 	// particle id in the light field source array
 	int current_source_point_number = n_min + local_particle_id;
 
+	if(current_source_point_number >= lightfield_source.num_particles)
+		return;
 
 	// populate shared memory
 	if(local_thread_id == 0)
@@ -1560,19 +1565,27 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 //			optical_element_shared[i].element_system_index = optical_element[i].element_system_index;
 //		}
 	}
-//	__syncthreads();
+	__syncthreads();
 
 	light_ray_data_t light_ray_data = generate_lightfield_angular_data(lens_pitch, image_distance,scattering_data,
 				scattering_type, lightfield_source_shared,lightray_number_per_particle, n_min, n_max,
 				beam_wavelength,aperture_f_number,num_rays,rand_array_1[local_ray_id],rand_array_2[local_ray_id]);
 
-	// trace the light ray through a medium containing density gradients
-	density_grad_params_t params = *density_grad_params_p;
-	light_ray_data = trace_rays_through_density_gradients(light_ray_data,params);
+//	ray_pos_final[global_ray_id].x = light_ray_data.ray_source_coordinates.x;
+//	ray_pos_final[global_ray_id].y = light_ray_data.ray_source_coordinates.y;
 
-	if(isnan(light_ray_data.ray_propagation_direction.x) || isnan(light_ray_data.ray_propagation_direction.y)
-			|| isnan(light_ray_data.ray_propagation_direction.z))
-		return;
+	// trace the light ray through a medium containing density gradients
+	if(simulate_density_gradients)
+	{
+		density_grad_params_t params = *density_grad_params_p;
+		light_ray_data = trace_rays_through_density_gradients(light_ray_data,params);
+
+		if(isnan(light_ray_data.ray_propagation_direction.x) || isnan(light_ray_data.ray_propagation_direction.y)
+					|| isnan(light_ray_data.ray_propagation_direction.z))
+				return;
+
+	}
+
 
 	// trace rays through the optical train
 	light_ray_data = propagate_rays_through_optical_system(element_data, element_center,
@@ -1605,14 +1618,28 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 
 	for(k = 0; k < 4; k++)
 	{
+		pixel_increment = 0.0;
 		if(ii_indices[k]<0 || ii_indices[k]>=y_pixel_number || jj_indices[k]<0 || jj_indices[k]>=x_pixel_number)
 			continue;
 
 		image_index = (ii_indices[k]-1)*x_pixel_number + jj_indices[k]-1;
 		pixel_increment = pixel_weights[k]*light_ray_data.ray_radiance*cos_4_alpha;
 
-		atomicAdd(&image_array[image_index],pixel_increment);
+//		atomicAdd(&image_array[image_index],pixel_increment);
+		atomicAdd(&image_float[image_index],(float)pixel_increment);
 	}
+
+}
+
+__global__ void convertinttodouble(int2* i_num, double* d_num)
+{
+    int local_threadId = threadIdx.x + threadIdx.y*blockDim.x;
+    int blockId = blockIdx.x + blockIdx.y*gridDim.x;
+    int pixel_id = blockId*blockDim.x*blockDim.y + local_threadId;
+
+	int2 v = i_num[pixel_id];
+
+    d_num[pixel_id] = __hiloint2double(v.y,v.x);
 
 }
 
@@ -1923,59 +1950,48 @@ void read_from_file()
 			std::ios::binary);
 	printf("\n");
 
-	double* image_array = (double *) malloc(camera_design.x_pixel_number*camera_design.y_pixel_number*sizeof(double));
+//	double* image_array = (double *) malloc(camera_design.x_pixel_number*camera_design.y_pixel_number*sizeof(double));
+	float* image_array = (float *) malloc(camera_design.x_pixel_number*camera_design.y_pixel_number*sizeof(float));
 
 	// write image array to file
 	for(k = 0; k < camera_design.x_pixel_number*camera_design.y_pixel_number; k++)
-		file_image_array.read((char*)&image_array[k],sizeof(double));
+		file_image_array.read((char*)&image_array[k],sizeof(float));
 
 	file_image_array.close();
 
-//	//--------------------------------------------------------------------------------------
-//	// save density gradient parameters to file
-//	//--------------------------------------------------------------------------------------
-//	// open file
-//	filename = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/density_grad.bin";
-//	std::ifstream file_density_grad(filename.c_str(), std::ios::in | std::ios::binary);
-//	printf("\n");
-//
-//	density_grad_params_t density_grad_params;
-//	// min bound
-//	printf("min_bound: %f, %f, %f\n",density_grad_params.min_bound.x,density_grad_params.min_bound.y,
-//			density_grad_params.min_bound.z);
-//	file_density_grad.read((char*)&density_grad_params.min_bound.x,sizeof(float));
-//	file_density_grad.read((char*)&density_grad_params.min_bound.y,sizeof(float));
-//	file_density_grad.read((char*)&density_grad_params.min_bound.z,sizeof(float));
-//
-//	// max bound
-//	printf("max_bound: %f, %f, %f\n",density_grad_params.max_bound.x,density_grad_params.max_bound.y,
-//			density_grad_params.max_bound.z);
-//	file_density_grad.read((char*)&density_grad_params.max_bound.x,sizeof(float));
-//	file_density_grad.read((char*)&density_grad_params.max_bound.y,sizeof(float));
-//	file_density_grad.read((char*)&density_grad_params.max_bound.z,sizeof(float));
-//
-//	// data width, height and depth
-//	printf("data_width: %d, data_height: %d, data_depth: %d\n",density_grad_params.data_width,
-//			density_grad_params.data_height, density_grad_params.data_depth);
-//	file_density_grad.read((char*)&density_grad_params.data_width,sizeof(int));
-//	file_density_grad.read((char*)&density_grad_params.data_height,sizeof(int));
-//	file_density_grad.read((char*)&density_grad_params.data_depth,sizeof(int));
-//
-//	// step_size
-//	printf("step_size: %f\n",density_grad_params.step_size);
-//	file_density_grad.read((char*)&density_grad_params.step_size,sizeof(float));
-//
-//	file_density_grad.close();
+	//--------------------------------------------------------------------------------------
+	// read density gradient parameters from file
+	//--------------------------------------------------------------------------------------
+
+	// open file
+	filename = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/density_grad.bin";
+	std::ifstream file_density_grad(filename.c_str(), std::ios::in | std::ios::binary);
+	printf("\n");
+
+
+	bool simulate_density_gradients;
+	// simulate density gradients
+	file_density_grad.read((char*)&simulate_density_gradients,sizeof(bool));
+
+	file_density_grad.close();
+
+
+
+
+	// specify if the density gradient effects have to be simulated or not
+//	bool simulate_density_gradients = true;
+//	bool simulate_density_gradients = false;
 
 	// specify name of the file containing density gradient data
 //	char density_grad_filename[] = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/const_grad.nrrd";
-	char density_grad_filename[] = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/test.nrrd";
+	char density_grad_filename[] = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/const_grad_BOS.nrrd";
+	//	char density_grad_filename[] = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/test.nrrd";
 
 	// call the ray tracing function
 	start_ray_tracing(lens_pitch, image_distance,&scattering_data, scattering_type_str,&lightfield_source,
 			lightray_number_per_particle,n_min, n_max,beam_wavelength,aperture_f_number,
 			num_elements, element_center_p,element_data,element_plane_parameters_p,element_system_index,&camera_design,image_array,
-			density_grad_filename);
+			simulate_density_gradients, density_grad_filename);
 
 }
 
@@ -1985,7 +2001,7 @@ void save_to_file(float lens_pitch, float image_distance,
 		int n_min, int n_max,float beam_wavelength, float aperture_f_number,
 		int num_elements, double (*element_center)[3],element_data_t* element_data_p,
 		double (*element_plane_parameters)[4], int *element_system_index, camera_design_t* camera_design_p,
-		double* image_array, char* density_grad_filename)
+		float* image_array, bool simulate_density_gradients, char* density_grad_filename)
 {
 	/*
 	 * 	This function saves the data passed from python to a file.
@@ -2289,40 +2305,18 @@ void save_to_file(float lens_pitch, float image_distance,
 
 	file_image_array.close();
 
-//	//--------------------------------------------------------------------------------------
-//	// save density gradient parameters to file
-//	//--------------------------------------------------------------------------------------
-//	// open file
-//	filename = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/density_grad.bin";
-//	std::ofstream file_density_grad(filename.c_str(), std::ios::out | std::ios::binary);
-//	printf("\n");
-//
-//	// min bound
-//	printf("min_bound: %f, %f, %f\n",density_grad_params_p->min_bound.x,density_grad_params_p->min_bound.y,
-//			density_grad_params_p->min_bound.z);
-//	file_density_grad.write((char*)&density_grad_params_p->min_bound.x,sizeof(float));
-//	file_density_grad.write((char*)&density_grad_params_p->min_bound.y,sizeof(float));
-//	file_density_grad.write((char*)&density_grad_params_p->min_bound.z,sizeof(float));
-//
-//	// max bound
-//	printf("max_bound: %f, %f, %f\n",density_grad_params_p->max_bound.x,density_grad_params_p->max_bound.y,
-//			density_grad_params_p->max_bound.z);
-//	file_density_grad.write((char*)&density_grad_params_p->max_bound.x,sizeof(float));
-//	file_density_grad.write((char*)&density_grad_params_p->max_bound.y,sizeof(float));
-//	file_density_grad.write((char*)&density_grad_params_p->max_bound.z,sizeof(float));
-//
-//	// data width, height and depth
-//	printf("data_width: %d, data_height: %d, data_depth: %d\n",density_grad_params_p->data_width,
-//			density_grad_params_p->data_height, density_grad_params_p->data_depth);
-//	file_density_grad.write((char*)&density_grad_params_p->data_width,sizeof(int));
-//	file_density_grad.write((char*)&density_grad_params_p->data_height,sizeof(int));
-//	file_density_grad.write((char*)&density_grad_params_p->data_depth,sizeof(int));
-//
-//	// step_size
-//	printf("step_size: %f\n",density_grad_params_p->step_size);
-//	file_density_grad.write((char*)&density_grad_params_p->step_size,sizeof(float));
-//
-//	file_density_grad.close();
+	//--------------------------------------------------------------------------------------
+	// save density gradient parameters to file
+	//--------------------------------------------------------------------------------------
+	// open file
+	filename = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/density_grad.bin";
+	std::ofstream file_density_grad(filename.c_str(), std::ios::out | std::ios::binary);
+	printf("\n");
+
+	// simulate density gradients
+	file_density_grad.write((char*)&simulate_density_gradients,sizeof(bool));
+
+	file_density_grad.close();
 
 //
 }
@@ -2407,8 +2401,8 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 		int n_min, int n_max,float beam_wavelength, float aperture_f_number,
 		int num_elements, double (*element_center)[3],element_data_t* element_data_p,
 				double (*element_plane_parameters)[4], int *element_system_index,
-				camera_design_t* camera_design_p, double* image_array,
-				char* density_grad_filename)
+				camera_design_t* camera_design_p, float* float_image_array,
+				bool simulate_density_gradients, char* density_grad_filename)
 {
 	/*
 	 * This function receives the ray tracing parameters from the python code, allocates
@@ -2446,12 +2440,8 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	scattering_data_t scattering_data = *scattering_data_p;
 	lightfield_source_t lightfield_source = *lightfield_source_p;
 
-	// number of particles that will simulated in one call to the GPU
-	int source_point_number = 10000;
-	// number of the light rays to be generated and traced in a single call
-	int num_rays = source_point_number*lightray_number_per_particle;
 
-	// counter variables for all the for loops in this function
+	// counter variable for all the for loops in this function
 	int k;
 
 	//--------------------------------------------------------------------------------------
@@ -2578,38 +2568,11 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	cudaMemcpy(d_rand1,h_rand1,sizeof(float)*lightray_number_per_particle,cudaMemcpyHostToDevice);
 	cudaMemcpy(d_rand2,h_rand2,sizeof(float)*lightray_number_per_particle,cudaMemcpyHostToDevice);
 
-	//--------------------------------------------------------------------------------------
-	// setup blocks and threads for ray tracing on the GPU
-	//--------------------------------------------------------------------------------------
-
-	// allocate number of threads per block
-	dim3 block(500,1);
-
-	// calculate number of blocks required
-	int grid_x;
-	// if number of light rays to be traced is less than or equal to the number of threads
-	// in one block then just one block is enough
-	if(lightray_number_per_particle<=block.x)
-		grid_x = 1;
-	// if number of light rays to be traced is greater than the number of threads in one block
-	// and it is an exact multiple, then calculate the number of blocks required
-	else if(lightray_number_per_particle>block.x && lightray_number_per_particle%block.x ==0)
-		grid_x = lightray_number_per_particle/block.x;
-	// if number of light rays to be traced is greater than the number of threads in one block
-	// and it is NOT an exact multiple, then use an extra block
-	else
-		grid_x = lightray_number_per_particle/block.x + 1;
-
-	/* allocate number of blocks per grid	 */
-	dim3 grid(grid_x,source_point_number);
-	printf("grid: %d, %d\n",grid_x,source_point_number);
 
 	//--------------------------------------------------------------------------------------
 	// generate light rays
 	//--------------------------------------------------------------------------------------
 
-	// print the number of rays
-	printf("num_rays: %d\n",num_rays);
 
 	//--------------------------------------------------------------------------------------
 	// propagate rays through the optical system
@@ -2701,24 +2664,86 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	int num_pixels = camera_design_p->x_pixel_number * camera_design_p->y_pixel_number;
 
 
+//	// array to store int2 values
+//	float2* d_float_image_array = 0;
+//	// allocate space on the gpu for the array that will hold the image
+//	cudaMalloc((void **)&d_float_image_array, sizeof(float2)*camera_design_p->x_pixel_number*camera_design_p->y_pixel_number);
+//
+//	// set image array intensity to zero
+//	cudaMemset(d_float_image_array,0.0,sizeof(float2)*camera_design_p->x_pixel_number*camera_design_p->y_pixel_number);
+
+	// array to store int2 values
+	float* d_float_image_array = 0;
+	// allocate space on the gpu for the array that will hold the image
+	cudaMalloc((void **)&d_float_image_array, sizeof(float)*camera_design_p->x_pixel_number*camera_design_p->y_pixel_number);
+
+	// set image array intensity to zero
+	cudaMemset(d_float_image_array,0.0,sizeof(float)*camera_design_p->x_pixel_number*camera_design_p->y_pixel_number);
+
+	cudaMemcpy(d_float_image_array,float_image_array,sizeof(float)*camera_design_p->x_pixel_number*camera_design_p->y_pixel_number,cudaMemcpyHostToDevice);
+
 	//--------------------------------------------------------------------------------------
 	// setup density gradient data
 	//--------------------------------------------------------------------------------------
-	density_grad_params_t params = readDatafromFile(density_grad_filename);
-
 	density_grad_params_t* d_params_p = 0;
-	cudaMalloc((void**)&d_params_p, sizeof(density_grad_params_t));
-	cudaMemcpy(d_params_p, &params, sizeof(density_grad_params_t),cudaMemcpyHostToDevice);
 
-	Host_Init(&params,d_params_p);
+	if(simulate_density_gradients)
+	{
+		density_grad_params_t params = readDatafromFile(density_grad_filename);
+		cudaMalloc((void**)&d_params_p, sizeof(density_grad_params_t));
+		cudaMemcpy(d_params_p, &params, sizeof(density_grad_params_t),cudaMemcpyHostToDevice);
 
-//	// check if the trace density gradients function works correcly
-//	check_density_gradients(params);
+		Host_Init(&params,d_params_p);
+
+	//	// check if the trace density gradients function works correctly
+	//	check_density_gradients(params);
+
+	}
+
+	//--------------------------------------------------------------------------------------
+	// setup blocks and threads for ray tracing on the GPU
+	//--------------------------------------------------------------------------------------
+
+	// number of particles that will simulated in one call to the GPU
+	int source_point_number = 10000;
+//	int source_point_number = 100;
+
+	// number of the light rays to be generated and traced in a single call
+	int num_rays = source_point_number*lightray_number_per_particle;
+
+	// allocate number of threads per block
+	dim3 block(500,1);
+
+	// calculate number of blocks required
+	int grid_x;
+	// if number of light rays to be traced is less than or equal to the number of threads
+	// in one block then just one block is enough
+	if(lightray_number_per_particle<=block.x)
+		grid_x = 1;
+	// if number of light rays to be traced is greater than the number of threads in one block
+	// and it is an exact multiple, then calculate the number of blocks required
+	else if(lightray_number_per_particle>block.x && lightray_number_per_particle%block.x ==0)
+		grid_x = lightray_number_per_particle/block.x;
+	// if number of light rays to be traced is greater than the number of threads in one block
+	// and it is NOT an exact multiple, then use an extra block
+	else
+		grid_x = lightray_number_per_particle/block.x + 1;
+
+	/* allocate number of blocks per grid	 */
+	dim3 grid(grid_x,source_point_number);
+
+	printf("grid: %d, %d\n",grid_x,source_point_number);
+
+	// print the number of rays
+	printf("num_rays: %d\n",num_rays);
 
 	//--------------------------------------------------------------------------------------
 	// begin ray tracing
 	//--------------------------------------------------------------------------------------
 
+//	// setup an array to store the final locations of the rays on the camera plane
+//	float2* d_ray_pos_final = 0;
+//	cudaMalloc((void**)&d_ray_pos_final, source_point_number*lightray_number_per_particle*sizeof(float2));
 
 	clock_t begin, end;
 	double time_spent;
@@ -2726,24 +2751,45 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	// begin timer
 	begin = clock();
 
+
 	int KMAX = num_particles/source_point_number;
-	for(k = 0; k < KMAX; k++)
+
+	if(KMAX < 0)
 	{
-		n_min = k*source_point_number;
-		printf("%d out of %d\n",k+1, KMAX);
+		n_min = 0;
 		parallel_ray_tracing<<<grid,block>>>(lens_pitch, image_distance,scattering_data,
 			scattering_type, lightfield_source,lightray_number_per_particle, n_min, n_max,
 			beam_wavelength,aperture_f_number,num_rays,d_rand1,d_rand2,
 			d_element_data, d_element_center,d_element_plane_parameters,
 			d_element_system_index,num_elements,
-			d_camera_design, d_image_array,d_params_p);
+			d_camera_design, d_image_array,simulate_density_gradients, d_params_p, d_float_image_array);
 
 		cudaDeviceSynchronize();
-//		break;
+
+	}
+	else
+	{
+		for(k = 0; k < KMAX; k++)
+		{
+			n_min = k*source_point_number;
+			printf("%d out of %d\n",k+1, KMAX);
+			parallel_ray_tracing<<<grid,block>>>(lens_pitch, image_distance,scattering_data,
+				scattering_type, lightfield_source,lightray_number_per_particle, n_min, n_max,
+				beam_wavelength,aperture_f_number,num_rays,d_rand1,d_rand2,
+				d_element_data, d_element_center,d_element_plane_parameters,
+				d_element_system_index,num_elements,
+				d_camera_design, d_image_array,simulate_density_gradients, d_params_p, d_float_image_array);
+
+			cudaDeviceSynchronize();
+	//		break;
+		}
 	}
 
 	// copy image data to CPU
-	cudaMemcpy(image_array,d_image_array,sizeof(double)*camera_design_p->x_pixel_number*camera_design_p->y_pixel_number,cudaMemcpyDeviceToHost);
+//	cudaMemcpy(image_array,d_image_array,sizeof(double)*camera_design_p->x_pixel_number*camera_design_p->y_pixel_number,cudaMemcpyDeviceToHost);
+
+//	float* float_image_array = new float[num_pixels];
+	cudaMemcpy(float_image_array,d_float_image_array,sizeof(float)*camera_design_p->x_pixel_number*camera_design_p->y_pixel_number,cudaMemcpyDeviceToHost);
 
 	// end timer
 	end = clock();
@@ -2752,22 +2798,53 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	time_spent = (double) (end - begin)/CLOCKS_PER_SEC;
 	printf("time_spent : %f\n", time_spent);
 
-
-
 	// display image array contents after intersecting the rays with the sensor
 	printf("finished intersecting rays with sensor\n");
 	printf("image array\n");
-	printf("first three: %G, %G, %G\n",image_array[0],image_array[1],image_array[2]);
-	printf("last three: %G, %G, %G\n",image_array[num_pixels-3],image_array[num_pixels-2],image_array[num_pixels-1]);
+//	printf("first three: %G, %G, %G\n",image_array[0],image_array[1],image_array[2]);
+//	printf("last three: %G, %G, %G\n",image_array[num_pixels-3],image_array[num_pixels-2],image_array[num_pixels-1]);
+	printf("first three: %G, %G, %G\n",float_image_array[0],float_image_array[1],float_image_array[2]);
+	printf("last three: %G, %G, %G\n",float_image_array[num_pixels-3],float_image_array[num_pixels-2],float_image_array[num_pixels-1]);
 
-	printf("saving image array to file");
+
+	printf("saving image array to file\n");
 //	filename = "/home/barracuda/a/lrajendr/Projects/camera_simulation/image_array_const_grad_x_2.bin";
-	filename = "/home/barracuda/a/lrajendr/Projects/camera_simulation/image_array_2.bin";
+	filename = "/home/barracuda/a/lrajendr/Projects/camera_simulation/image_grad.bin";
 	std::ofstream file_image_array(filename.c_str(),ios::out | ios::binary);
+//	for(k = 0; k < num_pixels; k++)
+//		file_image_array.write((char*)&image_array[k],sizeof(double));
 	for(k = 0; k < num_pixels; k++)
-		file_image_array.write((char*)&image_array[k],sizeof(double));
+			file_image_array.write((char*)&float_image_array[k],sizeof(float));
 
 	file_image_array.close();
+
+//	//--------------------------------------------------------------------------------------
+//	// save final light ray positions to file
+//	//--------------------------------------------------------------------------------------
+//
+//	printf("saving final light ray positions to file\n");
+//
+//	// copy positions to cpu
+//	float2* ray_pos_final = (float2*) malloc(sizeof(float2)*source_point_number*lightray_number_per_particle);
+//	cudaMemcpy(ray_pos_final,d_ray_pos_final,sizeof(float2)*source_point_number*lightray_number_per_particle,
+//			cudaMemcpyDeviceToHost);
+//
+//	// specify filename
+//	filename = "/home/barracuda/a/lrajendr/Projects/camera_simulation/final_pos.bin";
+//
+//	// open file
+//	std::ofstream file_final_pos(filename.c_str(), ios::out | ios::binary);
+//
+//	// write final positions to file
+//	for(k = 0; k < source_point_number*lightray_number_per_particle; k++)
+//		file_final_pos.write((char*)&ray_pos_final[k],sizeof(float2));
+//
+//	// close file
+//	file_final_pos.close();
+//
+//	// free allocated memory
+//	free(ray_pos_final);
+//	cudaFree(d_ray_pos_final);
 
 	// Destroy pointers to arrays
 	free(h_rand1);
@@ -2800,12 +2877,15 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 
 	cudaFree(d_camera_design);
 	cudaFree(d_image_array);
+	cudaFree(d_float_image_array);
 
 
 	cudaUnbindTexture(tex_data);
 	cudaFreeArray(data_array);
 	cudaFree(d_params_p);
 
+	free(float_image_array);
+	cudaFree(d_float_image_array);
 
 }
 

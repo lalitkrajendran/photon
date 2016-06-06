@@ -187,6 +187,7 @@ struct pixel_data_t
 	int4 jj_indices;
 	double4 pixel_weights;
 	double cos_4_alpha;
+	float2 final_pos;
 };
 
 struct density_grad_params_t
@@ -207,7 +208,7 @@ struct density_grad_params_t
 __device__ void parallel_ray_tracing(float , float , scattering_data_t* , int ,
 		lightfield_source_t* ,int , int , int , float , float , light_ray_data_t* , int ,
 		 float* ,float* ,element_data_t* , float3* , float4* , int* ,int , camera_design_t* ,
-		 double* ,density_grad_params_t* );
+		 double* , bool , density_grad_params_t*, float*);
 
 __device__ light_ray_data_t generate_lightfield_angular_data(float ,float,scattering_data_t* ,
 		int , lightfield_source_single_t , int , int , int, float, float,light_ray_data_t,int,
@@ -235,14 +236,14 @@ extern "C"
 
 void save_to_file(float , float ,scattering_data_t* , char* ,lightfield_source_t* ,
 		int ,int , int, float, float,int , double (*element_center)[3],element_data_t* ,
-		double (*element_plane_parameters)[4], int* ,camera_design_t* , double*,
-		char* );
+		double (*element_plane_parameters)[4], int* ,camera_design_t* , float*,
+		bool, char* );
 void read_from_file();
 int add(int a, int b);
 void start_ray_tracing(float , float ,scattering_data_t* , char* ,lightfield_source_t* ,
 		int ,int , int, float, float, int , double (*element_center)[3],element_data_t*,
-		double (*element_plane_parameters)[4], int* ,camera_design_t* , double*,
-		char* );
+		double (*element_plane_parameters)[4], int* ,camera_design_t* , float*,
+		bool, char* );
 
 }
 

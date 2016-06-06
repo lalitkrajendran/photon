@@ -222,7 +222,7 @@ __device__ light_ray_data_t trace_rays_through_density_gradients(light_ray_data_
 // 			printf("normal: %f, %f, %f\n",normal.x,normal.y,normal.z);
  		//#if !LINE_OF_SIGHT
  		dir = dir + params.step_size*normal;
-// 		dir = normalize(dir);
+ 		dir = normalize(dir);
 	    pos = pos + dir*params.step_size; ///old_index;
 
        }
@@ -290,15 +290,15 @@ void loadNRRD(DataFile* datafile, int data_min, int data_max)
 
 	xmin = nrrd->spaceOrigin[0];
 	del_x = nrrd->axis[0].spacing;
-	xmax = xmin + sizex*del_x;
+	xmax = xmin + (sizex-1)*del_x;
 
 	ymin = nrrd->spaceOrigin[1];
 	del_y = nrrd->axis[1].spacing;
-	ymax = ymin + sizey*del_y;
+	ymax = ymin + (sizey-1)*del_y;
 
 	zmin = nrrd->spaceOrigin[2];
 	del_z = nrrd->axis[2].spacing;
-	zmax = zmin + sizez*del_z;
+	zmax = zmin + (sizez-1)*del_z;
 
 	printf("\n******************** Co-ordinate System Info ******************************\n");
 	printf("xmin: %f, xmax: %f, N_x: %d, del_x: %f\n", xmin,xmax,sizex,del_x);
@@ -411,19 +411,30 @@ density_grad_params_t setData(float* data, int data_width, int data_height, int 
 			normal.y = sample1.y - sample2.y;
 			normal.z = sample1.z - sample2.z;
 
-			float4& datap = _params.data[size_t(z*data_width*data_height + y*data_width + x)];
-			datap.x = -normal.x;
-			datap.y = -normal.y;
-			datap.z = -normal.z;
-			datap.w = data[size_t(z*data_width*data_height + y*data_width + x)];
+//			float4& datap = _params.data[size_t(z*data_width*data_height + y*data_width + x)];
+//			datap.x = -normal.x;
+//			datap.y = -normal.y;
+//			datap.z = -normal.z;
+//			datap.w = data[size_t(z*data_width*data_height + y*data_width + x)];
+
+			int data_loc = (z*data_width*data_height + y*data_width + x);
+			_params.data[data_loc].x = -normal.x;
+			_params.data[data_loc].y = -normal.y;
+			_params.data[data_loc].z = -normal.z;
+			_params.data[data_loc].w = data[size_t(z*data_width*data_height + y*data_width + x)];
+
+			if (_params.data[(z*data_width*data_height + y*data_width + x)].w < _params.data_min)
+			  _params.data_min = _params.data[(z*data_width*data_height + y*data_width + x)].w;
 
 			/*
 			if(normal.x !=0 || normal.y !=0 || normal.z!=0)
 				printf("lookup: %f,%f,%f normal: %f, %f, %f \n", lookup.x, lookup.y, lookup.z, normal.x, normal.y, normal.z);
 			*/
 
-			if (datap.w < _params.data_min)
-			  _params.data_min = datap.w;
+//			if (datap.w < _params.data_min)
+//			  _params.data_min = datap.w;
+
+
 		  }
 		}
 	}
@@ -493,8 +504,8 @@ density_grad_params_t readDatafromFile(char* filename)
     step_size = fmin(dataFiles[0]->del_x,dataFiles[0]->del_y);
     step_size = step_size < dataFiles[0]->del_z ? step_size : dataFiles[0]->del_z;
     printf("step_size: %f\n", step_size);
-    _params.step_size = step_size;
-
+//    _params.step_size = step_size;
+    _params.step_size = dataFiles[0]->del_z;
     return _params;
 
 }
