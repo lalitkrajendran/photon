@@ -1854,29 +1854,6 @@ void read_from_file()
 
 	}
 
-//	std::string temp_string_1 = "-np.sqrt((100000.000000)**2-(x**2+y**2))";
-//
-//////	int len = strlen(temp_string);
-//////	element_data[0].element_geometry.front_surface_shape = "-np.sqrt((100000.000000)**2-(x**2+y**2))";
-////	//	element_data[0].element_geometry.front_surface_shape = (char *) malloc(strlen(temp_string)*sizeof(char));
-////	strcpy(element_data[0].element_geometry.front_surface_shape,temp_string.c_str());//"-np.sqrt((100000.000000)**2-(x**2+y**2))");
-//	element_data[0].element_geometry.front_surface_shape = &temp_string_1[0];
-//	printf("front_surface_shape: %s\n",element_data[0].element_geometry.front_surface_shape);
-//////	element_data[0].element_geometry.front_surface_shape[strlen(element_data[0].element_geometry.front_surface_shape)] = '\0';
-////
-//	std::string temp_string_2 = "+np.sqrt((100000.000000)**2-(x**2+y**2))";
-////	strcpy(element_data[0].element_geometry.back_surface_shape,temp_string.c_str());//"+np.sqrt((100000.000000)**2-(x**2+y**2))");
-//////	element_data[0].element_geometry.back_surface_shape = (char *) malloc(strlen(temp_string_2)*sizeof(char));
-//////	strcpy(element_data[0].element_geometry.back_surface_shape,temp_string_2.c_str());
-//	element_data[0].element_geometry.back_surface_shape = &temp_string_2[0];
-//	printf("back_surface_shape: %s\n",element_data[0].element_geometry.back_surface_shape);
-//
-//	// element_type
-//	temp_string = "lens";
-////	strcpy(element_data[0].element_type,"lens");//"lens");
-//	element_data[0].element_type = &temp_string[0];
-//	printf("element_type: %s\n", element_data[0].element_type);
-
 	// element plane parameters
 	double element_plane_parameters[num_elements][4];
 	for(k = 0; k < num_elements; k++)
@@ -1963,28 +1940,25 @@ void read_from_file()
 	// read density gradient parameters from file
 	//--------------------------------------------------------------------------------------
 
-	// open file
-	filename = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/density_grad.bin";
-	std::ifstream file_density_grad(filename.c_str(), std::ios::in | std::ios::binary);
-	printf("\n");
-
-
-	bool simulate_density_gradients;
-	// simulate density gradients
-	file_density_grad.read((char*)&simulate_density_gradients,sizeof(bool));
-
-	file_density_grad.close();
-
-
-
+//	// open file
+//	filename = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/density_grad.bin";
+//	std::ifstream file_density_grad(filename.c_str(), std::ios::in | std::ios::binary);
+//	printf("\n");
+//
+//
+//	bool simulate_density_gradients;
+//	// simulate density gradients
+//	file_density_grad.read((char*)&simulate_density_gradients,sizeof(bool));
+//
+//	file_density_grad.close();
 
 	// specify if the density gradient effects have to be simulated or not
-//	bool simulate_density_gradients = true;
+	bool simulate_density_gradients = true;
 //	bool simulate_density_gradients = false;
 
 	// specify name of the file containing density gradient data
-//	char density_grad_filename[] = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/const_grad.nrrd";
-	char density_grad_filename[] = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/const_grad_BOS.nrrd";
+	char density_grad_filename[] = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/const_grad_BOS_grad_x_20.nrrd";
+//	char density_grad_filename[] = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/const_grad_BOS.nrrd";
 	//	char density_grad_filename[] = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/test.nrrd";
 
 	// call the ray tracing function
@@ -2341,7 +2315,7 @@ void check_density_gradients(density_grad_params_t params)
     std::ifstream posFile (filename_pos.c_str(), std::ios::in | std::ios::binary);
     std::ifstream dirFile (filename_dir.c_str(), std::ios::in | std::ios::binary);
 
-    printf("Reading lightray data from file... ");
+    printf("Reading light ray data from file... ");
 
     // create structure to hold position and direction information
 	light_ray_data_t* light_ray_data = new light_ray_data_t[N];
@@ -2357,6 +2331,15 @@ void check_density_gradients(density_grad_params_t params)
 
     printf("done\n");
 
+    // store initial positions and directions of light rays
+	float3* pos_i = new float3[N];
+	float3* dir_i = new float3[N];
+    for(int i = 0; i < N; i++)
+	{
+		pos_i[i] = light_ray_data[i].ray_source_coordinates;
+		dir_i[i] = light_ray_data[i].ray_propagation_direction;
+	}
+
     // allocate space on the GPU
     light_ray_data_t* d_light_ray_data = 0;
     cudaMalloc((void**)&d_light_ray_data,sizeof(light_ray_data_t)*N);
@@ -2368,6 +2351,25 @@ void check_density_gradients(density_grad_params_t params)
     // copy new light ray data
     cudaMemcpy(light_ray_data,d_light_ray_data,sizeof(light_ray_data_t)*N,cudaMemcpyDeviceToHost);
 
+    // store final positions and directions of light rays
+	float3* pos_f = new float3[N];
+	float3* dir_f = new float3[N];
+    for(int i = 0; i < N; i++)
+	{
+		pos_f[i] = light_ray_data[i].ray_source_coordinates;
+		dir_f[i] = light_ray_data[i].ray_propagation_direction;
+	}
+
+    // display initial and final positions and directions to user
+    for(int i = 0; i < N; i++)
+    {
+    	printf("i: %d\t",i);
+    	printf("pos_i: %G, %G, %G\t", pos_i[i].x, pos_i[i].y, pos_i[i].z);
+    	printf("dir_i: %G, %G, %G\n", dir_i[i].x, dir_i[i].y, dir_i[i].z);
+    	printf("pos_f: %G, %G, %G\t", pos_f[i].x, pos_f[i].y, pos_f[i].z);
+    	printf("dir_f: %G, %G, %G\n", dir_f[i].x, dir_f[i].y, dir_f[i].z);
+    }
+
     // save new position and direction to file
     filename_pos = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/lightrayPos_f.bin";
     filename_dir = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/lightrayDir_f.bin";
@@ -2375,7 +2377,7 @@ void check_density_gradients(density_grad_params_t params)
     std::ofstream posFile_f (filename_pos.c_str(), std::ios::out | std::ios::binary);
     std::ofstream dirFile_f (filename_dir.c_str(), std::ios::out | std::ios::binary);
 
-    printf("Writing lightray data to file... ");
+    printf("Writing light ray data to file... ");
 
     for(int i = 0; i < N; i++)
     {
@@ -2695,8 +2697,9 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 
 		Host_Init(&params,d_params_p);
 
-	//	// check if the trace density gradients function works correctly
-	//	check_density_gradients(params);
+		// check if the trace density gradients function works correctly
+		check_density_gradients(params);
+		exit(0);
 
 	}
 
@@ -2705,8 +2708,8 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	//--------------------------------------------------------------------------------------
 
 	// number of particles that will simulated in one call to the GPU
-	int source_point_number = 10000;
-//	int source_point_number = 100;
+//	int source_point_number = 10000;
+	int source_point_number = 100;
 
 	// number of the light rays to be generated and traced in a single call
 	int num_rays = source_point_number*lightray_number_per_particle;

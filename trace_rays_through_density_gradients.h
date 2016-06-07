@@ -163,7 +163,7 @@ __device__ light_ray_data_t trace_rays_through_density_gradients(light_ray_data_
   	float grid_y = (max_bound.y - min_bound.y)/data_height;
   	float grid_z = (max_bound.z - min_bound.z)/data_depth;
 
-  	//printf("grid_x: %f, grid_y: %f, grid_z: %f\n", grid_x, grid_y, grid_z);
+//  	printf("grid_x: %f, grid_y: %f, grid_z: %f\n", grid_x, grid_y, grid_z);
 
  	float3 pos = light_ray_data.ray_source_coordinates;
  	float3 dir = light_ray_data.ray_propagation_direction;
@@ -512,85 +512,15 @@ density_grad_params_t readDatafromFile(char* filename)
 
 __global__ void check_trace_rays_through_density_gradients(light_ray_data_t* light_ray_data, density_grad_params_t params)
 {
+	/*
+	 * This function is used to check the ray deflection produced by the
+	 * trace_rays_through_density_gradients routine for a set of rays that are parallel
+	 * to the z axis
+	 */
+
 	int id = threadIdx.x;
 
- 	float3 min_bound = params.min_bound, max_bound = params.max_bound;
- 	float3 lookup_scale = {1.0f/(max_bound.x-min_bound.x), 1.0f/(max_bound.y - min_bound.y), 1.0f/(max_bound.z-min_bound.z)};
- 	int data_width = params.data_width, data_height = params.data_height, data_depth = params.data_depth;
-
- 	float max_scale = max(max(float(params.data_width), float(params.data_height)), float(params.data_depth));
-
-  	// calculate grid spacings for gradient calculation
-  	float grid_x = (max_bound.x - min_bound.x)/data_width;
-  	float grid_y = (max_bound.y - min_bound.y)/data_height;
-  	float grid_z = (max_bound.z - min_bound.z)/data_depth;
-
-  	//printf("grid_x: %f, grid_y: %f, grid_z: %f\n", grid_x, grid_y, grid_z);
-
- 	float3 pos = light_ray_data[id].ray_source_coordinates;
- 	float3 dir = light_ray_data[id].ray_propagation_direction;
-
- 	// if initial position is outside the volume, intersect ray with volume
- 	if(pos.x <= min_bound.x || pos.y <= min_bound.y || pos.z <= min_bound.z ||
- 	pos.x >= max_bound.x || pos.y >= max_bound.y || pos.z >= max_bound.z )
- 	{
- 		if(!IntersectWithVolume(&pos, dir, params.min_bound, params.max_bound))
- 		{
- 			//# % This sets any of the light ray positions outside of the domain
- 			//# % to NaN values
- 			light_ray_data[id].ray_source_coordinates = make_float3(CUDART_NAN_F,CUDART_NAN_F,CUDART_NAN_F);
-
- 			//# % This sets any of the light ray directions outside of the domain
- 			//# % to NaN values
- 			light_ray_data[id].ray_propagation_direction = make_float3(CUDART_NAN_F,CUDART_NAN_F,CUDART_NAN_F);
-
-
- 		}
- 	}
-
- 	//printf("Intersected Volume\n");
-
- 	float3 normal;
-
- 	int i = 0;
- 	int insideBox = 1;
- 	float3 lookupfn;
- 	// Trace Ray through volume
- 	while(insideBox==1)
- 	{
- 		i = i+1;
-
- 		float3 offset = pos-min_bound;
-// 		float3 lookupfn = lookup_scale*offset; // normalized lookup
- 		lookupfn.x = lookup_scale.x*offset.x;
- 		lookupfn.y = lookup_scale.y*offset.y;
- 		lookupfn.z = lookup_scale.z*offset.z;
-
-
- 		float3 lookup = {static_cast<float>(lookupfn.x*params.data_width), static_cast<float>(lookupfn.y*params.data_height), static_cast<float>(lookupfn.z*params.data_depth)};
-
- 		if(pos.x < min_bound.x || pos.y < min_bound.y || pos.z < min_bound.z ||
- 		pos.x > max_bound.x || pos.y > max_bound.y || pos.z > max_bound.z )
- 		{
- 		 //printf("pos: %f, %f, %f\n", pos.x,pos.y,pos.z);
- 		 break;
- 		}
-
- 		float4 val = tex3D(tex_data, round(lookup.x), round(lookup.y), round(lookup.z)); //*params.dataScalar;
-
- 		normal = make_float3(val.x/(2*grid_x),val.y/(2*grid_y),val.z/(2*grid_z));
- 		//normal = make_float3(val.x/grid_x,val.y/grid_y,val.z/grid_z);
- 		if(normal.x!=0 || normal.y!=0 || normal.z!=0)
-// 			printf("normal: %f, %f, %f\n",normal.x,normal.y,normal.z);
- 		//#if !LINE_OF_SIGHT
- 		dir = dir + params.step_size*normal;
- 		dir = normalize(dir);
-	    pos = pos + dir*params.step_size; ///old_index;
-
-       }
-
- 	light_ray_data[id].ray_source_coordinates = pos;
- 	light_ray_data[id].ray_propagation_direction = (dir);
+	light_ray_data[id] = trace_rays_through_density_gradients(light_ray_data[id],params);
 
 }
 
