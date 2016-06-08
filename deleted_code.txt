@@ -172,3 +172,255 @@
 	}
 
 	
+	
+	//	// setup texture array to hold scattering irradiance data
+//	cudaMalloc((void**)&data_array,scattering_data.num_angles*scattering_data.num_diameters*sizeof(float));
+//	cudaMemcpy(data_array,scattering_data.scattering_irradiance,
+//				scattering_data.num_angles*scattering_data.num_diameters*sizeof(float),cudaMemcpyHostToDevice);
+//	cudaChannelFormatDesc desc = cudaCreateChannelDesc<float>();
+//	cudaBindTexture2D( NULL, mie_scattering_irradiance,
+//	                               data_array,
+//	                               desc, scattering_data.num_diameters, scattering_data.num_angles,
+//	                               sizeof(float) * scattering_data.num_diameters );
+
+	// check scattering data arrangement
+	printf("num_angles: %d\n", scattering_data.num_angles);
+	printf("num_diameters: %d\n", scattering_data.num_diameters);
+
+	printf("scattering irradiance values\n");
+	printf("0,0: %f\n",scattering_data.scattering_irradiance[0]);
+//	printf("1,0: %f\n",scattering_data.scattering_irradiance[1*num_diameters]);
+	printf("0,ND: %f\n",scattering_data.scattering_irradiance[1*scattering_data.num_diameters-1]);
+	printf("NA,0: %f\n",scattering_data.scattering_irradiance[(scattering_data.num_angles-1)*scattering_data.num_diameters]);
+
+
+//	// allocate space on GPU
+//	optical_element_t* d_optical_element = 0;
+//	cudaMalloc((void**)&d_optical_element,sizeof(optical_element_t)*num_elements);
+//	cudaMemcpy(d_optical_element,optical_element,sizeof(optical_element_t)*num_elements,cudaMemcpyHostToDevice);
+
+//	// generate random numbers corresponding to radial and angular coordinates on the lens
+//	float random_number_1 = random_single(particle_id * local_ray_id * global_ray_id);
+//	float random_number_2 = random_single(particle_id + local_ray_id + global_ray_id);
+//	unsigned int seed1 = 1105;
+//	unsigned int seed2 = 4092;
+//	float random_number_1 = random_single(seed1,local_ray_id); //global_ray_id);
+//	float random_number_2 = random_single(seed2,local_ray_id); //global_ray_id);
+
+//__device__ light_ray_data_t propagate_rays_through_optical_system(optical_element_t optical_element[],int num_elements, int num_rays, int lightray_number_per_particle, light_ray_data_t light_ray_data)
+//{
+//	// % This function propagates the light ray data defined by the structure
+//	// % 'light_ray_data' through the optical system defined by the input
+//	// % arguments.
+//
+//	int k;
+//	// % This is the number of sequential optical elements within the total
+//	// % optical system that the light rays must be iteratively passed through
+//	int sequential_element_number = 0;
+//	for(k = 0; k < num_elements; k++)
+//	{
+//		if(sequential_element_number<=optical_element[k].element_system_index)
+//			sequential_element_number = optical_element[k].element_system_index;
+//	}
+//
+//	// % Since the the optical is defined from the sensor moving outward (i.e. the
+//	// % opposite direction in which the light will enter a camera system), this
+//	// % reverses the indexing of the optical elements so that the first element
+//	// % index corresponds to the first optical element that the light will hit
+//
+//	// % This iterates through the sequential optical elements propagating the
+//	// % light rays through each successive element (or system of coplanar
+//	// % elements)
+//	int element_index;
+////	int* current_element_indices = (int *) malloc(num_elements*sizeof(int));
+//	int current_element_indices[10];
+//	//	printf("sequential_element_number:%d\n",sequential_element_number);
+//	for(element_index = 0; element_index < sequential_element_number; element_index++)
+//	{
+//		// These are the indices of the current element or elements to propagate
+//		// the light rays through
+////		current_element_indices = np.squeeze(np.argwhere(element_system_index == element_index))
+//
+//		int element_ctr = 0;
+//		for(k = 0; k < num_elements; k++)
+//		{
+////			if(element_system_index_local[k]==element_index)
+//			if(sequential_element_number - optical_element[k].element_system_index==element_index)
+//			{
+//				current_element_indices[k] = k;
+//				element_ctr++;
+//			}
+//		}
+//
+//		// % This is the number of elements that the light rays need to be
+//		// % simultaneously propagated through
+//		int simultaneous_element_number = element_ctr;
+////		printf("simultaneous_element_number: %d\n",simultaneous_element_number);
+//
+//
+//		// % If there is only a single element that the rays are to be propagated
+//		// % through, this propagates the rays through the single element;
+//		// % otherwise the light rays are simultaneously propagated through the
+//		// % multiple elements
+//
+//		if(simultaneous_element_number == 1)
+//		{
+//
+////			// % This extracts the current optical element data
+////			element_data_t current_optical_element_single = element_data[current_element_indices[0]];
+////			// % This extracts the current optical element plane parameters
+////			float4 current_plane_parameters_single = element_plane_parameters[current_element_indices[0]];
+////			// % This extracts the current center of the optical element
+////			float3 current_element_center_single = element_center[current_element_indices[0]];
+//
+//			light_ray_data = propagate_rays_through_single_element(optical_element[current_element_indices[0]].element_data, optical_element[current_element_indices[0]].element_center,
+//					optical_element[current_element_indices[0]].element_plane_parameters,light_ray_data);
+//
+//		}
+////		else
+////		{
+////
+////			element_data_t* current_optical_element = (element_data_t *) malloc(simultaneous_element_number*sizeof(element_data_t));
+////			float4* current_plane_parameters = (float4 *) malloc(simultaneous_element_number*sizeof(float4));
+////			float3* current_element_center = (float3 *) malloc(simultaneous_element_number*sizeof(float3));
+////
+////			//# % This initializes a cell array to contain the optical element data
+//////			element_data_t current_optical_element[simultaneous_element_number];
+////			//# % This iterates through the individual optical elements extracting
+////			//# % the optical element data
+////			int simultaneous_element_index;
+////			for(simultaneous_element_index = 0; simultaneous_element_index <= simultaneous_element_number;simultaneous_element_index++)
+////			{
+////				// % This extracts the current optical element data
+////				current_optical_element[simultaneous_element_index] = element_data[
+////					current_element_indices[simultaneous_element_index]];
+////				//# % This extracts the current optical element plane parameters
+////				current_plane_parameters[simultaneous_element_index] = element_plane_parameters[current_element_indices[simultaneous_element_index]];
+////				//# % This extracts the current center of the optical element
+////				current_element_center[simultaneous_element_index] = element_center[current_element_indices[simultaneous_element_index]];
+////
+////			}
+////
+////			//# % This propagates the light rays through the multiple optical
+////			//# % elements
+////			light_ray_data = propagate_rays_through_multiple_elements(current_optical_element, current_element_center,
+////																	current_plane_parameters, simultaneous_element_number,light_ray_data);
+////
+////			// free allocated memory
+////			free(current_optical_element);
+////			free(current_plane_parameters);
+////			free(current_element_center);
+////
+////		}
+//
+//	}
+//
+//	// free allocated memory
+////	free(current_element_indices);
+////	free(element_system_index_local);
+//
+//	return light_ray_data;
+//
+//
+//}
+
+
+//__device__ double atomicAdd(double* address, double val)
+//{
+//    unsigned long long int* address_as_ull =
+//                                          (unsigned long long int*)address;
+//    unsigned long long int old = *address_as_ull, assumed;
+//    do {
+//        assumed = old;
+//        old = atomicCAS(address_as_ull, assumed,
+//                        __double_as_longlong(val +
+//                        __longlong_as_double(assumed)));
+//    } while (assumed != old);
+//    return __longlong_as_double(old);
+//}
+
+//	//# % This is the pixel pitch [micron]
+//	float pixel_pitch = camera_design.pixel_pitch;
+//	//# % This is the number of pixels in the x-direction
+//	int x_pixel_number = camera_design.x_pixel_number;
+//	//# % This is the number of pixels in the y-direction
+//	int y_pixel_number = camera_design.y_pixel_number;
+//
+//	//# % This is the coordinate of pixel (1,1) [0][0]
+//	float pixel_1_x = -pixel_pitch * (x_pixel_number - 1) / 2.0;
+//	float pixel_1_y = -pixel_pitch * (y_pixel_number - 1) / 2.0;
+//
+//	//# % This is the number of pixel diameters the point (x,y) is from the center
+//	//# % of the (0,0) pixel
+//	float x = ray_source_coordinates.x;
+//	float y = ray_source_coordinates.y;
+//	float d_x = (x - pixel_1_x) / pixel_pitch + 1.5;
+//	float d_y = (y - pixel_1_y) / pixel_pitch + 1.5;
+
+//		for(int i = 0; i < num_elements; i++)
+//		{
+//			optical_element_shared[i].element_data = optical_element[i].element_data;
+//			optical_element_shared[i].element_center = optical_element[i].element_center;
+//			optical_element_shared[i].element_plane_parameters = optical_element[i].element_plane_parameters;
+//			optical_element_shared[i].element_system_index = optical_element[i].element_system_index;
+//		}
+
+	// declare element to store optical system information
+//	extern __shared__ optical_element_t optical_element_shared[];
+
+//	ray_pos_final[global_ray_id].x = light_ray_data.ray_source_coordinates.x;
+//	ray_pos_final[global_ray_id].y = light_ray_data.ray_source_coordinates.y;
+
+__global__ void convertinttodouble(int2* i_num, double* d_num)
+{
+    int local_threadId = threadIdx.x + threadIdx.y*blockDim.x;
+    int blockId = blockIdx.x + blockIdx.y*gridDim.x;
+    int pixel_id = blockId*blockDim.x*blockDim.y + local_threadId;
+
+	int2 v = i_num[pixel_id];
+
+    d_num[pixel_id] = __hiloint2double(v.y,v.x);
+
+}
+
+	std::cout<<"5 + 6 = "<<add(5,6)<<std::endl;
+
+
+	float* d_array;
+	cudaMalloc((void **)&d_array, 5*sizeof(float));
+	cudaFree(d_array);
+
+//	// set image array intensity to zero
+//	cudaMemset(d_image_array,0.0,sizeof(float)*num_pixels);
+
+
+typedef struct optical_element_t
+{
+	element_data_t element_data;
+	float3 element_center;
+	float4 element_plane_parameters;
+	int element_system_index;
+}optical_element_t;
+
+	// store element data as an array of structures
+	optical_element_t* optical_element = (optical_element_t*) malloc(sizeof(optical_element_t)*num_elements);
+
+	for(k = 0; k < num_elements; k++)
+	{
+		optical_element[k].element_data = element_data_p[k];
+		optical_element[k].element_center = element_center_2[k];
+		optical_element[k].element_plane_parameters = element_plane_parameters_2[k];
+		optical_element[k].element_system_index = element_system_index[k];
+	}
+
+//			float4& datap = _params.data[size_t(z*data_width*data_height + y*data_width + x)];
+//			datap.x = -normal.x;
+//			datap.y = -normal.y;
+//			datap.z = -normal.z;
+//			datap.w = data[size_t(z*data_width*data_height + y*data_width + x)];
+
+float m = fmax(float(data_width), float(data_height));
+	m = fmax(m, float(data_depth));
+	float3 dataScale = make_float3(float(data_width)/m, float(data_height)/m, float(data_depth)/m);
+
+	

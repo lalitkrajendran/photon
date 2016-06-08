@@ -1,14 +1,16 @@
 /*
- * parallel_ray_tracing.h
+ * 	parallel_ray_tracing.h
  *
- *  Created on: Apr 20, 2016
- *      Author: lrajendr
+ *  This is a header file containing the definitions of all the data structures and
+ *  functions in the code
+ *
+ *  Author: lrajendr
  */
 
 #ifndef PARALLEL_RAY_TRACING_H_
 #define PARALLEL_RAY_TRACING_H_
 
-// this structure holds scattering data information
+// this structure holds the mie scattering data information
 typedef struct scattering_data_t
 {
 	// rotation matrix
@@ -152,14 +154,6 @@ typedef struct element_data_t
 	float z_inter_element_distance;
 }element_data_t;
 
-typedef struct optical_element_t
-{
-	element_data_t element_data;
-	float3 element_center;
-	float4 element_plane_parameters;
-	int element_system_index;
-}optical_element_t;
-
 // this structure contains the data that characterizes the camera
 typedef struct camera_design_t
 {
@@ -181,38 +175,61 @@ typedef struct camera_design_t
 	float z_sensor;
 }camera_design_t;
 
+// this structure contains the data about the pixels whose intensity will be incremented
+// because of the intersection of a light ray with the camera sensor
 struct pixel_data_t
 {
+	// these are the row locations of the four neighboring pixels
 	int4 ii_indices;
+	// these are the column locations of the four neighboring pixels
 	int4 jj_indices;
+	// these are the intensity increments for each of the four neighboring pixels
 	double4 pixel_weights;
+	// this is fraction of the light ray radiance that will be used to increment the pixel
+	// intensity
 	double cos_4_alpha;
+	// this is the (x,y) coordinates of the light ray at the end of the ray tracing
+	// process, once it has intersected the camera sensor
 	float2 final_pos;
 };
 
+// this structure contains the parameters for simulating ray deflection caused by density
+// gradients
 struct density_grad_params_t
 {
+	// this is corner of the volume where all the coordinates are the minimum
 	float3 min_bound;
+	// this is corner of the volume where all the coordinates are the maximum
 	float3 max_bound;
+	// this is the number of density data points along the x direction
 	int data_width;
+	// this is the number of density data points along the y direction
 	int data_height;
+	// this is the number of density data points along the z direction
 	int data_depth;
+	// this is the amount by which the position of the light ray will be incremented
+	// as it propagates through the variable density medium
 	float step_size;
+	// this is lowest value of refractive index in the volume
 	float data_min;
+	// this is the highest value of refractive index in the volume
 	float data_max;
+	// this is the array containing the refractive index gradient information inside
+	// the volume
 	float4* data;
 };
 
+//--------------------------------------------------------------------------------------
+// GPU FUNCTIONS
+//--------------------------------------------------------------------------------------
 
-
-__device__ void parallel_ray_tracing(float , float , scattering_data_t* , int ,
+__global__ void parallel_ray_tracing(float , float , scattering_data_t* , int ,
 		lightfield_source_t* ,int , int , int , float , float , light_ray_data_t* , int ,
 		 float* ,float* ,element_data_t* , float3* , float4* , int* ,int , camera_design_t* ,
-		 double* , bool , density_grad_params_t*, float*);
+		 float* , bool , density_grad_params_t*);
 
-__device__ light_ray_data_t generate_lightfield_angular_data(float ,float,scattering_data_t* ,
-		int , lightfield_source_single_t , int , int , int, float, float,light_ray_data_t,int,
-		float*, float*);
+__device__ light_ray_data_t generate_lightfield_angular_data(float , float ,scattering_data_t ,
+		int , lightfield_source_single_t, int, float, float, float, float);
 
 __device__ light_ray_data_t propagate_rays_through_optical_system(element_data_t*, float3* , float4* ,
 		int* , int , int , int , light_ray_data_t);
@@ -223,25 +240,35 @@ __device__ float random_single(unsigned int );
 
 __device__ light_ray_data_t propogate_rays_through_multiple_elements(element_data_t* , float3*,
 		float4* , int, light_ray_data_t );
+
 __device__ light_ray_data_t propagate_rays_through_single_element(element_data_t , float3,
 		   float4, light_ray_data_t );
 __device__ float3 ray_sphere_intersection(float3 , float , float3 , float3 , char );
 
 __device__ float measure_distance_to_optical_axis(float3 , float3 , float );
+
 __device__ void argsort(float* , int , int*);
+
 __device__ double atomicAdd(double* , double);
+
+//--------------------------------------------------------------------------------------
+// CPU FUNCTIONS
+//--------------------------------------------------------------------------------------
 
 extern "C"
 {
 
 void save_to_file(float , float ,scattering_data_t* , char* ,lightfield_source_t* ,
-		int ,int , int, float, float,int , double (*element_center)[3],element_data_t* ,
+		int ,float, float,int , double (*element_center)[3],element_data_t* ,
 		double (*element_plane_parameters)[4], int* ,camera_design_t* , float*,
 		bool, char* );
+
 void read_from_file();
+
 int add(int a, int b);
+
 void start_ray_tracing(float , float ,scattering_data_t* , char* ,lightfield_source_t* ,
-		int ,int , int, float, float, int , double (*element_center)[3],element_data_t*,
+		int ,float, float, int , double (*element_center)[3],element_data_t*,
 		double (*element_plane_parameters)[4], int* ,camera_design_t* , float*,
 		bool, char* );
 

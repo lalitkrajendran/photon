@@ -47,39 +47,51 @@ __device__ float random_single(unsigned int seed, int id)
 	/*
 	 * this function generates a single random float for a uniform distribution using
 	 * the cuRAND library
-	 *
 	 */
 
-  /* CUDA's random number library uses curandState_t to keep track of the seed value
-     we will store a random state for every thread  */
-  curandState_t state;
-//  int id = threadIdx.x + blockIdx.x * blockDim.x;
+	/* CUDA's random number library uses curandState_t to keep track of the seed value
+	 we will store a random state for every thread  */
+	curandState_t state;
 
-  /* the seed can be the same for each core, here we pass the time in from the CPU */
-  /* the sequence number should be different for each core (unless you want all
-                             cores to get the same sequence of numbers for some reason - use thread id! */
-  /* the offset is how much extra we advance in the sequence for each call, can be 0 */
+	/* the seed can be the same for each core, here we pass the time in from the CPU */
+	/* the sequence number should be different for each core (unless you want all
+							 cores to get the same sequence of numbers for some reason - use thread id! */
+	/* the offset is how much extra we advance in the sequence for each call, can be 0 */
 
-  /* we have to initialize the state */
-//  curand_init(seed, blockIdx.x, 0, &state);
-  curand_init(seed,0,id,&state);
+	/* we have to initialize the state */
+	//  curand_init(seed, blockIdx.x, 0, &state);
+	curand_init(seed,0,id,&state);
 
-  float rand_num = curand_uniform(&state);
-  return rand_num;
+	float rand_num = curand_uniform(&state);
+	return rand_num;
 }
 
 __device__ light_ray_data_t generate_lightfield_angular_data(float lens_pitch, float image_distance,
 		scattering_data_t scattering_data, int scattering_type, lightfield_source_single_t lightfield_source,
-                                     int lightray_number_per_particle, int n_min, int n_max, float beam_wavelength,
-                                     float aperture_f_number, int num_rays,
-                                     float rand_num_1,float rand_num_2)
+                                     int lightray_number_per_particle, float beam_wavelength,
+                                     float aperture_f_number, float random_number_1,float random_number_2)
 
 {
 	/*
-		This function generates the light field data for the source points specified by the
-		structure lightfield_source.  The data is only generated for the source points from
-		n_min to n_max.  The parameter lightray_number_per_particle is the number of rays to generate for each
-		source point.
+		This function generates a light ray for a given source point
+
+		INPUTS:
+		lens_pitch - aperture size of the camera lens
+		image_distance - distance between the image location and the second principal plane
+		scattering_data - structure containing mie scattering data for a range of
+		 	 	 	 	 particle diameters and angles
+		scattering_type - specifies the type of scattering to simulate (mie/diffuse)
+		lightfield_source - structure containing the various properties of a source point from
+							which light rays are generated.
+		lightray_number_per_particle - the number of rays to generate for each source point.
+		beam_wavelength - wavelength of the light source
+		aperture_f_number - f# of the aperture (= Focal Length/aperture diameter)
+		rand_num_1, rand_num_2 - random numbers for the radial and azimuthal coordinates
+						of the target points generated on the lens for each light ray
+
+		OUTPUT:
+		light_ray_data - structure containing the position, direction, wavelength and
+						radiance of the light ray
 	*/
 
 	// get difference in scattering angle
@@ -94,21 +106,9 @@ __device__ light_ray_data_t generate_lightfield_angular_data(float lens_pitch, f
 	// compute direction of propagation of light ray
 	//--------------------------------------------------------------------------------------
 
-//	// generate random numbers corresponding to radial and angular coordinates on the lens
-//	float random_number_1 = random_single(particle_id * local_ray_id * global_ray_id);
-//	float random_number_2 = random_single(particle_id + local_ray_id + global_ray_id);
-//	unsigned int seed1 = 1105;
-//	unsigned int seed2 = 4092;
-//	float random_number_1 = random_single(seed1,local_ray_id); //global_ray_id);
-//	float random_number_2 = random_single(seed2,local_ray_id); //global_ray_id);
-
-//	// generate random points on the lens where the rays should intersect
-//	float x_lens = 0.5*lens_pitch*sqrt(random_number_1)*cos(2*M_PI*random_number_2);
-//	float y_lens = 0.5*lens_pitch*sqrt(random_number_1)*sin(2*M_PI*random_number_2);
-
 	// generate random points on the lens where the rays should intersect
-	float x_lens = 0.5*lens_pitch*sqrt(rand_num_1)*cos(2*M_PI*rand_num_2);
-	float y_lens = 0.5*lens_pitch*sqrt(rand_num_1)*sin(2*M_PI*rand_num_2);
+	float x_lens = 0.5*lens_pitch*sqrt(random_number_1)*cos(2*M_PI*random_number_2);
+	float y_lens = 0.5*lens_pitch*sqrt(random_number_1)*sin(2*M_PI*random_number_2);
 
 	// calculate the x angles for the light rays
 	float theta_temp = -(x_lens - x_current) / (image_distance - z_current);
@@ -162,18 +162,21 @@ __device__ light_ray_data_t generate_lightfield_angular_data(float lens_pitch, f
 		ray_scattering_angles = angleBetween(beam_propagation_vector,ray_direction_vector)*M_PI/180.0;
 
 		// % This calculates the Mie scattering irradiance at the current
-		// % scattered angle and with the current particle diameter
-//		int lookup_angle = (int)(ray_scattering_angles - scattering_data.scattering_angle[0])/del_scattering_angle;
-//		ray_scattering_irradiance = scattering_data.scattering_irradiance[lookup_angle*scattering_data.num_diameters + diameter_index];
+		// % scattered angle and with the current particle diameter using linear interpolation
 
-		float x = (ray_scattering_angles - scattering_data.scattering_angle[0])/del_scattering_angle;
-		int a = (int)x;
-		int b = a+1;
-		float f_a = scattering_data.scattering_irradiance[(a)*scattering_data.num_diameters + diameter_index];
-		float f_b = scattering_data.scattering_irradiance[(b)*scattering_data.num_diameters + diameter_index];
-//		float x = ray_scattering_angles;
-		float f_x = f_a + (x - a)/(b - a) * (f_b - f_a);
-		ray_scattering_irradiance = f_x;
+		// calculate angular lookup index in the scattering irradiance table
+		float angle = (ray_scattering_angles - scattering_data.scattering_angle[0])/del_scattering_angle;
+		// find the integer index locations near the desired angle for which irradiance
+		// information is available
+		int angle_l = (int)angle;
+		int angle_u = angle_l+1;
+		// find the scattering irradiance for angular index a and the given particle diameter
+		float irradiance_l = scattering_data.scattering_irradiance[(angle_l)*scattering_data.num_diameters + diameter_index];
+		// find the scattering irradiance for angular index b and the given particle diameter
+		float irradiance_u = scattering_data.scattering_irradiance[(angle_u)*scattering_data.num_diameters + diameter_index];
+		// find the scattering irradiance for the given angle and diameter using linear
+		// interpolation
+		ray_scattering_irradiance = irradiance_l + (angle - angle_l)/(angle_u - angle_l) * (irradiance_u - irradiance_l);
 
 		// % This calculates the total irradiance for the current particle's rays
 		irradiance_current=ray_scattering_irradiance*lightfield_source.radiance; //[current_source_point_number];
@@ -186,14 +189,16 @@ __device__ light_ray_data_t generate_lightfield_angular_data(float lens_pitch, f
 		irradiance_current = lightfield_source.radiance; //[current_source_point_number];
 	}
 
-
-
 	// save the light rays to the light ray data structure
 	light_ray_data_t light_ray_data;
 
+	// this is the origin of the light ray
 	light_ray_data.ray_source_coordinates = make_float3(x_current,y_current,z_current);
+	// this is the propagation direction of the light ray
 	light_ray_data.ray_propagation_direction = normalize(make_float3(theta_temp,phi_temp,-1.0));
+	// this is the wavelength of the light ray
 	light_ray_data.ray_wavelength = beam_wavelength;
+	// this is the radiance of the light ray
 	light_ray_data.ray_radiance = 1/(aperture_f_number*aperture_f_number)*irradiance_current;
 
 	return light_ray_data;
@@ -1229,137 +1234,6 @@ __device__ light_ray_data_t propagate_rays_through_optical_system(element_data_t
 
 }
 
-//__device__ light_ray_data_t propagate_rays_through_optical_system(optical_element_t optical_element[],int num_elements, int num_rays, int lightray_number_per_particle, light_ray_data_t light_ray_data)
-//{
-//	// % This function propagates the light ray data defined by the structure
-//	// % 'light_ray_data' through the optical system defined by the input
-//	// % arguments.
-//
-//	int k;
-//	// % This is the number of sequential optical elements within the total
-//	// % optical system that the light rays must be iteratively passed through
-//	int sequential_element_number = 0;
-//	for(k = 0; k < num_elements; k++)
-//	{
-//		if(sequential_element_number<=optical_element[k].element_system_index)
-//			sequential_element_number = optical_element[k].element_system_index;
-//	}
-//
-//	// % Since the the optical is defined from the sensor moving outward (i.e. the
-//	// % opposite direction in which the light will enter a camera system), this
-//	// % reverses the indexing of the optical elements so that the first element
-//	// % index corresponds to the first optical element that the light will hit
-//
-//	// % This iterates through the sequential optical elements propagating the
-//	// % light rays through each successive element (or system of coplanar
-//	// % elements)
-//	int element_index;
-////	int* current_element_indices = (int *) malloc(num_elements*sizeof(int));
-//	int current_element_indices[10];
-//	//	printf("sequential_element_number:%d\n",sequential_element_number);
-//	for(element_index = 0; element_index < sequential_element_number; element_index++)
-//	{
-//		// These are the indices of the current element or elements to propagate
-//		// the light rays through
-////		current_element_indices = np.squeeze(np.argwhere(element_system_index == element_index))
-//
-//		int element_ctr = 0;
-//		for(k = 0; k < num_elements; k++)
-//		{
-////			if(element_system_index_local[k]==element_index)
-//			if(sequential_element_number - optical_element[k].element_system_index==element_index)
-//			{
-//				current_element_indices[k] = k;
-//				element_ctr++;
-//			}
-//		}
-//
-//		// % This is the number of elements that the light rays need to be
-//		// % simultaneously propagated through
-//		int simultaneous_element_number = element_ctr;
-////		printf("simultaneous_element_number: %d\n",simultaneous_element_number);
-//
-//
-//		// % If there is only a single element that the rays are to be propagated
-//		// % through, this propagates the rays through the single element;
-//		// % otherwise the light rays are simultaneously propagated through the
-//		// % multiple elements
-//
-//		if(simultaneous_element_number == 1)
-//		{
-//
-////			// % This extracts the current optical element data
-////			element_data_t current_optical_element_single = element_data[current_element_indices[0]];
-////			// % This extracts the current optical element plane parameters
-////			float4 current_plane_parameters_single = element_plane_parameters[current_element_indices[0]];
-////			// % This extracts the current center of the optical element
-////			float3 current_element_center_single = element_center[current_element_indices[0]];
-//
-//			light_ray_data = propagate_rays_through_single_element(optical_element[current_element_indices[0]].element_data, optical_element[current_element_indices[0]].element_center,
-//					optical_element[current_element_indices[0]].element_plane_parameters,light_ray_data);
-//
-//		}
-////		else
-////		{
-////
-////			element_data_t* current_optical_element = (element_data_t *) malloc(simultaneous_element_number*sizeof(element_data_t));
-////			float4* current_plane_parameters = (float4 *) malloc(simultaneous_element_number*sizeof(float4));
-////			float3* current_element_center = (float3 *) malloc(simultaneous_element_number*sizeof(float3));
-////
-////			//# % This initializes a cell array to contain the optical element data
-//////			element_data_t current_optical_element[simultaneous_element_number];
-////			//# % This iterates through the individual optical elements extracting
-////			//# % the optical element data
-////			int simultaneous_element_index;
-////			for(simultaneous_element_index = 0; simultaneous_element_index <= simultaneous_element_number;simultaneous_element_index++)
-////			{
-////				// % This extracts the current optical element data
-////				current_optical_element[simultaneous_element_index] = element_data[
-////					current_element_indices[simultaneous_element_index]];
-////				//# % This extracts the current optical element plane parameters
-////				current_plane_parameters[simultaneous_element_index] = element_plane_parameters[current_element_indices[simultaneous_element_index]];
-////				//# % This extracts the current center of the optical element
-////				current_element_center[simultaneous_element_index] = element_center[current_element_indices[simultaneous_element_index]];
-////
-////			}
-////
-////			//# % This propagates the light rays through the multiple optical
-////			//# % elements
-////			light_ray_data = propagate_rays_through_multiple_elements(current_optical_element, current_element_center,
-////																	current_plane_parameters, simultaneous_element_number,light_ray_data);
-////
-////			// free allocated memory
-////			free(current_optical_element);
-////			free(current_plane_parameters);
-////			free(current_element_center);
-////
-////		}
-//
-//	}
-//
-//	// free allocated memory
-////	free(current_element_indices);
-////	free(element_system_index_local);
-//
-//	return light_ray_data;
-//
-//
-//}
-
-
-//__device__ double atomicAdd(double* address, double val)
-//{
-//    unsigned long long int* address_as_ull =
-//                                          (unsigned long long int*)address;
-//    unsigned long long int old = *address_as_ull, assumed;
-//    do {
-//        assumed = old;
-//        old = atomicCAS(address_as_ull, assumed,
-//                        __double_as_longlong(val +
-//                        __longlong_as_double(assumed)));
-//    } while (assumed != old);
-//    return __longlong_as_double(old);
-//}
 
 __device__ pixel_data_t intersect_sensor(light_ray_data_t light_ray_data,camera_design_t camera_design,
 		int lightray_number_per_particle, int num_rays)
@@ -1409,24 +1283,6 @@ __device__ pixel_data_t intersect_sensor(light_ray_data_t light_ray_data,camera_
 
 	//# % This calculates the indices of the pixel on the sensor that the ray
 	//# % intersects and the relative weighting between the pixels
-
-//	//# % This is the pixel pitch [micron]
-//	float pixel_pitch = camera_design.pixel_pitch;
-//	//# % This is the number of pixels in the x-direction
-//	int x_pixel_number = camera_design.x_pixel_number;
-//	//# % This is the number of pixels in the y-direction
-//	int y_pixel_number = camera_design.y_pixel_number;
-//
-//	//# % This is the coordinate of pixel (1,1) [0][0]
-//	float pixel_1_x = -pixel_pitch * (x_pixel_number - 1) / 2.0;
-//	float pixel_1_y = -pixel_pitch * (y_pixel_number - 1) / 2.0;
-//
-//	//# % This is the number of pixel diameters the point (x,y) is from the center
-//	//# % of the (0,0) pixel
-//	float x = ray_source_coordinates.x;
-//	float y = ray_source_coordinates.y;
-//	float d_x = (x - pixel_1_x) / pixel_pitch + 1.5;
-//	float d_y = (y - pixel_1_y) / pixel_pitch + 1.5;
 
 	//# % This is the coordinate of pixel (1,1) [0][0]
 	float pixel_1_x = -camera_design.pixel_pitch * (camera_design.x_pixel_number - 1) / 2.0;
@@ -1494,16 +1350,18 @@ __device__ pixel_data_t intersect_sensor(light_ray_data_t light_ray_data,camera_
 	int jj_lr = int(jj_ul + 1);
 
 	pixel_data_t pixel_data;
-	//	//# % This is a vector of the ii coordinates
+	//# % This is a vector of the ii coordinates
 	pixel_data.ii_indices = make_int4(ii_ul,ii_ur,ii_ll,ii_lr);
-	//	//# % This is a vector of the jj coordinates
+	//# % This is a vector of the jj coordinates
 	pixel_data.jj_indices = make_int4(jj_ul,jj_ur,jj_ll,jj_lr);
-	//	//# % This is a vector of pixel weights
+	//# % This is a vector of pixel weights
 	pixel_data.pixel_weights = make_double4(w_ul, w_ur, w_ll, w_lr);
+	//# This is the contribution of the light ray energy to the pixel irradiance
 	pixel_data.cos_4_alpha = cos_4_alpha;
+	// This is the final x location of the light ray
 	pixel_data.final_pos.x = ray_source_coordinates.x;
+	// This is the final y location of the light ray
 	pixel_data.final_pos.y = ray_source_coordinates.y;
-
 
 	return pixel_data;
 
@@ -1516,13 +1374,17 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 		 float* rand_array_1,float* rand_array_2,element_data_t* element_data,
 		 float3* element_center, float4* element_plane_parameters,
 		int* element_system_index,int num_elements,
-		camera_design_t* camera_design_p, double* image_array,
-		bool simulate_density_gradients, density_grad_params_t* density_grad_params_p,
-		float* image_float)//,optical_element_t* optical_element)
+		camera_design_t* camera_design_p, float* image_array,
+		bool simulate_density_gradients, density_grad_params_t* density_grad_params_p)
 
 {
-	// declare element to store optical system information
-//	extern __shared__ optical_element_t optical_element_shared[];
+
+	/*
+	 * This is the master kernel function that performs ray tracing on the GPU. It calls
+	 * a number of functions that are visible only on the device to perform various parts
+	 * of the ray tracing process.
+	 */
+
 	//--------------------------------------------------------------------------------------
 	// compute indices to access in lightfield_source and lightfield_data
 	//--------------------------------------------------------------------------------------
@@ -1548,7 +1410,8 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 	// populate shared memory
 	if(local_thread_id == 0)
 	{
-		/* since all the threads in a given block correspond to rays from the same source
+		/*
+		 * since all the threads in a given block correspond to rays from the same source
 		 * point, store the source point information in shared memory
 		 */
 		lightfield_source_shared.x = lightfield_source.x[current_source_point_number];
@@ -1557,22 +1420,16 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 		lightfield_source_shared.radiance = lightfield_source.radiance[current_source_point_number];
 		lightfield_source_shared.diameter_index = lightfield_source.diameter_index[current_source_point_number];
 
-//		for(int i = 0; i < num_elements; i++)
-//		{
-//			optical_element_shared[i].element_data = optical_element[i].element_data;
-//			optical_element_shared[i].element_center = optical_element[i].element_center;
-//			optical_element_shared[i].element_plane_parameters = optical_element[i].element_plane_parameters;
-//			optical_element_shared[i].element_system_index = optical_element[i].element_system_index;
-//		}
 	}
+
+	// ensure that the shared memory information is updated before the rest of the threads
+	// in the block can access it
 	__syncthreads();
 
+	// generate light rays
 	light_ray_data_t light_ray_data = generate_lightfield_angular_data(lens_pitch, image_distance,scattering_data,
-				scattering_type, lightfield_source_shared,lightray_number_per_particle, n_min, n_max,
-				beam_wavelength,aperture_f_number,num_rays,rand_array_1[local_ray_id],rand_array_2[local_ray_id]);
-
-//	ray_pos_final[global_ray_id].x = light_ray_data.ray_source_coordinates.x;
-//	ray_pos_final[global_ray_id].y = light_ray_data.ray_source_coordinates.y;
+				scattering_type, lightfield_source_shared,lightray_number_per_particle,
+				beam_wavelength,aperture_f_number,rand_array_1[local_ray_id],rand_array_2[local_ray_id]);
 
 	// trace the light ray through a medium containing density gradients
 	if(simulate_density_gradients)
@@ -1580,27 +1437,26 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 		density_grad_params_t params = *density_grad_params_p;
 		light_ray_data = trace_rays_through_density_gradients(light_ray_data,params);
 
+		// ignore rays that did not pass through the volume
 		if(isnan(light_ray_data.ray_propagation_direction.x) || isnan(light_ray_data.ray_propagation_direction.y)
 					|| isnan(light_ray_data.ray_propagation_direction.z))
 				return;
-
 	}
-
 
 	// trace rays through the optical train
 	light_ray_data = propagate_rays_through_optical_system(element_data, element_center,
 			element_plane_parameters,element_system_index,num_elements,num_rays,
 			lightray_number_per_particle,light_ray_data);
 
-//	light_ray_data = propagate_rays_through_optical_system(optical_element_shared,num_elements,num_rays,
-//				lightray_number_per_particle,light_ray_data);
-
+	// ignore rays that did not pass through the optical train
 	if(isnan(light_ray_data.ray_propagation_direction.x) || isnan(light_ray_data.ray_propagation_direction.y)
 				|| isnan(light_ray_data.ray_propagation_direction.z))
 			return;
 
-	// perform ray intersection with the sensor and the radiance integration on the gpu
+	// this structure contains the camera design information
 	camera_design_t camera_design = *camera_design_p;
+
+	// perform ray intersection with the sensor and the pixel radiance integration
 	pixel_data_t pixel_data = intersect_sensor(light_ray_data,camera_design,
 			lightray_number_per_particle,num_rays);
 
@@ -1611,35 +1467,35 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 
 	int image_index, k;
 	double pixel_increment;
+
+	// convert the pixel row index vector type to an array for easy indexing
 	int ii_indices[4] = {pixel_data.ii_indices.x,pixel_data.ii_indices.y,pixel_data.ii_indices.z,pixel_data.ii_indices.w};
+	// convert the pixel column index vector type to an array for easy indexing
 	int jj_indices[4] = {pixel_data.jj_indices.x,pixel_data.jj_indices.y,pixel_data.jj_indices.z,pixel_data.jj_indices.w};
+	// convert the pixel intensity weight vector type to an array for easy indexing
 	double pixel_weights[4] = {pixel_data.pixel_weights.x,pixel_data.pixel_weights.y,pixel_data.pixel_weights.z,pixel_data.pixel_weights.w};
+	// this is the fraction of the ray radiance that will be added to the pixel
 	double cos_4_alpha = pixel_data.cos_4_alpha;
 
+	// loop over the four neighboring pixels on the camera sensor and increment their intensity
 	for(k = 0; k < 4; k++)
 	{
+		// initialize the pixel increment
 		pixel_increment = 0.0;
+
+		// if the indices refer to locations outside the camera sensor, ignore them
 		if(ii_indices[k]<0 || ii_indices[k]>=y_pixel_number || jj_indices[k]<0 || jj_indices[k]>=x_pixel_number)
 			continue;
 
+		// this is the index of the image array corresponding to the pixel
+		// where the intensity will be incremented
 		image_index = (ii_indices[k]-1)*x_pixel_number + jj_indices[k]-1;
+		// this is the amount by which the pixel's intensity will be updated
 		pixel_increment = pixel_weights[k]*light_ray_data.ray_radiance*cos_4_alpha;
-
-//		atomicAdd(&image_array[image_index],pixel_increment);
-		atomicAdd(&image_float[image_index],(float)pixel_increment);
+		// this performs the addition but in a way that avoids a race condition where
+		// multiple threads try to write to the same memory location
+		atomicAdd(&image_array[image_index],(float)pixel_increment);
 	}
-
-}
-
-__global__ void convertinttodouble(int2* i_num, double* d_num)
-{
-    int local_threadId = threadIdx.x + threadIdx.y*blockDim.x;
-    int blockId = blockIdx.x + blockIdx.y*gridDim.x;
-    int pixel_id = blockId*blockDim.x*blockDim.y + local_threadId;
-
-	int2 v = i_num[pixel_id];
-
-    d_num[pixel_id] = __hiloint2double(v.y,v.x);
 
 }
 
@@ -1647,17 +1503,17 @@ extern "C"{
 
 void read_from_file()
 {
+	/*
+	 * This function will be called by the test_parallel_ray_tracing application to
+	 * read the data that is used to perform the ray tracing. This is done to enable
+	 * debugging this program within nsight.
+	 * */
+
 	float lens_pitch, image_distance, beam_wavelength, aperture_f_number;
 	scattering_data_t scattering_data;
 	int scattering_type;
 	lightfield_source_t lightfield_source;
 	int lightray_number_per_particle;
-	int n_min; int n_max;
-
-	/*
-	 * 	This function saves the data passed from python to a file.
-	 * 	This is done to enable debugging this program within eclipse.
-	 */
 
 	int k,l;
 
@@ -1677,12 +1533,6 @@ void read_from_file()
 
 	// scattering_type
 	file_scalars.read((char*)&scattering_type, sizeof(int));
-
-	// n_min
-	file_scalars.read((char*)&n_min, sizeof(int));
-
-	// n_max
-	file_scalars.read((char*)&n_max, sizeof(int));
 
 	// lightray_number_per_particle
 	file_scalars.read((char*)&lightray_number_per_particle, sizeof(int));
@@ -1957,13 +1807,13 @@ void read_from_file()
 //	bool simulate_density_gradients = false;
 
 	// specify name of the file containing density gradient data
-	char density_grad_filename[] = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/const_grad_BOS_grad_x_20.nrrd";
+	char density_grad_filename[] = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/const_grad_BOS_grad_x_10.nrrd";
 //	char density_grad_filename[] = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/const_grad_BOS.nrrd";
 	//	char density_grad_filename[] = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/test.nrrd";
 
 	// call the ray tracing function
 	start_ray_tracing(lens_pitch, image_distance,&scattering_data, scattering_type_str,&lightfield_source,
-			lightray_number_per_particle,n_min, n_max,beam_wavelength,aperture_f_number,
+			lightray_number_per_particle,beam_wavelength,aperture_f_number,
 			num_elements, element_center_p,element_data,element_plane_parameters_p,element_system_index,&camera_design,image_array,
 			simulate_density_gradients, density_grad_filename);
 
@@ -1972,7 +1822,7 @@ void read_from_file()
 void save_to_file(float lens_pitch, float image_distance,
 		scattering_data_t* scattering_data_p, char* scattering_type_str,
 		lightfield_source_t* lightfield_source_p, int lightray_number_per_particle,
-		int n_min, int n_max,float beam_wavelength, float aperture_f_number,
+		float beam_wavelength, float aperture_f_number,
 		int num_elements, double (*element_center)[3],element_data_t* element_data_p,
 		double (*element_plane_parameters)[4], int *element_system_index, camera_design_t* camera_design_p,
 		float* image_array, bool simulate_density_gradients, char* density_grad_filename)
@@ -2000,12 +1850,6 @@ void save_to_file(float lens_pitch, float image_distance,
 
 	// scattering_type
 	file_scalars.write((char*)&scattering_type, sizeof(int));
-
-	// n_min
-	file_scalars.write((char*)&n_min, sizeof(int));
-
-	// n_max
-	file_scalars.write((char*)&n_max, sizeof(int));
 
 	// lightray_number_per_particle
 	file_scalars.write((char*)&lightray_number_per_particle, sizeof(int));
@@ -2036,7 +1880,6 @@ void save_to_file(float lens_pitch, float image_distance,
 		scattering_data_p->inverse_rotation_matrix[k] = (float) scattering_data_p->inverse_rotation_matrix[k];
 			file_scattering.write ((char*)&scattering_data_p->inverse_rotation_matrix[k], sizeof(float));
 
-//		}
 		printf("\n");
 	}
 	printf("\n");
@@ -2093,10 +1936,6 @@ void save_to_file(float lens_pitch, float image_distance,
 		file_lightfield_source.write ((char*)&lightfield_source_p->z[k], sizeof(float));
 
 	file_lightfield_source.close();
-
-//	printf("lightfield_source radiance\n");
-//	for(k = 0; k < 10; k++)
-//		printf("%d: %G\n",k,lightfield_source_p->radiance[k]);
 
 	//--------------------------------------------------------------------------------------
 	// save optical element data
@@ -2292,12 +2131,6 @@ void save_to_file(float lens_pitch, float image_distance,
 
 	file_density_grad.close();
 
-//
-}
-
-int add(int a, int b)
-{
-	return a+b;
 }
 
 void check_density_gradients(density_grad_params_t params)
@@ -2400,16 +2233,16 @@ void check_density_gradients(density_grad_params_t params)
 void start_ray_tracing(float lens_pitch, float image_distance,
 		scattering_data_t* scattering_data_p, char* scattering_type_str,
 		lightfield_source_t* lightfield_source_p, int lightray_number_per_particle,
-		int n_min, int n_max,float beam_wavelength, float aperture_f_number,
+		float beam_wavelength, float aperture_f_number,
 		int num_elements, double (*element_center)[3],element_data_t* element_data_p,
 				double (*element_plane_parameters)[4], int *element_system_index,
-				camera_design_t* camera_design_p, float* float_image_array,
+				camera_design_t* camera_design_p, float* image_array,
 				bool simulate_density_gradients, char* density_grad_filename)
 {
 	/*
 	 * This function receives the ray tracing parameters from the python code, allocates
 	 * memory on the gpu, specifies the thread and block information and calls the gpu
-	 * functions that perform the various steps in the ray tracing process./
+	 * functions that perform the various steps in the ray tracing process.
 	 *
 	 * INPUTS:
 	 * lens_pitch - diameter of the lens
@@ -2419,8 +2252,6 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	 * scattering_type_str - "mie" for mie scattering or "diffuse" for uniform light radiance
 	 * lightfield_source_p -pointer to structure containing info about light field generation
 	 * lightray_number_per_particle - number of light rays to be generated for each particle
-	 * n_min - id of the first particle in the set of particles that will be simulated in this call
-	 * n_max - id of the last particle in the set of particles that will be simulated in this call
 	 * beam_wavelength - wavelength of the laser beam in microns
 	 * aperture_f_number - f# of the lens/aperture (= focal length / pitch)
 	 *
@@ -2429,19 +2260,23 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	 * element_data_p - pointer to structure containing various properties of optical elements
 	 * element_plane_parameters - parameters define the plane upon which the element is centered
 	 * 							  (first three elements are a unit vector
-	 * element_system_index -
+	 * element_system_index - sequential index of all the elements in the optical train
+
+	 * camera_design_p - pointer to structure containing the camera sensor information
 	 *
+	 * image_array - array containing the intensity of each pixel
 	 *
-	 *
-	 *
+	 * simulate_density_gradients - boolean flag that indicates if the ray deflection through
+	 * 								density gradients will be simulated or not
+	 * density_grad_filename - name of the nrrd file that contains the density data
 	 */
 
 
 
-	// create instance of structure using the pointers
+	// this structure holds the scattering information
 	scattering_data_t scattering_data = *scattering_data_p;
+	// this structure holds the information about the lightfield source
 	lightfield_source_t lightfield_source = *lightfield_source_p;
-
 
 	// counter variable for all the for loops in this function
 	int k;
@@ -2450,19 +2285,19 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	// allocate space on GPU for lightfield_source
 	//--------------------------------------------------------------------------------------
 
-//	// check light ray radiance
-//	printf("lightfield_source radiance\n");
-//	for(k = 0; k < 10; k++)
-//		printf("%d: %G\n",k,lightfield_source.radiance[k]);
-
-	// declare pointers to device arrays
+	// this is a pointer to the device array containing the x coordinate of a source point
 	float* d_source_x = 0;
+	// this is a pointer to the device array containing the y coordinate of a source point
 	float* d_source_y = 0;
+	// this is a pointer to the device array containing the z coordinate of a source point
 	float* d_source_z = 0;
+	// this is a pointer to the device array containing the radiance of a source point
 	double *d_source_radiance = 0;
+	// this is a pointer to the device array containing the diameter of a source point
 	int *d_source_diameter_index = 0;
+	// this is the total number of source points that have to be simulated
 	int num_particles = lightfield_source.num_particles;
-	printf("num_particles: %d\n",num_particles);
+	printf("number of particles: %d\n",num_particles);
 
 	// allocate space for device arrays on GPU
 	cudaMalloc((void **)&d_source_x,sizeof(float)*num_particles);
@@ -2489,18 +2324,11 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	// allocate space on GPU for scattering_data
 	//--------------------------------------------------------------------------------------
 
-	// check scattering data arrangement
-	printf("num_angles: %d\n", scattering_data.num_angles);
-	printf("num_diameters: %d\n", scattering_data.num_diameters);
-
-	printf("scattering irradiance values\n");
-	printf("0,0: %f\n",scattering_data.scattering_irradiance[0]);
-//	printf("1,0: %f\n",scattering_data.scattering_irradiance[1*num_diameters]);
-	printf("0,ND: %f\n",scattering_data.scattering_irradiance[1*scattering_data.num_diameters-1]);
-	printf("NA,0: %f\n",scattering_data.scattering_irradiance[(scattering_data.num_angles-1)*scattering_data.num_diameters]);
-
-	// declare pointers to device arrays
+	// this is a pointer to the device array containing the angles for which mie scattering
+	// data is available
 	float *d_scattering_angle = 0;
+	// this is a pointer to the device array containing the mie scattering irradiance for a
+	// range of diameters and scattering angles
 	float* d_scattering_irradiance = 0;
 
 	// allocate space for device arrays on GPU
@@ -2513,20 +2341,9 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	cudaMemcpy(d_scattering_irradiance,scattering_data.scattering_irradiance,scattering_data.num_angles*scattering_data.num_diameters*sizeof(float)
 		,cudaMemcpyHostToDevice);
 
-	// point host structure to device array
+	// point host structure to device arrays
 	scattering_data.scattering_angle = d_scattering_angle;
-
-//	// setup texture array to hold scattering irradiance data
-//	cudaMalloc((void**)&data_array,scattering_data.num_angles*scattering_data.num_diameters*sizeof(float));
-//	cudaMemcpy(data_array,scattering_data.scattering_irradiance,
-//				scattering_data.num_angles*scattering_data.num_diameters*sizeof(float),cudaMemcpyHostToDevice);
-//	cudaChannelFormatDesc desc = cudaCreateChannelDesc<float>();
-//	cudaBindTexture2D( NULL, mie_scattering_irradiance,
-//	                               data_array,
-//	                               desc, scattering_data.num_diameters, scattering_data.num_angles,
-//	                               sizeof(float) * scattering_data.num_diameters );
 	scattering_data.scattering_irradiance = d_scattering_irradiance;
-
 
 	int scattering_type = 0;
 	if(strcmp(scattering_type_str,"mie")==0)
@@ -2536,11 +2353,11 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	// read random numbers from file
 	//--------------------------------------------------------------------------------------
 
-	// allocate space for cpu arrays to hold the random numbers
+	// allocate space for CPU arrays to hold the random numbers
 	float* h_rand1 = (float*) malloc(lightray_number_per_particle*sizeof(float));
 	float* h_rand2 = (float*) malloc(lightray_number_per_particle*sizeof(float));
 
-	// declare gpu arrays to store the random numbers
+	// declare GPU arrays to store the random numbers
 	float* d_rand1 = 0;
 	float* d_rand2 = 0;
 
@@ -2570,75 +2387,49 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	cudaMemcpy(d_rand1,h_rand1,sizeof(float)*lightray_number_per_particle,cudaMemcpyHostToDevice);
 	cudaMemcpy(d_rand2,h_rand2,sizeof(float)*lightray_number_per_particle,cudaMemcpyHostToDevice);
 
-
 	//--------------------------------------------------------------------------------------
-	// generate light rays
-	//--------------------------------------------------------------------------------------
-
-
-	//--------------------------------------------------------------------------------------
-	// propagate rays through the optical system
+	// allocate space on GPU for the optical system data
 	//--------------------------------------------------------------------------------------
 
-	//  convert coordinate arrays to float3 and float4 arrays
+	// this array contains the coordinates of the centers of each optical element
 	float3* element_center_2 = (float3 *) malloc(num_elements*sizeof(float3));
+	// this array contains the normal to the plane of the optical element and
+	// its z location
 	float4* element_plane_parameters_2 = (float4 *) malloc(num_elements*sizeof(float4));
 
+	//  convert coordinate arrays to float3 and float4 arrays
 	for(k = 0; k < num_elements; k++)
 	{
 		element_center_2[k] = make_float3(element_center[k][0],element_center[k][1],element_center[k][2]);
 		element_plane_parameters_2[k] = make_float4(element_plane_parameters[k][0],element_plane_parameters[k][1],element_plane_parameters[k][2],element_plane_parameters[k][3]);
-//		printf("element_system_index[k]: %d\n",element_system_index[k]);
 	}
-
-	// store element data as an array of structs
-	optical_element_t* optical_element = (optical_element_t*) malloc(sizeof(optical_element_t)*num_elements);
-
-	for(k = 0; k < num_elements; k++)
-	{
-		optical_element[k].element_data = element_data_p[k];
-		optical_element[k].element_center = element_center_2[k];
-		optical_element[k].element_plane_parameters = element_plane_parameters_2[k];
-		optical_element[k].element_system_index = element_system_index[k];
-	}
-
-//	// allocate space on GPU
-//	optical_element_t* d_optical_element = 0;
-//	cudaMalloc((void**)&d_optical_element,sizeof(optical_element_t)*num_elements);
-//	cudaMemcpy(d_optical_element,optical_element,sizeof(optical_element_t)*num_elements,cudaMemcpyHostToDevice);
 
 	// declare arrays to hold element coordinate information the gpu
 	float3* d_element_center = 0;
 	float4* d_element_plane_parameters = 0;
 	int* d_element_system_index = 0;
+	element_data_t* d_element_data = 0;
 
 	// allocate space on GPU for coordinate arrays
 	cudaMalloc((void**)&d_element_center,num_elements*sizeof(float3));
 	cudaMalloc((void**)&d_element_plane_parameters,num_elements*sizeof(float4));
 	cudaMalloc((void**)&d_element_system_index,num_elements*sizeof(int));
+	cudaMalloc((void**)&d_element_data,num_elements*sizeof(element_data_t));
 
 	// copy data from GPU to CPU
 	cudaMemcpy(d_element_center,element_center_2,num_elements*sizeof(float3),cudaMemcpyHostToDevice);
 	cudaMemcpy(d_element_plane_parameters,element_plane_parameters_2,num_elements*sizeof(float4),cudaMemcpyHostToDevice);
 	cudaMemcpy(d_element_system_index,element_system_index,num_elements*sizeof(int),cudaMemcpyHostToDevice);
-
-	element_data_t* d_element_data = 0;
-	cudaMalloc((void**)&d_element_data,num_elements*sizeof(element_data_t));
 	cudaMemcpy(d_element_data,element_data_p,num_elements*sizeof(element_data_t),cudaMemcpyHostToDevice);
 
 	for(k = 0; k < num_elements; k++)
 	{
-//		cudaMalloc((void**)&d_element_data[k].axial_offset_distances,2*sizeof(double));
 		cudaMemcpy(d_element_data[k].axial_offset_distances,element_data_p[k].axial_offset_distances,2*sizeof(double),cudaMemcpyHostToDevice);
-
-//		cudaMalloc((void**)&d_element_data[k].rotation_angles,3*sizeof(double));
 		cudaMemcpy(d_element_data[k].rotation_angles,element_data_p[k].rotation_angles,3*sizeof(double),cudaMemcpyHostToDevice);
-
 	}
 
-
 	//--------------------------------------------------------------------------------------
-	// intersect rays with sensor
+	// allocate space on GPU for the camera sensor data
 	//--------------------------------------------------------------------------------------
 
 	// declare pointer to the structure that will hold the camera design information
@@ -2651,55 +2442,39 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	cudaMemcpy(d_camera_design,camera_design_p,sizeof(camera_design_t),cudaMemcpyHostToDevice);
 
 	// declare pointer to the array that will hold the image
-	double* d_image_array = 0;
+	float* d_image_array = 0;
 
-	// allocate space on the gpu for the array that will hold the image
-	cudaMalloc((void **)&d_image_array, sizeof(double)*camera_design_p->x_pixel_number*camera_design_p->y_pixel_number);
-
-//	// copy image array contents from the previous iteration to the gpu
-//	cudaMemcpy(d_image_array,image_array,sizeof(double)*camera_design_p->x_pixel_number*camera_design_p->y_pixel_number,cudaMemcpyHostToDevice);
-
-	// set image array intensity to zero
-	cudaMemset(d_image_array,0.0,sizeof(double)*camera_design_p->x_pixel_number*camera_design_p->y_pixel_number);
-
-	// number of pixels in the image
+	// this is the number of pixels on the camera sensor
 	int num_pixels = camera_design_p->x_pixel_number * camera_design_p->y_pixel_number;
 
-
-//	// array to store int2 values
-//	float2* d_float_image_array = 0;
-//	// allocate space on the gpu for the array that will hold the image
-//	cudaMalloc((void **)&d_float_image_array, sizeof(float2)*camera_design_p->x_pixel_number*camera_design_p->y_pixel_number);
-//
-//	// set image array intensity to zero
-//	cudaMemset(d_float_image_array,0.0,sizeof(float2)*camera_design_p->x_pixel_number*camera_design_p->y_pixel_number);
-
-	// array to store int2 values
-	float* d_float_image_array = 0;
 	// allocate space on the gpu for the array that will hold the image
-	cudaMalloc((void **)&d_float_image_array, sizeof(float)*camera_design_p->x_pixel_number*camera_design_p->y_pixel_number);
+	cudaMalloc((void **)&d_image_array, sizeof(float)*num_pixels);
 
-	// set image array intensity to zero
-	cudaMemset(d_float_image_array,0.0,sizeof(float)*camera_design_p->x_pixel_number*camera_design_p->y_pixel_number);
-
-	cudaMemcpy(d_float_image_array,float_image_array,sizeof(float)*camera_design_p->x_pixel_number*camera_design_p->y_pixel_number,cudaMemcpyHostToDevice);
+	// copy image array contents from the previous iteration to the gpu
+	cudaMemcpy(d_image_array,image_array,sizeof(float)*num_pixels,cudaMemcpyHostToDevice);
 
 	//--------------------------------------------------------------------------------------
 	// setup density gradient data
 	//--------------------------------------------------------------------------------------
+
+	// pointer to the structure containing the density gradient info
 	density_grad_params_t* d_params_p = 0;
 
 	if(simulate_density_gradients)
 	{
+		// read the density data from file
 		density_grad_params_t params = readDatafromFile(density_grad_filename);
-		cudaMalloc((void**)&d_params_p, sizeof(density_grad_params_t));
-		cudaMemcpy(d_params_p, &params, sizeof(density_grad_params_t),cudaMemcpyHostToDevice);
 
+		// allocate space on the GPU to hold the density gradient simulation parameters data
+		cudaMalloc((void**)&d_params_p, sizeof(density_grad_params_t));
+		// copy the density gradient simulation parameters from CPU to GPU
+		cudaMemcpy(d_params_p, &params, sizeof(density_grad_params_t),cudaMemcpyHostToDevice);
+		// setup the array containing the density gradient data separately as a texture
 		Host_Init(&params,d_params_p);
 
-		// check if the trace density gradients function works correctly
-		check_density_gradients(params);
-		exit(0);
+//		// check if the trace density gradients function works correctly
+//		check_density_gradients(params);
+//		exit(0);
 
 	}
 
@@ -2707,156 +2482,130 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	// setup blocks and threads for ray tracing on the GPU
 	//--------------------------------------------------------------------------------------
 
-	// number of particles that will simulated in one call to the GPU
-//	int source_point_number = 10000;
-	int source_point_number = 100;
+	// number of particles that will simulated in one call to the GPU. this is a function
+	// of the GPU memory, and threads-blocks-grids specifications
+	int source_point_number = 10000;
+//	int source_point_number = 100;
 
 	// number of the light rays to be generated and traced in a single call
 	int num_rays = source_point_number*lightray_number_per_particle;
+	// print the number of rays
+	printf("num_particles: %d, source_point_number: %d, num_rays: %d\n",
+			num_particles, source_point_number, num_rays);
 
 	// allocate number of threads per block
 	dim3 block(500,1);
 
+	//------------------------------------------------------------------------------------------
 	// calculate number of blocks required
+	//------------------------------------------------------------------------------------------
 	int grid_x;
-	// if number of light rays to be traced is less than or equal to the number of threads
-	// in one block then just one block is enough
+	// if the number of light rays to be traced is less than or equal to the number of
+	// threads in one block, then just one block is enough
 	if(lightray_number_per_particle<=block.x)
 		grid_x = 1;
-	// if number of light rays to be traced is greater than the number of threads in one block
-	// and it is an exact multiple, then calculate the number of blocks required
+	// if the number of light rays to be traced is greater than the number of threads in one
+	// block and it is an exact multiple, then calculate the number of blocks required
 	else if(lightray_number_per_particle>block.x && lightray_number_per_particle%block.x ==0)
 		grid_x = lightray_number_per_particle/block.x;
-	// if number of light rays to be traced is greater than the number of threads in one block
-	// and it is NOT an exact multiple, then use an extra block
+	// if the number of light rays to be traced is greater than the number of threads in one
+	// block and it is NOT an exact multiple, then use an extra block
 	else
 		grid_x = lightray_number_per_particle/block.x + 1;
 
-	/* allocate number of blocks per grid	 */
+	// allocate number of blocks per grid
 	dim3 grid(grid_x,source_point_number);
-
 	printf("grid: %d, %d\n",grid_x,source_point_number);
 
-	// print the number of rays
-	printf("num_rays: %d\n",num_rays);
-
-	//--------------------------------------------------------------------------------------
-	// begin ray tracing
-	//--------------------------------------------------------------------------------------
-
-//	// setup an array to store the final locations of the rays on the camera plane
-//	float2* d_ray_pos_final = 0;
-//	cudaMalloc((void**)&d_ray_pos_final, source_point_number*lightray_number_per_particle*sizeof(float2));
+	//------------------------------------------------------------------------------------------
+	// perform ray tracing
+	//------------------------------------------------------------------------------------------
 
 	clock_t begin, end;
 	double time_spent;
+	int n_min, n_max;
 
 	// begin timer
 	begin = clock();
 
+	// this is the number of time the GPU will be called to simulate all the source points
+	int KMAX;
+	if(num_particles%source_point_number == 0)
+		KMAX = num_particles/source_point_number;
+	else
+		KMAX = num_particles/source_point_number + 1;
 
-	int KMAX = num_particles/source_point_number;
-
-	if(KMAX < 0)
+	for(k = 0; k < KMAX; k++)
 	{
-		n_min = 0;
+		// display progress to the user
+		printf("%d out of %d\n",k+1, KMAX);
+
+		// this is the starting index in the source point array of the set of points
+		// that will be simulated in this call
+		n_min = k*source_point_number;
+
 		parallel_ray_tracing<<<grid,block>>>(lens_pitch, image_distance,scattering_data,
 			scattering_type, lightfield_source,lightray_number_per_particle, n_min, n_max,
 			beam_wavelength,aperture_f_number,num_rays,d_rand1,d_rand2,
 			d_element_data, d_element_center,d_element_plane_parameters,
 			d_element_system_index,num_elements,
-			d_camera_design, d_image_array,simulate_density_gradients, d_params_p, d_float_image_array);
+			d_camera_design, d_image_array,simulate_density_gradients, d_params_p);
 
 		cudaDeviceSynchronize();
-
-	}
-	else
-	{
-		for(k = 0; k < KMAX; k++)
-		{
-			n_min = k*source_point_number;
-			printf("%d out of %d\n",k+1, KMAX);
-			parallel_ray_tracing<<<grid,block>>>(lens_pitch, image_distance,scattering_data,
-				scattering_type, lightfield_source,lightray_number_per_particle, n_min, n_max,
-				beam_wavelength,aperture_f_number,num_rays,d_rand1,d_rand2,
-				d_element_data, d_element_center,d_element_plane_parameters,
-				d_element_system_index,num_elements,
-				d_camera_design, d_image_array,simulate_density_gradients, d_params_p, d_float_image_array);
-
-			cudaDeviceSynchronize();
-	//		break;
-		}
+//		break;
 	}
 
 	// copy image data to CPU
-//	cudaMemcpy(image_array,d_image_array,sizeof(double)*camera_design_p->x_pixel_number*camera_design_p->y_pixel_number,cudaMemcpyDeviceToHost);
-
-//	float* float_image_array = new float[num_pixels];
-	cudaMemcpy(float_image_array,d_float_image_array,sizeof(float)*camera_design_p->x_pixel_number*camera_design_p->y_pixel_number,cudaMemcpyDeviceToHost);
+	cudaMemcpy(image_array,d_image_array,sizeof(float)*camera_design_p->x_pixel_number*camera_design_p->y_pixel_number,cudaMemcpyDeviceToHost);
 
 	// end timer
 	end = clock();
 
 	// compute time spent
 	time_spent = (double) (end - begin)/CLOCKS_PER_SEC;
-	printf("time_spent : %f\n", time_spent);
+
+	// display total time spent to the user
+	printf("time_spent : %f minutes\n", time_spent/60);
+
+	//--------------------------------------------------------------------------------------
+	// save image array to file (for debugging purposes)
+	//--------------------------------------------------------------------------------------
 
 	// display image array contents after intersecting the rays with the sensor
 	printf("finished intersecting rays with sensor\n");
 	printf("image array\n");
-//	printf("first three: %G, %G, %G\n",image_array[0],image_array[1],image_array[2]);
-//	printf("last three: %G, %G, %G\n",image_array[num_pixels-3],image_array[num_pixels-2],image_array[num_pixels-1]);
-	printf("first three: %G, %G, %G\n",float_image_array[0],float_image_array[1],float_image_array[2]);
-	printf("last three: %G, %G, %G\n",float_image_array[num_pixels-3],float_image_array[num_pixels-2],float_image_array[num_pixels-1]);
-
+	printf("first three: %G, %G, %G\n",image_array[0],image_array[1],image_array[2]);
+	printf("last three: %G, %G, %G\n",image_array[num_pixels-3],image_array[num_pixels-2],image_array[num_pixels-1]);
 
 	printf("saving image array to file\n");
-//	filename = "/home/barracuda/a/lrajendr/Projects/camera_simulation/image_array_const_grad_x_2.bin";
-	filename = "/home/barracuda/a/lrajendr/Projects/camera_simulation/image_grad.bin";
-	std::ofstream file_image_array(filename.c_str(),ios::out | ios::binary);
-//	for(k = 0; k < num_pixels; k++)
-//		file_image_array.write((char*)&image_array[k],sizeof(double));
-	for(k = 0; k < num_pixels; k++)
-			file_image_array.write((char*)&float_image_array[k],sizeof(float));
 
+	// this is the name of the file where the image data will be stored
+	filename = "/home/barracuda/a/lrajendr/Projects/camera_simulation/image_increased_radiance.bin";
+//	filename = "/home/barracuda/a/lrajendr/Projects/camera_simulation/image_grad.bin";
+
+	// open the file
+	std::ofstream file_image_array(filename.c_str(),ios::out | ios::binary);
+	// save all the pixel intensities to file
+	for(k = 0; k < num_pixels; k++)
+			file_image_array.write((char*)&image_array[k],sizeof(float));
+	// close the file
 	file_image_array.close();
 
-//	//--------------------------------------------------------------------------------------
-//	// save final light ray positions to file
-//	//--------------------------------------------------------------------------------------
-//
-//	printf("saving final light ray positions to file\n");
-//
-//	// copy positions to cpu
-//	float2* ray_pos_final = (float2*) malloc(sizeof(float2)*source_point_number*lightray_number_per_particle);
-//	cudaMemcpy(ray_pos_final,d_ray_pos_final,sizeof(float2)*source_point_number*lightray_number_per_particle,
-//			cudaMemcpyDeviceToHost);
-//
-//	// specify filename
-//	filename = "/home/barracuda/a/lrajendr/Projects/camera_simulation/final_pos.bin";
-//
-//	// open file
-//	std::ofstream file_final_pos(filename.c_str(), ios::out | ios::binary);
-//
-//	// write final positions to file
-//	for(k = 0; k < source_point_number*lightray_number_per_particle; k++)
-//		file_final_pos.write((char*)&ray_pos_final[k],sizeof(float2));
-//
-//	// close file
-//	file_final_pos.close();
-//
-//	// free allocated memory
-//	free(ray_pos_final);
-//	cudaFree(d_ray_pos_final);
+	//--------------------------------------------------------------------------------------
+	// free allocated memory
+	//--------------------------------------------------------------------------------------
 
-	// Destroy pointers to arrays
+	// free allocated memory on the CPU
 	free(h_rand1);
 	free(h_rand2);
+
+	free(element_center_2);
+	free(element_plane_parameters_2);
+
+	// free allocated memory on the GPU
 	cudaFree(d_rand1);
 	cudaFree(d_rand2);
 
-	// free GPU arrays
-	// free pointers
 	cudaFree(d_source_x);
 	cudaFree(d_source_y);
 	cudaFree(d_source_z);
@@ -2867,28 +2616,18 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	cudaFree(d_scattering_irradiance);
 	cudaFree(data_array);
 
-	// free arrays
 	cudaFree(d_element_center);
 	cudaFree(d_element_plane_parameters);
 	cudaFree(d_element_system_index);
 	cudaFree(d_element_data);
-//	cudaFree(d_optical_element);
-
-	free(element_center_2);
-	free(element_plane_parameters_2);
-	free(optical_element);
 
 	cudaFree(d_camera_design);
 	cudaFree(d_image_array);
-	cudaFree(d_float_image_array);
 
 
 	cudaUnbindTexture(tex_data);
 	cudaFreeArray(data_array);
 	cudaFree(d_params_p);
-
-	free(float_image_array);
-	cudaFree(d_float_image_array);
 
 }
 
