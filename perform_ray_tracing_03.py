@@ -1,23 +1,14 @@
 import numpy as np
-#import weave
 from numpy import linalg as la
 import run_piv_simulation_02
-import scipy.io as sio
-from progressbar import ProgressBar
 import subprocess
 import os
-import time
 from sklearn.neighbors import NearestNeighbors
-import matplotlib.pyplot as plt
 import scipy.integrate as siint
 from scipy.interpolate import interp1d
-# import pyximport
-# pyximport.install()
-import c_functions
 import ctypes
 import numpy.ctypeslib as npct
-#import increment_pixel_radiance
-import string
+from skimage import exposure
 
 def create_element_coordinate_data(optical_element):
     # % This function creates data to describe the location of the current
@@ -1636,10 +1627,10 @@ def trace_rays_through_density_gradients(light_ray_data):
 
 
 def prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, scattering_type, lightfield_source,
-                                     lightray_number_per_particle, n_min, n_max,beam_wavelength,aperture_f_number,
+                                     lightray_number_per_particle, beam_wavelength,aperture_f_number,
                                  element_data, element_center,
-                                 element_plane_parameters, element_system_index,camera_design,I,density_grad_filename
-                                 ):
+                                 element_plane_parameters, element_system_index,camera_design,I,density_grad_filename,
+                                 simulate_density_gradients):
     #-------------------------------------------------------------------------------------------------------------------
     # convert variables to appropriate ctypes formats
     # -------------------------------------------------------------------------------------------------------------------
@@ -1650,6 +1641,7 @@ def prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, sc
     _doublep = npct.ndpointer(dtype=np.float64, flags='C')
     _intp = npct.ndpointer(dtype=np.int32, flags='C')
 
+    lightray_number_per_particle = int(lightray_number_per_particle)
     # define a class to represent the scattering_data dictionary
     class scattering_data_struct(ctypes.Structure):
         _fields_ = [
@@ -1664,31 +1656,54 @@ def prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, sc
     # copy data to structure
     scattering_data_ctypes = scattering_data_struct()
 
-    # use a temporary variable to avoid typing the long name several times
-    temp_var = np.asarray(scattering_data['inverse_rotation_matrix']).astype('float32')
+    if(scattering_type == 'mie'):
+        # use a temporary variable to avoid typing the long name several times
+        temp_var = np.asarray(scattering_data['inverse_rotation_matrix']).astype('float32')
 
-    scattering_data['scattering_angle'] = scattering_data['scattering_angle'].astype('float32')
-    scattering_data_ctypes.scattering_angle = scattering_data['scattering_angle'].__array_interface__['data'][0]
-    # get pointer to the first element of the 2d array
-    irradiance = np.reshape(scattering_data['scattering_irradiance'].astype('float32'),(1,scattering_data['scattering_irradiance'].size))
-    scattering_data_ctypes.scattering_irradiance = irradiance.__array_interface__['data'][0]
+        scattering_data['scattering_angle'] = scattering_data['scattering_angle'].astype('float32')
+        scattering_data_ctypes.scattering_angle = scattering_data['scattering_angle'].__array_interface__['data'][0]
+        # get pointer to the first element of the 2d array
+        irradiance = np.reshape(scattering_data['scattering_irradiance'].astype('float32'),(1,scattering_data['scattering_irradiance'].size))
+        scattering_data_ctypes.scattering_irradiance = irradiance.__array_interface__['data'][0]
 
-    # get number of angles over which mie scattering data is available
-    scattering_data_ctypes.num_angles = scattering_data['scattering_irradiance'].shape[0]
-    # get number of diameters over which mie scattering data is available
-    scattering_data_ctypes.num_diameters = scattering_data['scattering_irradiance'].shape[1]
+        # get number of angles over which mie scattering data is available
+        scattering_data_ctypes.num_angles = scattering_data['scattering_irradiance'].shape[0]
+        # get number of diameters over which mie scattering data is available
+        scattering_data_ctypes.num_diameters = scattering_data['scattering_irradiance'].shape[1]
 
-    print "scattering_data_ctypes, pointer at %d" % id(scattering_data_ctypes)
+        # print "scattering_data_ctypes, pointer at %d" % id(scattering_data_ctypes)
 
-    for i in range(0,3):
-        scattering_data_ctypes.beam_propogation_vector[i] = scattering_data['beam_propogation_vector'][i].astype('float32')
-        for j in range(0,3):
-            scattering_data_ctypes.inverse_rotation_matrix[i*3 + j] = scattering_data['inverse_rotation_matrix'][i,j].astype('float32')
+        for i in range(0,3):
+            scattering_data_ctypes.beam_propogation_vector[i] = scattering_data['beam_propogation_vector'][i].astype('float32')
+            for j in range(0,3):
+                scattering_data_ctypes.inverse_rotation_matrix[i*3 + j] = scattering_data['inverse_rotation_matrix'][i,j].astype('float32')
+    else:
+        scattering_data_ctypes.scattering_angle = 0
+        # get pointer to the first element of the 2d array
+        scattering_data_ctypes.scattering_irradiance = 0
+
+        # get number of angles over which mie scattering data is available
+        scattering_data_ctypes.num_angles = 0
+        # get number of diameters over which mie scattering data is available
+        scattering_data_ctypes.num_diameters = 0
+
+        # print "scattering_data_ctypes, pointer at %d" % id(scattering_data_ctypes)
+        # scattering_data_ctypes.beam_propagation_vector = 0
+
+        for i in range(0, 3):
+            scattering_data_ctypes.beam_propogation_vector[i] = np.NAN
+            for j in range(0, 3):
+                scattering_data_ctypes.inverse_rotation_matrix[i * 3 + j] = np.NAN
+
+        # # scattering_data_ctypes.inverse_rotation_matrix = np.ones((9,))*np.NAN
+        # for i in range(0,9):
+        #     scattering_data_ctypes.inverse_rotation_matrix[i] = np.NAN
+
 
     class lightfield_source_struct(ctypes.Structure):
         _fields_ = [
             ('lightray_number_per_particle', ctypes.c_int),
-            ('lightray_process_number', ctypes.c_int),
+            ('source_point_number', ctypes.c_int),
             ('diameter_index', _intp),
             ('radiance', _doublep),
             ('x', _floatp),
@@ -1707,7 +1722,7 @@ def prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, sc
     # copy data to structure
     lightfield_source_ctypes = lightfield_source_struct()
     lightfield_source_ctypes.lightray_number_per_particle = int(lightfield_source['lightray_number_per_particle'])
-    lightfield_source_ctypes.lightray_process_number = int(lightfield_source['lightray_process_number'])
+    lightfield_source_ctypes.source_point_number = int(lightfield_source['source_point_number'])
     lightfield_source_ctypes.diameter_index = lightfield_source['diameter_index'].__array_interface__['data'][0]
     lightfield_source_ctypes.radiance = np.asarray(lightfield_source['radiance']).__array_interface__['data'][0]#.astype('float32').ctypes.data
     lightfield_source_ctypes.x = lightfield_source['x'].__array_interface__['data'][0]
@@ -1818,7 +1833,7 @@ def prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, sc
 
     # assign values to the fields
     camera_design_ctypes_struct.pixel_bit_depth = int(camera_design['pixel_bit_depth'])
-    camera_design_ctypes_struct.pixel_gain = 25.0
+    camera_design_ctypes_struct.pixel_gain = camera_design['pixel_gain']
     camera_design_ctypes_struct.pixel_pitch = camera_design['pixel_pitch']
     camera_design_ctypes_struct.x_camera_angle = camera_design['x_camera_angle']
     camera_design_ctypes_struct.y_camera_angle = camera_design['y_camera_angle']
@@ -1826,10 +1841,8 @@ def prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, sc
     camera_design_ctypes_struct.y_pixel_number = int(camera_design['y_pixel_number'])
     camera_design_ctypes_struct.z_sensor = camera_design['z_sensor']
 
-    I2 = np.reshape(I,(1,1024*1024))
-    # I2 = np.squeeze(I.reshape(1,1024*1024))
-    # declare image array to be passed to CUDA
-    # I = np.zeros(camera_design['x_pixel_number']*camera_design['y_pixel_number']).astype('float32')
+    # convert the 2D image array to a 1D array because they are easier to handle in CUDA
+    I2 = np.reshape(I,(1,1024*1024)).astype(np.float32)
 
     # -------------------------------------------------------------------------------------------------------------------
     # call cuda code
@@ -1838,51 +1851,54 @@ def prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, sc
     # import cuda code
     cuda_func = ctypes.CDLL('/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/Debug/libparallel_ray_tracing.so')
 
-    # cuda_func.save_to_file.argtypes = [ctypes.c_float, ctypes.c_float, ctypes.POINTER(scattering_data_struct),
-    #                                    ctypes.c_char_p, ctypes.POINTER(lightfield_source_struct), ctypes.c_int, \
-    #                                    ctypes.c_int, ctypes.c_int, ctypes.c_float, ctypes.c_float, ctypes.c_int,
-    #                                    _double3p,ctypes.POINTER(element_data_struct),
-    #                                    _double4p,_intp,ctypes.POINTER(camera_design_struct),_doublep]
-    #
-    # # # define return type
-    # # cuda_func.start_ray_tracing.restype = ctypes.POINTER(lightfield_data_struct)
-    # cuda_func.save_to_file.restype = None
-    # #
-    #
-    # # # call function in cuda code
-    # cuda_func.save_to_file(lens_pitch, image_distance, scattering_data_ctypes, scattering_type,
-    #                        lightfield_source_ctypes, lightray_number_per_particle, n_min, n_max,
-    #                        beam_wavelength, aperture_f_number,num_elements,element_center,element_data_ctypes_struct,element_plane_parameters,
-    #                        np.asarray(element_system_index).astype('int32'),camera_design_ctypes_struct,
-    #                           I2)
+    # specify the properties of the function that will save the input parameters to a file for debugging later
 
-
-    cuda_func.start_ray_tracing.argtypes = [ctypes.c_float, ctypes.c_float, ctypes.POINTER(scattering_data_struct),
+    # these are the argument data types
+    cuda_func.save_to_file.argtypes = [ctypes.c_float, ctypes.c_float, ctypes.POINTER(scattering_data_struct),
                                        ctypes.c_char_p, ctypes.POINTER(lightfield_source_struct), ctypes.c_int, \
-                                       ctypes.c_int, ctypes.c_int, ctypes.c_float, ctypes.c_float, ctypes.c_int,
-                                       _double3p, ctypes.POINTER(element_data_struct),
-                                       _double4p, _intp, ctypes.POINTER(camera_design_struct), _doublep,ctypes.c_char_p]
-
+                                        ctypes.c_float, ctypes.c_float, ctypes.c_int,
+                                       _double3p,ctypes.POINTER(element_data_struct),
+                                       _double4p,_intp,ctypes.POINTER(camera_design_struct),_floatp,
+                                            ctypes.c_bool, ctypes.c_char_p]
 
     # # define return type
-    # cuda_func.start_ray_tracing.restype = ctypes.POINTER(lightfield_data_struct)
-    cuda_func.start_ray_tracing.restype = None
-    #
+    cuda_func.save_to_file.restype = None
 
-    # # call function in cuda code
+    # # call function in cuda code to save inputs to file
+    cuda_func.save_to_file(lens_pitch, image_distance, scattering_data_ctypes, scattering_type,
+                           lightfield_source_ctypes, lightray_number_per_particle,
+                           beam_wavelength, aperture_f_number,num_elements,element_center,element_data_ctypes_struct,element_plane_parameters,
+                           np.asarray(element_system_index).astype('int32'),camera_design_ctypes_struct,
+                              I2,simulate_density_gradients,density_grad_filename)
+
+    # specify the properties of the function that will start the ray tracing process
+
+    # these are the argument data types
+    cuda_func.start_ray_tracing.argtypes = [ctypes.c_float, ctypes.c_float, ctypes.POINTER(scattering_data_struct),
+                                       ctypes.c_char_p, ctypes.POINTER(lightfield_source_struct), ctypes.c_int, \
+                                       ctypes.c_float, ctypes.c_float, ctypes.c_int,
+                                       _double3p, ctypes.POINTER(element_data_struct),
+                                       _double4p, _intp, ctypes.POINTER(camera_design_struct), _floatp,
+                                            ctypes.c_bool, ctypes.c_char_p]
+
+
+    #  define return type
+    cuda_func.start_ray_tracing.restype = None
+
+
+    # call the function in cuda code to perform the ray tracing
     cuda_func.start_ray_tracing(lens_pitch, image_distance, scattering_data_ctypes, scattering_type,
-                           lightfield_source_ctypes, lightray_number_per_particle, n_min, n_max,
+                           lightfield_source_ctypes, lightray_number_per_particle,
                            beam_wavelength, aperture_f_number, num_elements, element_center, element_data_ctypes_struct,
                            element_plane_parameters,
                            np.asarray(element_system_index).astype('int32'), camera_design_ctypes_struct,
-                                I2,density_grad_filename)
+                                I2,simulate_density_gradients,density_grad_filename)
 
     print "done ray tracing"
 
+    # reshape the image back into a 2D array
     I = np.reshape(I2,(1024,1024))
 
-    # plt.imshow(I,cmap='gray')
-    # plt.show()
     return I
 def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain, scattering_data, scattering_type,
                            lightfield_source, field_type):
@@ -1941,7 +1957,7 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     lightray_number_per_particle = lightfield_source['lightray_number_per_particle']
     # % This extracts the number of lightrays to simulateously process to the
     # % 'lightfield_source' data
-    lightray_process_number = lightfield_source['lightray_process_number']
+    # lightray_process_number = lightfield_source['lightray_process_number']
     #
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # % Calculates optical system properties                                    %
@@ -1961,6 +1977,9 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     # % This is the Z position of the sensor
     z_sensor = 0.0
     piv_simulation_parameters['camera_design']['z_sensor'] = z_sensor
+
+    piv_simulation_parameters['camera_design']['pixel_gain'] = pixel_gain
+
     # % This is the Z position of the lens center
     z_lens = (v1_vertex_plane + v2_vertex_plane) / 2.0
     #
@@ -1979,11 +1998,9 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     # % This initializes the optical element data cell array
     # element_data = cell(1,1);
     element_data = np.zeros((1, 1), dtype=np.object)
-    #
+
     # % This calculates the coordinates of the circles and planes that define the
     # % optical elements in the current system
-    # [element_center,~,element_plane_parameters,~,~,~,element_system_index,~,element_data]=create_element_coordinate_arrays(optical_system.design,elements_coplanar,element_type,element_count,element_data);
-    # %   [element_center,~,element_plane_parameters,~,~,~,element_system_index,~,element_data]=create_element_coordinate_arrays(optical_system.design,elements_coplanar,element_type,element_count,element_data);
     [element_center, _, element_plane_parameters, _, _, _, element_system_index, _,
      element_data] = create_element_coordinate_arrays(optical_system['design'],
                                                       elements_coplanar,
@@ -1993,11 +2010,6 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     # remove first element because in the cell for element_data. because i don't understand python syntax well enough
     # to know why it's added in the first place.
     element_data = element_data[1:]
-    # [element_center, element_pitch, element_plane_parameters, element_type, element_thickness, total_element_distance,
-    #  element_system_index, element_count, element_data] = create_element_coordinate_arrays(optical_system['design'],
-    #                                                                                        elements_coplanar,
-    #                                                                                        element_type, element_count,
-    #                                                                                        element_data)
 
     element_center = np.squeeze(element_center)
     # element_pitch = np.squeeze(element_pitch)
@@ -2007,9 +2019,6 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     if(len(element_center.shape)==1):
         element_center = np.reshape(element_center,(1,element_center.shape[0]))
 
-    # element_type = np.squeeze(element_type)
-    # element_thickness = np.squeeze(element_thickness)
-
     # % This offsets the lens to account for the sensor position
     element_plane_parameters[:,3] = element_plane_parameters[:,3] - element_plane_parameters[:,2] * z_lens
     element_center[:,2] = element_center[:,2] + z_lens
@@ -2017,38 +2026,29 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # % Begins raytracing operations                                            %
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    #
+
     # % This initializes the sensor image
-    # I = np.zeros([x_pixel_number, y_pixel_number]).astype('float64')
-    I = np.zeros([x_pixel_number+1, y_pixel_number+1])
+    I = np.zeros([x_pixel_number, y_pixel_number]).astype('float32')
 
-    # lightray_process_number = 1000000
-    # lightray_number_per_particle = 10000
+    # TODO remove this
+    lightray_number_per_particle = 10
+    lightfield_source['source_point_number'] = 100
 
-    lightray_process_number = 1000000
-    lightray_number_per_particle = 10000
-
-    lightfield_source['lightray_process_number'] = lightray_process_number
-    lightfield_source['lightray_number_per_particle'] = lightray_number_per_particle
-
-    # % This generates an array of indices into the source points to calculate the lightfield
-    lightfield_N = np.ceil(lightray_process_number*1.0 / lightray_number_per_particle)
-
-    if(lightfield_N<1.0):
-        # lightfield_vector = np.linspace(0,lightfield_source['x'].size,endpoint=False)
-        lightfield_vector = np.r_[0:lightfield_source['x'].size-1]
-    else:
-        #lightfield_vector = np.linspace(0, lightfield_source['x'].size, lightfield_N,endpoint=False)
-        lightfield_vector = np.r_[0:lightfield_source['x'].size-1:lightfield_N]
-    # % This checks whether the last segment of indices is at the end of the
-    # % vector and if not, adds them
-    if lightfield_vector[-1] != lightfield_source['x'].size-1:
-        lightfield_vector = np.append(lightfield_vector, lightfield_source['x'].size-1)
-
-    light_ray_data = {}
-    # % This iterates through the rays in blocks of less then or equal to
-    # % lightray_process_number in size
-    # pbar = ProgressBar(maxval=len(lightfield_vector)-2).start()
+    # # % This generates an array of indices into the source points to calculate the lightfield
+    # lightfield_N = np.ceil(lightray_process_number*1.0 / lightray_number_per_particle)
+    #
+    # if(lightfield_N<1.0):
+    #     # lightfield_vector = np.linspace(0,lightfield_source['x'].size,endpoint=False)
+    #     lightfield_vector = np.r_[0:lightfield_source['x'].size-1]
+    # else:
+    #     #lightfield_vector = np.linspace(0, lightfield_source['x'].size, lightfield_N,endpoint=False)
+    #     lightfield_vector = np.r_[0:lightfield_source['x'].size-1:lightfield_N]
+    # # % This checks whether the last segment of indices is at the end of the
+    # # % vector and if not, adds them
+    # if lightfield_vector[-1] != lightfield_source['x'].size-1:
+    #     lightfield_vector = np.append(lightfield_vector, lightfield_source['x'].size-1)
+    #
+    # light_ray_data = {}
 
     # generate a set of random numbers using MT 19937
     # % This creates random radial coordinates for the lightrays to intersect
@@ -2064,190 +2064,50 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     psi_temp.tofile('random2.bin')
 
     # this is the name of the file which contains the density dataset for the volume
+    simulate_density_gradients = False
     density_grad_filename = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/test.nrrd"
 
-    I[:-1,:-1] = prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, scattering_type,
-                           lightfield_source, lightray_number_per_particle, int(lightfield_vector[0]),
-                           int(lightfield_vector[1]),beam_wavelength,aperture_f_number, element_data, element_center,
+    # simulate_density_gradients = True
+    # density_grad_filename = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/const_grad_BOS_grad_x_20.nrrd"
+
+    # convert the data to ctypes compatible format and call the CUDA function
+    I = prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, scattering_type,
+                           lightfield_source, lightray_number_per_particle, beam_wavelength,aperture_f_number, element_data, element_center,
                            element_plane_parameters, element_system_index,piv_simulation_parameters['camera_design'],
-                                              I[:-1,:-1],density_grad_filename)
+                                              I,density_grad_filename,simulate_density_gradients)
 
-
-
-    # for m in range(0, len(lightfield_vector) - 1):
-    #     # print "%d out of %d particles have been simulated" % (m*lightfield_N,lightfield_vector[-1])
-    #     # % This displays the progress of the sensor rendering
-    #     pbar.update(m)
-    #     # time.sleep(1)
-    #     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    #     # % Generate lightfield and propogate it through the optical system     %
-    #     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    #     #
-    #
-    #     # I[:-1,:-1] = prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, scattering_type,
-    #     #                    lightfield_source, lightray_number_per_particle, int(lightfield_vector[m]),
-    #     #                    int(lightfield_vector[m + 1]),beam_wavelength,aperture_f_number, element_data, element_center,
-    #     #                    element_plane_parameters, element_system_index,piv_simulation_parameters['camera_design'],I[:-1,:-1])
-    #
-    #
-    #     # I2 = prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, scattering_type,
-    #     #                    lightfield_source, lightray_number_per_particle, int(lightfield_vector[m]),
-    #     #                    int(lightfield_vector[m + 1]),beam_wavelength,aperture_f_number, element_data, element_center,
-    #     #                    element_plane_parameters, element_system_index,piv_simulation_parameters['camera_design'],I[:-1,:-1])
-    #     #
-    #     # % This generates the lightfield data for the current set of source points
-    #     lightfield_data = generate_lightfield_angular_data(lens_pitch, image_distance, scattering_data, scattering_type,
-    #                                                        lightfield_source, lightray_number_per_particle,
-    #                                                        int(lightfield_vector[m]), int(lightfield_vector[m + 1]))
-    #     # % This extracts the light ray source coordinates
-    #     light_ray_data['ray_source_coordinates'] = np.array(
-    #         [lightfield_data['x'], lightfield_data['y'], lightfield_data['z']]).T
-    #     # % This extracts the propogation direction of the light rays
-    #     light_ray_data['ray_propogation_direction'] = np.array(
-    #         [lightfield_data['theta'], lightfield_data['phi'], -np.ones(lightfield_data['theta'].size)]).T
-    #     # % This ensures that the light ray propogation direction vector has a
-    #     # % unit magnitude
-    #     light_ray_data['ray_propogation_direction'] /= la.norm(light_ray_data['ray_propogation_direction'], axis=1)[:,
-    #                                                    None]
-    #
-    #     # % This extracts the wavelength of the light rays
-    #     light_ray_data['ray_wavelength'] = beam_wavelength * np.ones(lightfield_data['theta'].size)
-    #     # % This extracts the light ray radiance
-    #     # %light_ray_data.ray_radiance=ones(size(lightfield_data.theta))';
-    #     light_ray_data['ray_radiance'] = (1.0 / aperture_f_number ** 2) * np.transpose(lightfield_data['radiance'])
-    #
-    #     # This traces the light rays through a medium containing density gradients
-    #     #light_ray_data = trace_rays_through_density_gradients(light_ray_data)
-    #
-    #
-    #     # % This propogates some imaginary light rays through the optical system
-    #     light_ray_data = propogate_rays_through_optical_system(element_data, element_center, element_plane_parameters,
-    #                                                            element_system_index, light_ray_data)
-    #
-    #     # # read light ray data from file
-    #     # a = np.fromfile('LRD_pos.bin', dtype=np.float32)
-    #     # a2 = a.reshape((a.size / 3, 3))
-    #     # diff = np.nanmax(abs(light_ray_data['ray_source_coordinates'] - a2))
-    #     # print "ray_source_coordinates: max diff = " + str(diff)
-    #     # light_ray_data['ray_source_coordinates'] = a2
-    #     #
-    #     #
-    #     # a = np.fromfile('LRD_dir.bin', dtype=np.float32)
-    #     # a2 = a.reshape((a.size / 3, 3))
-    #     # diff = np.nanmax(abs(light_ray_data['ray_propogation_direction'] - a2))
-    #     # print "ray_propogation_direction: max diff = " + str(diff)
-    #     # light_ray_data['ray_propogation_direction'] = a2
-    #     #
-    #     # a = np.fromfile('LRD_wavelength.bin', dtype=np.float32)
-    #     # diff = np.nanmax(abs(light_ray_data['ray_wavelength'] - a))
-    #     # print "ray_wavelength: max diff = " + str(diff)
-    #     # light_ray_data['ray_wavelength'] = a
-    #     #
-    #     # a = np.fromfile('LRD_radiance.bin', dtype=np.float64)
-    #     # diff = np.nanmax(abs(light_ray_data['ray_radiance'] - a))
-    #     # print "ray_radiance: max diff = " + str(diff)
-    #     # light_ray_data['ray_radiance'] = a
-    #     #
-    #     # # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    #     # # % Propogation of the light rays to the sensor                         %
-    #     # # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    #
-    #     # % This extracts the propogation direction of the light rays
-    #     ray_propogation_direction = light_ray_data['ray_propogation_direction'].astype('float64')
-    #     # % This extracts the light ray source coordinates
-    #     ray_source_coordinates = light_ray_data['ray_source_coordinates'].astype('float64')
-    #
-    #     # % This extracts the individual plane parameters for the sensor
-    #     a = 0.0
-    #     b = 0.0
-    #     c = 1.0
-    #     d = -z_sensor
-    #
-    #     # % This is the independent intersection time between the light rays and
-    #     # % the first plane of the aperture stop
-    #     intersection_time = -(
-    #     a * ray_source_coordinates[:,0] + b * ray_source_coordinates[:,1] + c * ray_source_coordinates[:,2] + d) / (
-    #                         a * ray_propogation_direction[:,0] + b * ray_propogation_direction[:,1] + c *
-    #                         ray_propogation_direction[:,2])
-    #
-    #     # % This calculates the intersection points
-    #     x_intersect = ray_source_coordinates[:,0] + ray_propogation_direction[:,0] * intersection_time
-    #     y_intersect = ray_source_coordinates[:,1] + ray_propogation_direction[:,1] * intersection_time
-    #     z_intersect = ray_source_coordinates[:,2] + ray_propogation_direction[:,2] * intersection_time
-    #
-    #     # % This sets the new light ray origin to the intersection point with the
-    #     # % front surface of the lens
-    #     ray_source_coordinates = np.array([x_intersect, y_intersect, z_intersect])
-    #     ray_source_coordinates = ray_source_coordinates.T
-    #     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    #     # % Add lightray radiance to sensor integration                         %
-    #     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    #     #
-    #     # % This is the angle between the lightray and the sensor (ie a lightray
-    #     # % normal to the sensor would yield an angle of zero)
-    #     alpha = np.arctan(np.sqrt((ray_propogation_direction[:,0] / ray_propogation_direction[:,2]) ** 2 + (
-    #         ray_propogation_direction[:,1] / ray_propogation_direction[:,2]) ** 2))
-    #
-    #
-    #     # % This calculates the cos^4(alpha) term which controls the contribution
-    #     # % of the incident light rays onto the measured energy in the sensor
-    #     cos_4_alpha = np.cos(alpha) ** 4
-    #
-    #     # % This calculates the indicies of the pixel on the sensor that the ray
-    #     # % intersects and the relative weighting between the pixels
-    #     [ii_indices, jj_indices, pixel_weights] = intersect_sensor_better(piv_simulation_parameters['camera_design'],
-    #                                                                       ray_source_coordinates[:,0],
-    #                                                                       ray_source_coordinates[:,1])
-    #
-    #     ii_indices = ii_indices.astype('int32')
-    #     jj_indices = jj_indices.astype('int32')
-    #
-    #     jj_indices[(jj_indices < 0)] = x_pixel_number + 1
-    #     jj_indices[(x_pixel_number <= jj_indices)] = x_pixel_number + 1
-    #
-    #     ii_indices[(ii_indices < 0)] = y_pixel_number + 1
-    #     ii_indices[(y_pixel_number <= ii_indices)] = y_pixel_number + 1
-    #
-    #     I = c_functions.increment_pixel_radiance(I, pixel_weights, ii_indices.astype('int32'),
-    #                                                           jj_indices.astype('int32'), \
-    #                                                           light_ray_data['ray_radiance'], cos_4_alpha, \
-    #                                                           ray_source_coordinates.shape[0])
-
-        # # read image array from file
-        # a = np.fromfile('image_array.bin',dtype=np.float64)
-        # a2 = np.reshape(a,(x_pixel_number,y_pixel_number))
-        # diff = np.nanmax(abs(a2-I[:-1,:-1]))
-        # print "image_array : max_diff = " + str(diff)
-        # I[:-1,:-1] = a2
-
-    # pbar.finish()
-
-    # remove cells that store nan values
-    I = I[:-1,:-1]
-
-    print "max(I): %f" % I.max()
 
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # % Rescales and resamples image for export                                 %
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    '''
     # % This rescales the image intensity to account for the pixel gain
     I *= 10 ** (pixel_gain/ 20.0)
-    #
+
     # % This rescales the image to values ranging from 0 to 2^bit_depth-1
     # I = (2 ** pixel_bit_depth - 1) * I / (2 ** 16 - 1)
     I = (2 ** pixel_bit_depth - 1) * I / (np.nanmax(I) - 1)
+
     # % This rounds the values of the image to the nearest integer
     I = np.round(I)
+
     # % This rescales the image to the full 16 bit range (but only bit_depth bits
     # % of information are now used)
     I *= (2 ** 16 - 1.0) / (2 ** pixel_bit_depth - 1.0)
 
     # % This converts the image from double precision to 16 bit precision
     I = np.uint16(I)
-    '''
-    #plt.imshow(I,cmap = plt.get_cmap('gray'),vmin=0,vmax=2**16-1)
-    #plt.show()
-    
+
+    # Contrast stretching (http://homepages.inf.ed.ac.uk/rbf/HIPR2/stretch.htm)
+
+    # These are the percentile thresholds of the intensity values to rescale the image
+    threshold_lo = 0
+    threshold_hi = 99.8
+
+    # These are the intensities correspoding to the high and low thresholds
+    p_lo, p_hi = np.percentile(I, (threshold_lo, threshold_hi))
+
+    # This rescales the image
+    I = exposure.rescale_intensity(I, in_range=(p_lo, p_hi))
+
     return I
