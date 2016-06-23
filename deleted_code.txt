@@ -423,4 +423,20 @@ float m = fmax(float(data_width), float(data_height));
 	m = fmax(m, float(data_depth));
 	float3 dataScale = make_float3(float(data_width)/m, float(data_height)/m, float(data_depth)/m);
 
+end = time.time()
+print(end - start)
+
+
+
+//	lightfield_source_single_t lightfield_source_single;
+//	lightfield_source_single.x = lightfield_source.x[current_source_point_number];
+//	lightfield_source_single.y = lightfield_source.y[current_source_point_number];
+//	lightfield_source_single.z = lightfield_source.z[current_source_point_number];
+//	lightfield_source_single.radiance = lightfield_source.radiance[current_source_point_number];
+//	lightfield_source_single.diameter_index = lightfield_source.diameter_index[current_source_point_number];
+//
+//	light_ray_data_t light_ray_data = generate_lightfield_angular_data(lens_pitch, image_distance,scattering_data,
+//				scattering_type, lightfield_source_single,lightray_number_per_particle,
+//				beam_wavelength,aperture_f_number,rand_array_1[local_ray_id],rand_array_2[local_ray_id]);
+
 	

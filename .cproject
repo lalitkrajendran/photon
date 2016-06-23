@@ -40,7 +40,7 @@
 									<listOptionValue builtIn="false" value="/home/barracuda/a/lrajendr/usr/lib"/>
 									<listOptionValue builtIn="false" value="/home/barracuda/a/lrajendr/usr/"/>
 								</option>
-								<option id="nvcc.compiler.maxregcount.1734349467" superClass="nvcc.compiler.maxregcount" value="32" valueType="string"/>
+								<option id="nvcc.compiler.maxregcount.1734349467" name="Maximum number of registers (-maxrregcount)" superClass="nvcc.compiler.maxregcount" value="32" valueType="string"/>
 								<inputType id="nvcc.compiler.input.cu.1779611780" superClass="nvcc.compiler.input.cu"/>
 								<inputType id="nvcc.compiler.input.cpp.1796251513" superClass="nvcc.compiler.input.cpp"/>
 								<inputType id="nvcc.compiler.input.c.1363805992" superClass="nvcc.compiler.input.c"/>
@@ -208,10 +208,10 @@
 		<scannerConfigBuildInfo instanceId="com.nvidia.cuda.ide.configuration.so.debug.1095736804;com.nvidia.cuda.ide.configuration.so.debug.1095736804.;nvcc.compiler.base.1077345921;nvcc.compiler.input.cu.1779611780">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="com.nvidia.cuda.ide.build.NVCCPerProjectProfile"/>
 		</scannerConfigBuildInfo>
-		<scannerConfigBuildInfo instanceId="com.nvidia.cuda.ide.configuration.so.debug.1356475313;com.nvidia.cuda.ide.configuration.so.debug.1356475313.;nvcc.compiler.base.1359733233;nvcc.compiler.input.cpp.1221868735">
+		<scannerConfigBuildInfo instanceId="com.nvidia.cuda.ide.configuration.so.debug.1095736804">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="com.nvidia.cuda.ide.build.NVCCPerProjectProfile"/>
 		</scannerConfigBuildInfo>
-		<scannerConfigBuildInfo instanceId="com.nvidia.cuda.ide.configuration.so.debug.1095736804">
+		<scannerConfigBuildInfo instanceId="com.nvidia.cuda.ide.configuration.so.debug.1356475313;com.nvidia.cuda.ide.configuration.so.debug.1356475313.;nvcc.compiler.base.1359733233;nvcc.compiler.input.cpp.1221868735">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="com.nvidia.cuda.ide.build.NVCCPerProjectProfile"/>
 		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="com.nvidia.cuda.ide.configuration.so.release.582358932;com.nvidia.cuda.ide.configuration.so.release.582358932.;nvcc.compiler.base.604876087;nvcc.compiler.input.cu.58295553">

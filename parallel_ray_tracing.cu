@@ -94,8 +94,6 @@ __device__ light_ray_data_t generate_lightfield_angular_data(float lens_pitch, f
 						radiance of the light ray
 	*/
 
-	// get difference in scattering angle
-	float del_scattering_angle = (scattering_data.scattering_angle[1] - scattering_data.scattering_angle[0]); //*180.0/M_PI;
 
 	// get source coordinates of the light ray
 	float x_current = lightfield_source.x;
@@ -129,6 +127,9 @@ __device__ light_ray_data_t generate_lightfield_angular_data(float lens_pitch, f
 	// if scattering_type is mie, then use mie scattering data
 	if(scattering_type)
 	{
+		// get difference in scattering angle
+		float del_scattering_angle = (scattering_data.scattering_angle[1] - scattering_data.scattering_angle[0]); //*180.0/M_PI;
+
 		//% This extracts the normalized beam propagation direction vector from the
 		//% parameters structure
 		beam_propagation_vector.x=scattering_data.beam_propagation_vector[0];
@@ -1375,7 +1376,8 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 		 float3* element_center, float4* element_plane_parameters,
 		int* element_system_index,int num_elements,
 		camera_design_t* camera_design_p, float* image_array,
-		bool simulate_density_gradients, density_grad_params_t* density_grad_params_p)
+		bool simulate_density_gradients, density_grad_params_t* density_grad_params_p,
+		float2* final_pos, float3* final_dir)
 
 {
 
@@ -1399,7 +1401,7 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 	int global_ray_id = local_ray_id + local_particle_id * lightray_number_per_particle;
 
 	// if the ray id is greater than the total number of rays to be simulated, exit.
-	if(global_ray_id >= num_rays)
+	if(local_ray_id >= lightray_number_per_particle || global_ray_id >= num_rays)
 		return;
 	// particle id in the light field source array
 	int current_source_point_number = n_min + local_particle_id;
@@ -1426,10 +1428,19 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 	// in the block can access it
 	__syncthreads();
 
+	final_pos[global_ray_id].x = CUDART_NAN_F;
+	final_pos[global_ray_id].y = CUDART_NAN_F;
+
+	final_dir[global_ray_id].x = CUDART_NAN_F;
+	final_dir[global_ray_id].y = CUDART_NAN_F;
+	final_dir[global_ray_id].z = CUDART_NAN_F;
+
+
 	// generate light rays
 	light_ray_data_t light_ray_data = generate_lightfield_angular_data(lens_pitch, image_distance,scattering_data,
 				scattering_type, lightfield_source_shared,lightray_number_per_particle,
 				beam_wavelength,aperture_f_number,rand_array_1[local_ray_id],rand_array_2[local_ray_id]);
+
 
 	// trace the light ray through a medium containing density gradients
 	if(simulate_density_gradients)
@@ -1448,10 +1459,18 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 			element_plane_parameters,element_system_index,num_elements,num_rays,
 			lightray_number_per_particle,light_ray_data);
 
-	// ignore rays that did not pass through the optical train
-	if(isnan(light_ray_data.ray_propagation_direction.x) || isnan(light_ray_data.ray_propagation_direction.y)
-				|| isnan(light_ray_data.ray_propagation_direction.z))
-			return;
+
+//		final_pos[global_ray_id].x = light_ray_data.ray_source_coordinates.x;
+//		final_pos[global_ray_id].y = light_ray_data.ray_source_coordinates.y;
+//
+//		final_dir[global_ray_id].x = light_ray_data.ray_propagation_direction.x;
+//		final_dir[global_ray_id].y = light_ray_data.ray_propagation_direction.y;
+//		final_dir[global_ray_id].z = light_ray_data.ray_propagation_direction.z;
+
+		// ignore rays that did not pass through the optical train
+		if(isnan(light_ray_data.ray_propagation_direction.x) || isnan(light_ray_data.ray_propagation_direction.y)
+					|| isnan(light_ray_data.ray_propagation_direction.z))
+				return;
 
 	// this structure contains the camera design information
 	camera_design_t camera_design = *camera_design_p;
@@ -1496,6 +1515,10 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 		// multiple threads try to write to the same memory location
 		atomicAdd(&image_array[image_index],(float)pixel_increment);
 	}
+
+	final_pos[global_ray_id] = pixel_data.final_pos;
+
+
 
 }
 
@@ -1549,36 +1572,48 @@ void read_from_file()
 	// read scattering data
 	//--------------------------------------------------------------------------------------
 
-	// open file
-	filename = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/scattering_data.bin";
-	std::ifstream file_scattering(filename.c_str(), std::ios::in |
-			std::ios::binary);
-	// inverse rotation matrix
-	for(k = 0; k < 9; k++)
-		file_scattering.read ((char*)&scattering_data.inverse_rotation_matrix[k], sizeof(float));
+	//	char* scattering_type_str;
+	//	if(scattering_type)
+	//		strcpy(scattering_type_str,"mie");
+	//	else
+	//		strcpy(scattering_type_str,"diffuse");
+	char scattering_type_str[] = "mie";
+//		char scattering_type_str[] = "diffuse";
+
+	if(strcmp(scattering_type_str,"mie")==0)
+	{
+		// open file
+		filename = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/scattering_data.bin";
+		std::ifstream file_scattering(filename.c_str(), std::ios::in |
+				std::ios::binary);
+		// inverse rotation matrix
+		for(k = 0; k < 9; k++)
+			file_scattering.read ((char*)&scattering_data.inverse_rotation_matrix[k], sizeof(float));
 
 
-	// beam_propagation_vector
-	for(k = 0; k < 3; k++)
-		file_scattering.read ((char*)&scattering_data.beam_propagation_vector[k], sizeof(float));
+		// beam_propagation_vector
+		for(k = 0; k < 3; k++)
+			file_scattering.read ((char*)&scattering_data.beam_propagation_vector[k], sizeof(float));
 
-	// num_angles
-	file_scattering.read ((char*)&scattering_data.num_angles, sizeof(int));
+		// num_angles
+		file_scattering.read ((char*)&scattering_data.num_angles, sizeof(int));
 
-	// num_diameters
-	file_scattering.read ((char*)&scattering_data.num_diameters, sizeof(int));
+		// num_diameters
+		file_scattering.read ((char*)&scattering_data.num_diameters, sizeof(int));
 
-	// scattering_angle
-	scattering_data.scattering_angle = (float *) malloc(scattering_data.num_angles*sizeof(float));
-	for(k = 0; k < scattering_data.num_angles; k++)
-			file_scattering.read ((char*)&scattering_data.scattering_angle[k], sizeof(float));
+		// scattering_angle
+		scattering_data.scattering_angle = (float *) malloc(scattering_data.num_angles*sizeof(float));
+		for(k = 0; k < scattering_data.num_angles; k++)
+				file_scattering.read ((char*)&scattering_data.scattering_angle[k], sizeof(float));
 
-	// scattering_irradiance
-	scattering_data.scattering_irradiance = (float *) malloc(scattering_data.num_angles * scattering_data.num_diameters*sizeof(float));
-	for(k = 0; k < scattering_data.num_angles * scattering_data.num_diameters; k++)
-			file_scattering.read ((char*)&scattering_data.scattering_irradiance[k], sizeof(float));
+		// scattering_irradiance
+		scattering_data.scattering_irradiance = (float *) malloc(scattering_data.num_angles * scattering_data.num_diameters*sizeof(float));
+		for(k = 0; k < scattering_data.num_angles * scattering_data.num_diameters; k++)
+				file_scattering.read ((char*)&scattering_data.scattering_irradiance[k], sizeof(float));
 
-	file_scattering.close();
+		file_scattering.close();
+
+	}
 
 
 	//--------------------------------------------------------------------------------------
@@ -1593,8 +1628,8 @@ void read_from_file()
 	// lightray_number_per_particle
 	file_lightfield_source.read ((char*)&lightfield_source.lightray_number_per_particle, sizeof(int));
 
-	// lightray_process_number
-	file_lightfield_source.read ((char*)&lightfield_source.lightray_process_number, sizeof(int));
+	// source_point_number
+	file_lightfield_source.read ((char*)&lightfield_source.source_point_number, sizeof(int));
 
 	// num_particles
 	file_lightfield_source.read ((char*)&lightfield_source.num_particles, sizeof(int));
@@ -1630,12 +1665,7 @@ void read_from_file()
 	file_lightfield_source.close();
 
 
-//	char* scattering_type_str;
-//	if(scattering_type)
-//		strcpy(scattering_type_str,"mie");
-//	else
-//		strcpy(scattering_type_str,"diffuse");
-	char scattering_type_str[] = "mie";
+
 
 	//--------------------------------------------------------------------------------------
 	// save optical element data
@@ -1803,8 +1833,8 @@ void read_from_file()
 //	file_density_grad.close();
 
 	// specify if the density gradient effects have to be simulated or not
-	bool simulate_density_gradients = true;
-//	bool simulate_density_gradients = false;
+//	bool simulate_density_gradients = true;
+	bool simulate_density_gradients = false;
 
 	// specify name of the file containing density gradient data
 	char density_grad_filename[] = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/const_grad_BOS_grad_x_10.nrrd";
@@ -1913,8 +1943,8 @@ void save_to_file(float lens_pitch, float image_distance,
 
 	// lightray_number_per_particle
 	file_lightfield_source.write ((char*)&lightfield_source_p->lightray_number_per_particle, sizeof(int));
-	// lightray_process_number
-	file_lightfield_source.write ((char*)&lightfield_source_p->lightray_process_number, sizeof(int));
+	// source_point_number
+	file_lightfield_source.write ((char*)&lightfield_source_p->source_point_number, sizeof(int));
 	// num_particles
 	file_lightfield_source.write ((char*)&lightfield_source_p->num_particles, sizeof(int));
 	// num_rays
@@ -2323,31 +2353,32 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	//--------------------------------------------------------------------------------------
 	// allocate space on GPU for scattering_data
 	//--------------------------------------------------------------------------------------
-
 	// this is a pointer to the device array containing the angles for which mie scattering
 	// data is available
 	float *d_scattering_angle = 0;
 	// this is a pointer to the device array containing the mie scattering irradiance for a
 	// range of diameters and scattering angles
 	float* d_scattering_irradiance = 0;
-
-	// allocate space for device arrays on GPU
-	cudaMalloc((void**)&d_scattering_angle,scattering_data.num_angles*sizeof(float));
-	cudaMalloc((void**)&d_scattering_irradiance,scattering_data.num_angles*scattering_data.num_diameters*sizeof(float));
-
-	// copy data to GPU
-	cudaMemcpy(d_scattering_angle,scattering_data.scattering_angle,scattering_data.num_angles*sizeof(float)
-	,cudaMemcpyHostToDevice);
-	cudaMemcpy(d_scattering_irradiance,scattering_data.scattering_irradiance,scattering_data.num_angles*scattering_data.num_diameters*sizeof(float)
-		,cudaMemcpyHostToDevice);
-
-	// point host structure to device arrays
-	scattering_data.scattering_angle = d_scattering_angle;
-	scattering_data.scattering_irradiance = d_scattering_irradiance;
-
 	int scattering_type = 0;
 	if(strcmp(scattering_type_str,"mie")==0)
+	{
+
+		// allocate space for device arrays on GPU
+		cudaMalloc((void**)&d_scattering_angle,scattering_data.num_angles*sizeof(float));
+		cudaMalloc((void**)&d_scattering_irradiance,scattering_data.num_angles*scattering_data.num_diameters*sizeof(float));
+
+		// copy data to GPU
+		cudaMemcpy(d_scattering_angle,scattering_data.scattering_angle,scattering_data.num_angles*sizeof(float)
+		,cudaMemcpyHostToDevice);
+		cudaMemcpy(d_scattering_irradiance,scattering_data.scattering_irradiance,scattering_data.num_angles*scattering_data.num_diameters*sizeof(float)
+			,cudaMemcpyHostToDevice);
+
+		// point host structure to device arrays
+		scattering_data.scattering_angle = d_scattering_angle;
+		scattering_data.scattering_irradiance = d_scattering_irradiance;
+
 		scattering_type = 1;
+	}
 
 	//--------------------------------------------------------------------------------------
 	// read random numbers from file
@@ -2484,12 +2515,11 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 
 	// number of particles that will simulated in one call to the GPU. this is a function
 	// of the GPU memory, and threads-blocks-grids specifications
-	int source_point_number = 10000;
-//	int source_point_number = 100;
+	int source_point_number = lightfield_source.source_point_number;
 
 	// number of the light rays to be generated and traced in a single call
 	int num_rays = source_point_number*lightray_number_per_particle;
-	// print the number of rays
+//	// print the number of rays
 	printf("num_particles: %d, source_point_number: %d, num_rays: %d\n",
 			num_particles, source_point_number, num_rays);
 
@@ -2535,6 +2565,16 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	else
 		KMAX = num_particles/source_point_number + 1;
 
+	// this stores the final positions of all light rays
+//	int total_num_rays = particle
+	float2* d_final_pos = 0;
+	cudaMalloc((void **)&d_final_pos, sizeof(float2)*num_rays);
+
+	// this stores the final directions of all light rays
+	float3* d_final_dir = 0;
+	cudaMalloc((void **)&d_final_dir, sizeof(float3)*num_rays);
+
+
 	for(k = 0; k < KMAX; k++)
 	{
 		// display progress to the user
@@ -2549,7 +2589,8 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 			beam_wavelength,aperture_f_number,num_rays,d_rand1,d_rand2,
 			d_element_data, d_element_center,d_element_plane_parameters,
 			d_element_system_index,num_elements,
-			d_camera_design, d_image_array,simulate_density_gradients, d_params_p);
+			d_camera_design, d_image_array,simulate_density_gradients, d_params_p,
+			d_final_pos, d_final_dir);
 
 		cudaDeviceSynchronize();
 //		break;
@@ -2568,28 +2609,68 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	printf("time_spent : %f minutes\n", time_spent/60);
 
 	//--------------------------------------------------------------------------------------
-	// save image array to file (for debugging purposes)
+	// save final light ray positions to file (for debugging purposes)
 	//--------------------------------------------------------------------------------------
+	float2* final_pos = (float2*) malloc(sizeof(float2)*num_rays);
+	cudaMemcpy(final_pos, d_final_pos, sizeof(float2)*num_rays, cudaMemcpyDeviceToHost);
 
-	// display image array contents after intersecting the rays with the sensor
-	printf("finished intersecting rays with sensor\n");
-	printf("image array\n");
-	printf("first three: %G, %G, %G\n",image_array[0],image_array[1],image_array[2]);
-	printf("last three: %G, %G, %G\n",image_array[num_pixels-3],image_array[num_pixels-2],image_array[num_pixels-1]);
-
-	printf("saving image array to file\n");
-
-	// this is the name of the file where the image data will be stored
-	filename = "/home/barracuda/a/lrajendr/Projects/camera_simulation/image_increased_radiance.bin";
-//	filename = "/home/barracuda/a/lrajendr/Projects/camera_simulation/image_grad.bin";
+	// this is the file name
+	filename = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/results/final_pos.bin";
 
 	// open the file
-	std::ofstream file_image_array(filename.c_str(),ios::out | ios::binary);
+	std::ofstream file_final_pos(filename.c_str(),ios::out | ios::binary);
 	// save all the pixel intensities to file
-	for(k = 0; k < num_pixels; k++)
-			file_image_array.write((char*)&image_array[k],sizeof(float));
+	for(k = 0; k < num_rays; k++)
+			file_final_pos.write((char*)&final_pos[k],sizeof(float2));
+
 	// close the file
-	file_image_array.close();
+	file_final_pos.close();
+
+	free(final_pos);
+	cudaFree(d_final_pos);
+
+	//--------------------------------------------------------------------------------------
+	// save final light ray directions to file (for debugging purposes)
+	//--------------------------------------------------------------------------------------
+	float3* final_dir = (float3*) malloc(sizeof(float3)*num_rays);
+	cudaMemcpy(final_dir, d_final_dir, sizeof(float3)*num_rays, cudaMemcpyDeviceToHost);
+
+	// this is the file name
+	filename = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/results/final_dir.bin";
+
+	// open the file
+	std::ofstream file_final_dir(filename.c_str(),ios::out | ios::binary);
+	// save all the pixel intensities to file
+	for(k = 0; k < num_rays; k++)
+			file_final_dir.write((char*)&final_dir[k],sizeof(float3));
+
+	// close the file
+	file_final_dir.close();
+	free(final_dir);
+	cudaFree(d_final_dir);
+//	//--------------------------------------------------------------------------------------
+//	// save image array to file (for debugging purposes)
+//	//--------------------------------------------------------------------------------------
+//
+//	// display image array contents after intersecting the rays with the sensor
+//	printf("finished intersecting rays with sensor\n");
+//	printf("image array\n");
+//	printf("first three: %G, %G, %G\n",image_array[0],image_array[1],image_array[2]);
+//	printf("last three: %G, %G, %G\n",image_array[num_pixels-3],image_array[num_pixels-2],image_array[num_pixels-1]);
+//
+//	printf("saving image array to file\n");
+//
+//	// this is the name of the file where the image data will be stored
+//	filename = "/home/barracuda/a/lrajendr/Projects/camera_simulation/image_increased_radiance.bin";
+////	filename = "/home/barracuda/a/lrajendr/Projects/camera_simulation/image_grad.bin";
+//
+//	// open the file
+//	std::ofstream file_image_array(filename.c_str(),ios::out | ios::binary);
+//	// save all the pixel intensities to file
+//	for(k = 0; k < num_pixels; k++)
+//			file_image_array.write((char*)&image_array[k],sizeof(float));
+//	// close the file
+//	file_image_array.close();
 
 	//--------------------------------------------------------------------------------------
 	// free allocated memory
