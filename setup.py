@@ -1,18 +1,16 @@
-from distutils.core import setup
-from Cython.Build import cythonize
-import numpy
+from setuptools import setup
+
+
 
 setup(
-    ext_modules = cythonize("c_functions.pyx"),
-    include_dirs=[numpy.get_include()]
-)
+    name="camera_simulation_package",
+    version="1.0",
+    author="Lalit Rajendran",
+    author_email="lrajendr@purdue.edu",
+    description=("A set of ray tracing codes that can render synthetic PIV/BOS 
+      images for user-defined optical arrangements"),
+    url="https://github.com/lrajendr/camera_simulation.git",
+    packages=["scipy","numpy","matplotlib","skimage","sklearn",
+      "ctypes","nrrd","progressbar"]
+    )
 
-# setup(
-#     ext_modules = cythonize("increment_pixel_radiance.pyx"),
-#     include_dirs=[numpy.get_include()]
-# )
-
-# setup(
-#     ext_modules = cythonize("hello_world.pyx"),
-#     include_dirs = [numpy.get_include()]
-# )

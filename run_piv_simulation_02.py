@@ -104,7 +104,7 @@ def create_single_lens_optical_system():
 
     # % This specifies the geometry of the current optical element - if the
     # % element type is 'system', then the geometry has a Null value
-    #optical_system['design']['optical_element'][0]['element_geometry'] = None
+    optical_system['design']['optical_element'][0]['element_geometry'] = np.NAN
 
     # % This creates a substructure to describe the optical properties of the 
     # % current element (the value of the structure will be null if the current 
@@ -113,7 +113,7 @@ def create_single_lens_optical_system():
 
     # % This specifies the optical properties of the current element - if the
     # % element type is 'system' then the geometry has a Null value
-    #optical_system['design']['optical_element'][0]['element_properties'] = None
+    optical_system['design']['optical_element'][0]['element_properties'] = np.NAN
 
     # %% This describes the first lens in the system
 
@@ -134,7 +134,7 @@ def create_single_lens_optical_system():
     # % This is a Boolean value stating whether the current elements are coplanar
     # % (this value may only be true for an element type of 'system' and will be
     # % Null for single optical elements)
-    optical_system['design']['optical_element'][0]['optical_element'][0]['elements_coplanar'] = []
+    optical_system['design']['optical_element'][0]['optical_element'][0]['elements_coplanar'] = np.NAN
 
     # % This is a double value stating the z axis distance between the current 
     # % back optical axis vertex and the front optical axis vertex of the next
@@ -211,7 +211,7 @@ def create_single_lens_optical_system():
     # % lambda_D = 589.3 nm and the Abbe number is used with a reduced Cauchy
     # % formula to calculate dispersion.  If the refractive index is a
     # % string, then the Abbe number is ignored.
-    optical_system['design']['optical_element'][0]['optical_element'][0]['element_properties']['abbe_number'] = []
+    optical_system['design']['optical_element'][0]['optical_element'][0]['element_properties']['abbe_number'] = np.NAN
 
     # % This is the equivalent thin lens focal length for the current element (if
     # % this value is defined - if not, then the value is Null)
@@ -550,7 +550,7 @@ def calculate_particle_diameter_indices(piv_simulation_parameters,particle_diame
         #diameter_indices = np.where(particle_diameter_cdf[particle_diameter_index]<=random_vector and particle_diameter_cdf[particle_diameter_index>random_vector])
         #diameter_indices = (term1&term2).astype('int')
 
-        #TODO ###########THIS COULD BE A PROBLEM############################################
+        ## THIS COULD BE A PROBLEM?############################################
         # This sets the current indices of the particle diameter distribution
         # equal to the current diameter
         particle_diameter_index_distribution[diameter_indices] = particle_diameter_index
@@ -1096,13 +1096,12 @@ def run_piv_simulation_02(piv_simulation_parameters):
     # This creates the optical system parameters used to simulate the defined lens system
     optical_system = create_camera_optical_system(piv_simulation_parameters)
 
-    #TODO remove these lines
-    # convert Nones to nans so you can save it as a MATLAB file. then reconvert them to null in MATLAB
-    optical_system['design']['optical_element'][0]['optical_element'][0]['element_number'] = np.NAN
-    optical_system['design']['optical_element'][0]['optical_element'][0]['elements_coplanar'] = np.NAN
-    optical_system['design']['optical_element'][0]['optical_element'][0]['element_properties']['abbe_number'] = np.NAN
-    optical_system['design']['optical_element'][0]['element_geometry'] = np.NAN
-    optical_system['design']['optical_element'][0]['element_properties'] = np.NAN
+    # # convert Nones to nans so you can save it as a MATLAB file. then reconvert them to null in MATLAB
+    # optical_system['design']['optical_element'][0]['optical_element'][0]['element_number'] = np.NAN
+    # optical_system['design']['optical_element'][0]['optical_element'][0]['elements_coplanar'] = np.NAN
+    # optical_system['design']['optical_element'][0]['optical_element'][0]['element_properties']['abbe_number'] = np.NAN
+    # optical_system['design']['optical_element'][0]['element_geometry'] = np.NAN
+    # optical_system['design']['optical_element'][0]['element_properties'] = np.NAN
 
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # % Particle Field Simulation                                               %
@@ -1230,7 +1229,7 @@ def run_piv_simulation_02(piv_simulation_parameters):
         for plane_index in range(1,calibration_plane_number+1):
 
             # % This creates the lightfield data for performing the raytracing operation
-            lightfield_source = generate_calibration_lightfield_data(piv_simulation_parameters,optical_system,plane_index)
+            lightfield_source = generate_calibration_lightfield_data(piv_simulation_parameters,optical_system,plane_index-1)
             # % This adds the number of lightrays per particle to the
             # % 'lightfield_source' data
             lightfield_source['lightray_number_per_particle'] = lightray_number_per_particle

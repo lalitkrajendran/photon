@@ -47,7 +47,7 @@ def _todict(matobj):
 
 
 # This function creates a series of PIV images that closely resemble the data that was produced by the PIV Challenge Case E data.
-top_write_directory = './test_directory_100/'
+top_write_directory = './test_directory_250000/'
 
 # Create the top write directory
 if not (os.path.exists(top_write_directory)):
@@ -115,9 +115,9 @@ Z_Min = -7.5e3
 Z_Max = +7.5e3
 
 # This is the number of particles to simulate
-# total_particle_number = 250000
-total_particle_number = 100
-# total_particle_number = 1000
+total_particle_number = 250000
+# total_particle_number = 100
+# total_particle_number = 100
 
 # initialize random number seed
 RAND_SEED = 5
@@ -176,6 +176,9 @@ sio.savemat(particle_position_data_directory + 'particle_data_frame_0002.mat', p
 # nrrd_filename = os.path.dirname(os.path.realpath(__file__)) + '/' + 'test.nrrd'
 # create_nrrd(nrrd_filename)
 
+import time
+
+start = time.time()
 
 ### Performs Camera Simulation
 # This iterates through the different cameras performing the image simulation
@@ -214,9 +217,9 @@ for i in range(1, len(camera_parameter_list) + 1):
     # This changes the number of particles to simulate out of the list of possible
     # particles (if this number is larger than the number of saved particles,
     # an error will be returned)
-    # piv_simulation_parameters['particle_field']['particle_number'] = 250000
+    piv_simulation_parameters['particle_field']['particle_number'] = 250000
     # piv_simulation_parameters['particle_field']['particle_number'] = 1000
-    piv_simulation_parameters['particle_field']['particle_number'] = 100
+    # piv_simulation_parameters['particle_field']['particle_number'] = 100
 
     # This changes the directory to save the particle images in parameters structure
     piv_simulation_parameters['output_data']['particle_image_directory'] = particle_image_top_directory + 'camera_%02d' % camera_index + '/'
@@ -240,3 +243,6 @@ for i in range(1, len(camera_parameter_list) + 1):
     a = 2
     # This runs the camera simulation for the current camera
     run_piv_simulation_02(piv_simulation_parameters)
+
+end = time.time()
+print "TOTAL time taken (minutes): ", (end - start)/60

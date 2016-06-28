@@ -2030,26 +2030,6 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     # % This initializes the sensor image
     I = np.zeros([x_pixel_number, y_pixel_number]).astype('float32')
 
-    # TODO remove this
-    lightray_number_per_particle = 10
-    lightfield_source['source_point_number'] = 100
-
-    # # % This generates an array of indices into the source points to calculate the lightfield
-    # lightfield_N = np.ceil(lightray_process_number*1.0 / lightray_number_per_particle)
-    #
-    # if(lightfield_N<1.0):
-    #     # lightfield_vector = np.linspace(0,lightfield_source['x'].size,endpoint=False)
-    #     lightfield_vector = np.r_[0:lightfield_source['x'].size-1]
-    # else:
-    #     #lightfield_vector = np.linspace(0, lightfield_source['x'].size, lightfield_N,endpoint=False)
-    #     lightfield_vector = np.r_[0:lightfield_source['x'].size-1:lightfield_N]
-    # # % This checks whether the last segment of indices is at the end of the
-    # # % vector and if not, adds them
-    # if lightfield_vector[-1] != lightfield_source['x'].size-1:
-    #     lightfield_vector = np.append(lightfield_vector, lightfield_source['x'].size-1)
-    #
-    # light_ray_data = {}
-
     # generate a set of random numbers using MT 19937
     # % This creates random radial coordinates for the lightrays to intersect
     # % on the lens

@@ -13,7 +13,8 @@ import tifffile as TIFF
 from skimage import exposure
 
 # specify directory contatining images
-read_directory = '/home/barracuda/a/lrajendr/Projects/camera_simulation_package_02/test_directory_250000/camera_images/'
+#read_directory = '/home/barracuda/a/lrajendr/Projects/camera_simulation_package_02/test_directory_250000/camera_images/'
+read_directory = '/home/barracuda/a/lrajendr/Projects/photon/analysis/src/matlab_camera_simulation/from_kolmogorov/matlab_camera_simulation/test_directory_250000/camera_images/'
 
 # types of images to read
 field_types = ['particle' , 'calibration']
