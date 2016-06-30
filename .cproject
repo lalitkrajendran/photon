@@ -32,13 +32,10 @@
 								<option defaultValue="nvcc.compiler.optimization.level.none" id="nvcc.compiler.optimization.level.1685188493" name="Optimization Level" superClass="nvcc.compiler.optimization.level" valueType="enumerated"/>
 								<option id="nvcc.compiler.pic.7668004" name="Position Independent Code (-fPIC)" superClass="nvcc.compiler.pic" value="true" valueType="boolean"/>
 								<option id="nvcc.compiler.include.paths.1077436147" name="Include paths (-I)" superClass="nvcc.compiler.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="/home/barracuda/a/lrajendr/usr/include"/>
 									<listOptionValue builtIn="false" value="/usr/include"/>
 									<listOptionValue builtIn="false" value="/usr/lib64"/>
 									<listOptionValue builtIn="false" value="/usr/local/lib"/>
 									<listOptionValue builtIn="false" value="../"/>
-									<listOptionValue builtIn="false" value="/home/barracuda/a/lrajendr/usr/lib"/>
-									<listOptionValue builtIn="false" value="/home/barracuda/a/lrajendr/usr/"/>
 								</option>
 								<option id="nvcc.compiler.maxregcount.1734349467" name="Maximum number of registers (-maxrregcount)" superClass="nvcc.compiler.maxregcount" value="32" valueType="string"/>
 								<inputType id="nvcc.compiler.input.cu.1779611780" superClass="nvcc.compiler.input.cu"/>
