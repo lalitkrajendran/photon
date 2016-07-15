@@ -178,6 +178,19 @@ def create_piv_simulation_parameters_02():
 
     return piv_simulation_parameters
 
+
+# This is the path where the parameter file will be saved
+filepath = '/home/barracuda/a/lrajendr/Projects/camera_simulation/'
+
+# This is the name of the parameter file
+filename = 'test_simulation_parameter.mat'
+
+# This displays the filepath and filename to the user
+print "saving piv simulation parameters to ", (filepath + filename)
+
+# This calls the function to generate the parameters
 piv_simulation_parameters = create_piv_simulation_parameters_02()
 
-sio.savemat()
+# This saves the parameters to file
+sio.savemat(filepath+filename, piv_simulation_parameters, appendmat=True, format='5', long_field_names=True)
+

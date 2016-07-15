@@ -5,6 +5,8 @@ import scipy.io as sio
 from run_piv_simulation_02 import run_piv_simulation_02
 import os
 import pickle
+import time
+
 
 os.environ['LD_LIBRARY_PATH'] = '~/usr/lib/python2.7'
 
@@ -48,7 +50,7 @@ def _todict(matobj):
 
 # This function creates a series of PIV images that closely resemble the data that was produced by the PIV Challenge Case E data.
 #top_write_directory = './test_directory_100000_cam5_inc_10/' #_bream_vector_z/'
-top_write_directory = './test_directory_larger_domain_f_22/'
+top_write_directory = './test_directory_create_params/'
 
 # Create the top write directory
 if not (os.path.exists(top_write_directory)):
@@ -56,10 +58,10 @@ if not (os.path.exists(top_write_directory)):
     os.mkdir(top_write_directory)
 
 # This is the directory containing the camera simulation parameters to run for each camera
-camera_simulation_parameters_read_directory = './piv_challenge_simulation_parameters/'
+camera_simulation_parameters_read_directory = './test_parameters/'
 
 # This is the list of camera parameters to run the simulation over
-camera_parameter_list = sorted(glob.glob(camera_simulation_parameters_read_directory + 'camera*.mat'))
+camera_parameter_list = sorted(glob.glob(camera_simulation_parameters_read_directory + '*.mat'))
 print "Number of cameras: %d" % len(camera_parameter_list)
 
 #### Creates Data Write Directories
@@ -110,15 +112,13 @@ Z_Velocity = 00.1e3
 # This is the domain of the particles to be simulated
 X_Min = -7.5e4
 X_Max = +7.5e4
-Y_Min = -7.5e4 #-15e4
-Y_Max = +7.5e4 #+15e4
+Y_Min = -7.5e4
+Y_Max = +7.5e4
 Z_Min = -7.5e3
 Z_Max = +7.5e3
 
 # This is the number of particles to simulate
 total_particle_number = 100000
-# total_particle_number = 100
-# total_particle_number = 100
 
 # initialize random number seed
 RAND_SEED = 5
@@ -173,19 +173,13 @@ particle_data_frame_0002 = {'X': X, 'Y': Y, 'Z': Z}
 pickle.dump(particle_data_frame_0002, open(particle_position_data_directory + 'particle_data_frame_0002.p', 'wb'))
 sio.savemat(particle_position_data_directory + 'particle_data_frame_0002.mat', particle_data_frame_0002)
 
-# create nrrd file
-# nrrd_filename = os.path.dirname(os.path.realpath(__file__)) + '/' + 'test.nrrd'
-# create_nrrd(nrrd_filename)
-
-import time
 
 start = time.time()
 
 ### Performs Camera Simulation
 # This iterates through the different cameras performing the image simulation
 for i in range(1, len(camera_parameter_list) + 1):
-    # if(i>1):
-    #   break
+
     camera_index = i
     # This displays that the current camera simulation is being ran
     print "\n\n\n\n"
@@ -201,10 +195,19 @@ for i in range(1, len(camera_parameter_list) + 1):
     # similarity in syntax from the matlab code, since since matlab structures and python objects
     # have similar syntax for accessing their contents
     mat_contents = sio.loadmat(parameter_filename_read, struct_as_record=False, squeeze_me=True)
-    piv_simulation_parameters = mat_contents['piv_simulation_parameters']
+    if('piv_simulation_paramters' in mat_contents.keys()):
+        piv_simulation_parameters = mat_contents['piv_simulation_parameters']
+    else:
+        piv_simulation_parameters = mat_contents
 
     # convert object to dictionary
-    piv_simulation_parameters = _todict(piv_simulation_parameters)
+    if(type(piv_simulation_parameters)!=dict):
+        piv_simulation_parameters = _todict(piv_simulation_parameters)
+
+    # if there are nested mat_structs inside the dictionary, then convert them to dictionaries too
+    for key in piv_simulation_parameters.keys():
+        if(type(piv_simulation_parameters[key]) == sio.matlab.mio5_params.mat_struct):
+             piv_simulation_parameters[key] = _todict(piv_simulation_parameters[key])
 
     # This changes the directory containing the particle locations in the
     # parameters structure
@@ -219,8 +222,6 @@ for i in range(1, len(camera_parameter_list) + 1):
     # particles (if this number is larger than the number of saved particles,
     # an error will be returned)
     piv_simulation_parameters['particle_field']['particle_number'] = total_particle_number
-    # piv_simulation_parameters['particle_field']['particle_number'] = 1000
-    # piv_simulation_parameters['particle_field']['particle_number'] = 100
 
     # This changes the directory to save the particle images in parameters structure
     piv_simulation_parameters['output_data']['particle_image_directory'] = particle_image_top_directory + 'camera_%02d' % camera_index + '/'
@@ -231,6 +232,8 @@ for i in range(1, len(camera_parameter_list) + 1):
 
     # convert int variables to float
     for i in piv_simulation_parameters:
+        if(type(piv_simulation_parameters[i]) is str or type(piv_simulation_parameters[i]) is list):
+            continue
         for j in piv_simulation_parameters[i]:
             if (type(piv_simulation_parameters[i][j]) is int):
                 piv_simulation_parameters[i][j] = float(piv_simulation_parameters[i][j])
