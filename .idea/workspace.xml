@@ -73,12 +73,6 @@
       <change type="DELETED" beforePath="$PROJECT_DIR$/test_bhmie.py" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/test_py.png" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/createNRRD.py" afterPath="$PROJECT_DIR$/createNRRD.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/create_piv_simulation_parameters_02.py" afterPath="$PROJECT_DIR$/create_piv_simulation_parameters_02.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/perform_ray_tracing_03.py" afterPath="$PROJECT_DIR$/perform_ray_tracing_03.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/post_processing_codes/convert_bin_to_tiff.py" afterPath="$PROJECT_DIR$/post_processing_codes/convert_bin_to_tiff.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/run_piv_challenge_simulation_01.py" afterPath="$PROJECT_DIR$/run_piv_challenge_simulation_01.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/run_piv_simulation_02.py" afterPath="$PROJECT_DIR$/run_piv_simulation_02.py" />
     </list>
     <ignored path="camera_simulation.iws" />
     <ignored path=".idea/workspace.xml" />
