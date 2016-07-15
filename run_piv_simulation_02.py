@@ -1178,13 +1178,19 @@ def run_piv_simulation_02(piv_simulation_parameters):
             os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
             # % This performs the ray tracing to generate the sensor image
-            I = perform_ray_tracing_03(piv_simulation_parameters,optical_system,pixel_gain,scattering_data,scattering_type,lightfield_source,field_type)
+            I, I_raw = perform_ray_tracing_03(piv_simulation_parameters,optical_system,pixel_gain,scattering_data,scattering_type,lightfield_source,field_type)
 
             # This is the filename to save the image data to
             image_filename_write = particle_image_directory + 'particle_image_frame_' + '%04d' % frame_index + '.tif'
 
             # This saves the image to memory
             TIFF.imsave(image_filename_write,I)
+
+            # this is the filename to sve the raw image data to
+            raw_image_filename_write = particle_image_directory + 'particle_image_frame_' + '%04d' % frame_index + '.bin'
+
+            # this saves the image to memory
+            I_raw.tofile(raw_image_filename_write)
 
 
     # # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1241,11 +1247,18 @@ def run_piv_simulation_02(piv_simulation_parameters):
             scattering_data = np.NAN
 
             # % This performs the ray tracing to generate the sensor image
-            I = perform_ray_tracing_03(piv_simulation_parameters,optical_system,pixel_gain,scattering_data,scattering_type,lightfield_source,field_type)
+            I, I_raw = perform_ray_tracing_03(piv_simulation_parameters,optical_system,pixel_gain,scattering_data,scattering_type,lightfield_source,field_type)
 
             # % This is the filename to save the image data to
             image_filename_write = calibration_grid_image_directory + 'calibration_image_plane_' + '%04d' % plane_index + '.tif'
 
             # % This saves the image to memory
             TIFF.imsave(image_filename_write, I)
+
+            # this is the filename to save the raw image data to
+            raw_image_filename_write = calibration_grid_image_directory + 'calibration_image_plane_' + '%04d' % plane_index + '.bin'
+
+            # % This saves the image to memory
+            I_raw.tofile(raw_image_filename_write)
+
 

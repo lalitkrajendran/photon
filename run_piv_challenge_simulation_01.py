@@ -47,7 +47,8 @@ def _todict(matobj):
 
 
 # This function creates a series of PIV images that closely resemble the data that was produced by the PIV Challenge Case E data.
-top_write_directory = './test_directory_250000/'
+#top_write_directory = './test_directory_100000_cam5_inc_10/' #_bream_vector_z/'
+top_write_directory = './test_directory_larger_domain_f_22/'
 
 # Create the top write directory
 if not (os.path.exists(top_write_directory)):
@@ -109,13 +110,13 @@ Z_Velocity = 00.1e3
 # This is the domain of the particles to be simulated
 X_Min = -7.5e4
 X_Max = +7.5e4
-Y_Min = -7.5e4
-Y_Max = +7.5e4
+Y_Min = -7.5e4 #-15e4
+Y_Max = +7.5e4 #+15e4
 Z_Min = -7.5e3
 Z_Max = +7.5e3
 
 # This is the number of particles to simulate
-total_particle_number = 250000
+total_particle_number = 100000
 # total_particle_number = 100
 # total_particle_number = 100
 
@@ -217,7 +218,7 @@ for i in range(1, len(camera_parameter_list) + 1):
     # This changes the number of particles to simulate out of the list of possible
     # particles (if this number is larger than the number of saved particles,
     # an error will be returned)
-    piv_simulation_parameters['particle_field']['particle_number'] = 250000
+    piv_simulation_parameters['particle_field']['particle_number'] = total_particle_number
     # piv_simulation_parameters['particle_field']['particle_number'] = 1000
     # piv_simulation_parameters['particle_field']['particle_number'] = 100
 
@@ -228,9 +229,6 @@ for i in range(1, len(camera_parameter_list) + 1):
     # parameters structure
     piv_simulation_parameters['output_data']['calibration_grid_image_directory'] = calibration_image_top_directory + 'camera_%02d' % camera_index + '/'
 
-    # # convert object to dictionary
-    # piv_simulation_parameters = _todict(piv_simulation_parameters)
-
     # convert int variables to float
     for i in piv_simulation_parameters:
         for j in piv_simulation_parameters[i]:
@@ -240,7 +238,7 @@ for i in range(1, len(camera_parameter_list) + 1):
     piv_simulation_parameters['particle_field']['beam_propogation_vector'] = \
     piv_simulation_parameters['particle_field']['beam_propogation_vector'].astype('float')
 
-    a = 2
+
     # This runs the camera simulation for the current camera
     run_piv_simulation_02(piv_simulation_parameters)
 

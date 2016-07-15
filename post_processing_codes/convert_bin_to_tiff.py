@@ -6,6 +6,7 @@ and saves them as a 16 bit tiff file after contrast stretching
 import numpy as np
 import glob
 import sys
+import matplotlib.pyplot as plt
 
 sys.path.append('/home/barracuda/a/lrajendr/Projects/camera_simulation/')
 import tifffile as TIFF
@@ -13,14 +14,14 @@ import tifffile as TIFF
 from skimage import exposure
 
 # specify directory contatining images
-#read_directory = '/home/barracuda/a/lrajendr/Projects/camera_simulation_package_02/test_directory_250000/camera_images/'
-read_directory = '/home/barracuda/a/lrajendr/Projects/photon/analysis/src/matlab_camera_simulation/from_kolmogorov/matlab_camera_simulation/test_directory_250000/camera_images/'
+read_directory = '/home/barracuda/a/lrajendr/Projects/camera_simulation/test_directory_100000_bream_vector_z/camera_images/'
+#read_directory = '/home/barracuda/a/lrajendr/Projects/photon/analysis/src/matlab_camera_simulation/from_kolmogorov/matlab_camera_simulation/test_directory_250000/camera_images/'
 
 # types of images to read
-field_types = ['particle' , 'calibration']
-
+#field_types = ['particle' , 'calibration']
+field_types = ['particle']
 # this is the number of cameras
-num_cameras = 5
+num_cameras = 1
 
 # this is the pixel_gain
 pixel_gain = 25.0
@@ -37,10 +38,11 @@ for field in field_types:
 
     # load list of all bin files
     filename_list = sorted(glob.glob(folder_name + '*.bin'))
+    print filename_list
     for filename in filename_list:
       #print 'read_file : ' + filename
       # read file contents
-      I = np.fromfile(filename, dtype = np.float64)
+      I = np.fromfile(filename, dtype = np.float32)
       
       # reshape array
       I = np.reshape(I, (1024,1024))
@@ -64,6 +66,9 @@ for field in field_types:
       # % This converts the image from double precision to 16 bit precision
       I = np.uint16(I)
 
+      plt.imshow(I,cmap='gray')
+      plt.show()
+      '''
       # Contrast stretching (http://homepages.inf.ed.ac.uk/rbf/HIPR2/stretch.htm)
 
       # These are the percentile thresholds of the intensity values to rescale the image
@@ -84,4 +89,4 @@ for field in field_types:
       #print 'I.shape: ', I.shape
       # this saves the image to memory
       TIFF.imsave(image_filename_write, I)
-
+      '''

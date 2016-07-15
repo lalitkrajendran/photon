@@ -1,5 +1,5 @@
 import numpy as np
-
+import scipy.io as sio
 
 def create_piv_simulation_parameters_02():
     # % This function is designed to create a basic parameters structure for
@@ -74,7 +74,7 @@ def create_piv_simulation_parameters_02():
     # % This is the number of lightrays to simulate per particle (this is roughly
     # % equivalent to the power of the laser)
     piv_simulation_parameters['particle_field'][
-        'lightray_number_per_particle'] = 1e4;  # % 1e4 is a good number of lightrays . . .
+        'lightray_number_per_particle'] = 1e4  # % 1e4 is a good number of lightrays . . .
     # % This is the number of lightrays to propogate per iteration (this is a
     # % function of the RAM available on the computer)
     piv_simulation_parameters['particle_field']['lightray_process_number'] = 1e6
@@ -177,3 +177,7 @@ def create_piv_simulation_parameters_02():
     piv_simulation_parameters['output_data']['calibration_grid_image_directory'] = ''
 
     return piv_simulation_parameters
+
+piv_simulation_parameters = create_piv_simulation_parameters_02()
+
+sio.savemat()

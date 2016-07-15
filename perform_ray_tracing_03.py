@@ -2056,6 +2056,20 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
                            element_plane_parameters, element_system_index,piv_simulation_parameters['camera_design'],
                                               I,density_grad_filename,simulate_density_gradients)
 
+    # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    # % Adding image noise                                                      %
+    # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    # # this sets the seed for the image noise
+    # np.random.seed(2891)
+    # # this generates random numbers from a normal distribution to add to the image array
+    # image_noise = np.random.normal(0.0, scale=0.03*I.max(), size=I.shape)
+    #
+    # # this adds the image noise
+    # I += image_noise
+
+    # this is the raw verion of the original image
+    I_raw = I
 
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # % Rescales and resamples image for export                                 %
@@ -2090,4 +2104,4 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     # This rescales the image
     I = exposure.rescale_intensity(I, in_range=(p_lo, p_hi))
 
-    return I
+    return I, I_raw

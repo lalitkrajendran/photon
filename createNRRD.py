@@ -98,7 +98,7 @@ del_x = np.diff(data['x'])[0]
 
 ray_deflection = del_n/del_x * abs(Z_Max - Z_Min)
 
-print "del_x (microns) : %.2E, del_rho: %.2E" % (del_x, del_rho)
+print "del_x (microns) : %.2E, del_rho: %.2E, del_n: %.2E" % (del_x, del_rho, del_n)
 print "theoretical deflection (radians) : %0.2E" % ray_deflection
 
 
