@@ -983,10 +983,27 @@ def generate_calibration_lightfield_data(piv_simulation_parameters,optical_syste
     # % This is the Z world coordinate of the current grid to simulate
     current_z_world_coordinate = grid_plane_z_world_coordinate[plane_index]
 
-    # % This is a vector of the x world coordinates of the grid points
-    x_grid_point_coordinate_vector = x_grid_point_spacing*np.linspace(-(x_grid_point_number-1.0)/2.0,(x_grid_point_number - 1.0)/2.0,x_grid_point_number,endpoint=True)
-    # % This is a vector of the y world coordinates of the grid points
-    y_grid_point_coordinate_vector = y_grid_point_spacing*np.linspace(-(y_grid_point_number-1.0)/2.0,(y_grid_point_number - 1.0)/2.0,y_grid_point_number,endpoint=True)
+    # # % This is a vector of the x world coordinates of the grid points
+    # x_grid_point_coordinate_vector = x_grid_point_spacing*np.linspace(-(x_grid_point_number-1.0)/2.0,(x_grid_point_number - 1.0)/2.0,x_grid_point_number,endpoint=True)
+    # # % This is a vector of the y world coordinates of the grid points
+    # y_grid_point_coordinate_vector = y_grid_point_spacing*np.linspace(-(y_grid_point_number-1.0)/2.0,(y_grid_point_number - 1.0)/2.0,y_grid_point_number,endpoint=True)
+
+    #TODO remove
+    current_z_world_coordinate = 0.0
+    x_grid_point_number = 100
+    y_grid_point_number = 100
+    X_Min = -7.5e4
+    X_Max = +7.5e4
+    Y_Min = -7.5e4
+    Y_Max = +7.5e4
+    # x_grid_point_coordinate_vector = X_Min + (X_Max - X_Min)*np.random.rand(x_grid_point_number,1)
+    # y_grid_point_coordinate_vector = Y_Min + (Y_Max - Y_Min)*np.random.rand(y_grid_point_number,1)
+    x_grid_point_coordinate_vector = X_Min + (X_Max - X_Min) * np.random.rand(x_grid_point_number, y_grid_point_number)
+    y_grid_point_coordinate_vector = Y_Min + (Y_Max - Y_Min) * np.random.rand(x_grid_point_number, y_grid_point_number)
+
+    grid_point_diameter/=10
+    particle_number_per_grid_point/=10
+
 
     # % This generates a series of points that fill the circle of the grid point
     # % uniformly
@@ -1003,10 +1020,16 @@ def generate_calibration_lightfield_data(piv_simulation_parameters,optical_syste
     # % point
     for x_grid_index in range(0,int(x_grid_point_number)):
         for y_grid_index in range(0,int(y_grid_point_number)):
-            
+
+            # # % This is the coordinate of the current grid point
+            # x_grid_point_coordinate = x_grid_point_coordinate_vector[x_grid_index]
+            # y_grid_point_coordinate = y_grid_point_coordinate_vector[y_grid_index]
+
+            #TODO remove
             # % This is the coordinate of the current grid point
-            x_grid_point_coordinate = x_grid_point_coordinate_vector[x_grid_index]
-            y_grid_point_coordinate = y_grid_point_coordinate_vector[y_grid_index]
+            x_grid_point_coordinate = x_grid_point_coordinate_vector[x_grid_index,y_grid_index]
+            y_grid_point_coordinate = y_grid_point_coordinate_vector[x_grid_index,y_grid_index]
+
 
             #% These are the coordinates of the current lightrays
             x_grid_point_lightray_coordinates = x_lightray_coordinates + x_grid_point_coordinate
@@ -1034,7 +1057,7 @@ def generate_calibration_lightfield_data(piv_simulation_parameters,optical_syste
         y = y[:count+1]
 
     # % This generates a series of points that fill the circle of one quarter of 
-    # % the grid point uniformly
+    # % the grid point diameter uniformly
     [x_lightray_coordinates, y_lightray_coordinates] = calculate_sunflower_coordinates(grid_point_diameter/4,particle_number_per_grid_point/16);
 
     # % These are the coordinates of the first origin marker
@@ -1052,6 +1075,186 @@ def generate_calibration_lightfield_data(piv_simulation_parameters,optical_syste
     # % These are the coordinates of the second origin marker
     x_grid_point_coordinate = 0
     y_grid_point_coordinate = y_grid_point_spacing/2.0
+
+    # % These are the coordinates of the current lightrays
+    x_grid_point_lightray_coordinates = x_lightray_coordinates + x_grid_point_coordinate
+    y_grid_point_lightray_coordinates = y_lightray_coordinates + y_grid_point_coordinate
+
+    # % This adds the current lightrays tot he total lightray vectors
+    x = np.append(x,x_grid_point_lightray_coordinates)
+    y = np.append(y,y_grid_point_lightray_coordinates)
+
+    # % This initializes the Z coordinate vector
+    z = current_z_world_coordinate * np.ones(x.shape)
+    # % This initializes the radiance vector
+    radiance = np.ones(x.shape)
+
+    # % This rotates the image coordinates by the specified angles
+    [x,y,z] = rotate_coordinates(x,y,z,x_camera_angle,y_camera_angle,0.0,0.0,0.0,0.0)
+
+    # % % This rotates the particles by the specified angles
+    # % [x_source,y_source,z_source]=rotate_coordinates(x_source,y_source,z_source,theta_x,theta_y,theta_z,0,0,0);
+    # % This translates the Z coordinates of the paricles to the focal plane
+    z = z + z_object
+
+    # % This adds in the particles to the lightfield source data
+    lightfield_source = {'x': x, 'y': y, 'z': z, 'radiance': radiance, 'diameter_index': np.ones(x.shape)}
+
+    # This is the number of source points that will simulated in one call to the GPU. this is a function
+	# of the GPU memory, and threads-blocks-grids specifications
+    lightfield_source['source_point_number'] = 10000
+
+    # This is the number of rays to be generated for each source point
+    lightfield_source['lightray_number_per_particle'] = 10000
+    return lightfield_source
+
+def generate_bos_lightfield_data(piv_simulation_parameters,optical_system):
+# % This function generates a structure containing the location of the each of the
+# % lightfield source points as well as their irradiance and color on a BOS texture.  Only a single value is
+# % returned for each source point and no angular information is stored.  The angular data
+# % of the lightrays will be generated later - this is done to avoid out of memory errors.
+
+    # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    # % Extracts parameters from 'piv_simulation_parameters'                    %
+    # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    # % This extracts the object distance of the lens (ie the distance between
+    # % the lens front principal plane and the center of the focal plane) to the
+    # % design structure (in microns)
+    object_distance = piv_simulation_parameters['lens_design']['object_distance']
+    # % This extracts the lens focal length from the design structure (in microns)
+    focal_length = piv_simulation_parameters['lens_design']['focal_length']
+
+    # % This extracts the grid point diameter from the structure
+    grid_point_diameter = piv_simulation_parameters['bos_pattern']['grid_point_diameter']
+    # % This extracts the grid point number from the calibration structure
+    x_grid_point_number = piv_simulation_parameters['bos_pattern']['x_grid_point_number']
+    y_grid_point_number = piv_simulation_parameters['bos_pattern']['y_grid_point_number']
+    # % This extracts the number of light source partciles per grid point from
+    # % the calibration structure
+    particle_number_per_grid_point = piv_simulation_parameters['bos_pattern']['particle_number_per_grid_point']
+
+    # % This extracts the x angle of the camera to the particle volume
+    x_camera_angle = piv_simulation_parameters['camera_design']['x_camera_angle']
+    # % This extracts the y angle of the camera to the particle volume
+    y_camera_angle = piv_simulation_parameters['camera_design']['y_camera_angle']
+
+    # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    # % Extracts parameters from 'optical_system'                               %
+    # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    # % This extracts the lens refractive index
+    refractive_index = optical_system['design']['optical_element'][0]['optical_element'][0]['element_properties']['refractive_index']
+    # % This extracts the radius of curvature for the front surface of the lens
+    front_surface_radius=optical_system['design']['optical_element'][0]['optical_element'][0]['element_geometry']['front_surface_radius']
+    # % This extracts the radius of curvature for the back surface of the lens
+    back_surface_radius=optical_system['design']['optical_element'][0]['optical_element'][0]['element_geometry']['back_surface_radius']
+    # % This extracts the front surface to back surface vertex distance of the
+    # % lens
+    optical_system_length=optical_system['design']['optical_element'][0]['optical_element'][0]['element_geometry']['vertex_distance']
+
+    # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    # % Calculates optical system properties                                    %
+    # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    # % This calculates the image distance
+    image_distance = (1.0/focal_length - 1.0/object_distance)**-1
+
+    # % This calculates the offsets of the principal planes
+    h1_principal_plane = -(focal_length * (refractive_index - 1.0) * optical_system_length)/(back_surface_radius * refractive_index)
+    h2_principal_plane = -(focal_length * (refractive_index - 1.0) * optical_system_length)/(front_surface_radius * refractive_index)
+
+    # % This calculates the positions of the lens vertex planes
+    v2_vertex_plane = image_distance + h2_principal_plane
+    v1_vertex_plane = v2_vertex_plane + optical_system_length
+
+    # % This is the object distance of the lens
+    z_object = v1_vertex_plane - h1_principal_plane + object_distance
+
+    # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    # % Generates the bos pattern data                                     %
+    # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    current_z_world_coordinate = 0.0
+
+    X_Min = -7.5e4
+    X_Max = +7.5e4
+    Y_Min = -7.5e4
+    Y_Max = +7.5e4
+
+    x_grid_point_coordinate_vector = X_Min + (X_Max - X_Min) * np.random.rand(x_grid_point_number, y_grid_point_number)
+    y_grid_point_coordinate_vector = Y_Min + (Y_Max - Y_Min) * np.random.rand(x_grid_point_number, y_grid_point_number)
+
+    # % This generates a series of points that fill the circle of the grid point
+    # % uniformly
+    [x_lightray_coordinates,y_lightray_coordinates] = calculate_sunflower_coordinates(grid_point_diameter,particle_number_per_grid_point);
+
+    # % These are the full coordinate vectors of all the lightrays
+    x = np.zeros(int(particle_number_per_grid_point*x_grid_point_number*y_grid_point_number))
+    y = np.zeros(int(particle_number_per_grid_point*x_grid_point_number*y_grid_point_number))
+
+    # % This is a counting index
+    count = 0
+
+    # % This iterates through the grid points generating the light rays for each
+    # % point
+    for x_grid_index in range(0,int(x_grid_point_number)):
+        for y_grid_index in range(0,int(y_grid_point_number)):
+
+            # # % This is the coordinate of the current grid point
+            # x_grid_point_coordinate = x_grid_point_coordinate_vector[x_grid_index]
+            # y_grid_point_coordinate = y_grid_point_coordinate_vector[y_grid_index]
+
+            #TODO remove
+            # % This is the coordinate of the current grid point
+            x_grid_point_coordinate = x_grid_point_coordinate_vector[x_grid_index,y_grid_index]
+            y_grid_point_coordinate = y_grid_point_coordinate_vector[x_grid_index,y_grid_index]
+
+
+            #% These are the coordinates of the current lightrays
+            x_grid_point_lightray_coordinates = x_lightray_coordinates + x_grid_point_coordinate
+            y_grid_point_lightray_coordinates = y_lightray_coordinates + y_grid_point_coordinate
+
+            # This is the vector of indices to add in the new coordinates
+            index_vector = (count+1) + np.linspace(1,len(x_grid_point_lightray_coordinates),endpoint=True).astype('int')
+
+            # This increments the counting variable
+            count = count + len(x_grid_point_lightray_coordinates)
+
+            # This adds the current lightrays tot the total lightray vectors
+            if(x_grid_index==0 and y_grid_index==0):
+                x = x_grid_point_lightray_coordinates
+                y = y_grid_point_lightray_coordinates
+            else:
+                x = np.append(x,x_grid_point_lightray_coordinates)
+                y = np.append(y,y_grid_point_lightray_coordinates)
+
+    # % This eliminates any coordinates that were initilized but not changed
+    if (count+1)<len(x):
+        # This deletes the ending values from the coordinate vectors
+        # HOW TO DELETE ELEMENTS IN PYTHON?
+        x = x[:count+1]
+        y = y[:count+1]
+
+    # % This generates a series of points that fill the circle of one quarter of
+    # % the grid point diameter uniformly
+    [x_lightray_coordinates, y_lightray_coordinates] = calculate_sunflower_coordinates(grid_point_diameter/4,particle_number_per_grid_point/16);
+
+    # % These are the coordinates of the first origin marker
+    x_grid_point_coordinate = 0
+    y_grid_point_coordinate = 0
+
+    # % These are the coordinates of the current lightrays
+    x_grid_point_lightray_coordinates = x_lightray_coordinates + x_grid_point_coordinate
+    y_grid_point_lightray_coordinates = y_lightray_coordinates + y_grid_point_coordinate
+
+    # % This adds the current lightrays to the total lightray vectors
+    x = np.append(x,x_grid_point_lightray_coordinates)
+    y = np.append(y,y_grid_point_lightray_coordinates)
+
+    # % These are the coordinates of the second origin marker
+    x_grid_point_coordinate = 0
+    y_grid_point_coordinate = 0
 
     # % These are the coordinates of the current lightrays
     x_grid_point_lightray_coordinates = x_lightray_coordinates + x_grid_point_coordinate
@@ -1230,6 +1433,9 @@ def run_piv_simulation_02(piv_simulation_parameters):
         scattering_data = None
 
         field_type = 'calibration'
+
+        #TODO remove
+        calibration_plane_number = 1
         # % This iterates through the calibration grid planes performing the ray
         # % tracing operations for each plane
         for plane_index in range(1,calibration_plane_number+1):
@@ -1260,5 +1466,72 @@ def run_piv_simulation_02(piv_simulation_parameters):
 
             # % This saves the image to memory
             I_raw.tofile(raw_image_filename_write)
+
+
+    # # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    # # % BOS pattern Simulation                                             %
+    # # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    #
+    # % This extracts the Boolean value stating whether to generate the calibration
+    # % images from the structure
+    generate_bos_pattern_images = piv_simulation_parameters['bos_pattern']['generate_bos_pattern_images']
+    # % This extracts the directory to save the calibration grid images from
+    # % parameters structure
+    bos_pattern_image_directory = piv_simulation_parameters['output_data']['bos_pattern_image_directory']
+    # % This extracts the number of lightrays to simulate per particle (this is roughly
+    # % equivalent to the power of the laser)
+    lightray_number_per_particle = piv_simulation_parameters['bos_pattern']['lightray_number_per_particle']
+    # % This extracts the number of lightrays to propogate per iteration (this is a
+    # % function of the RAM available on the computer)
+    lightray_process_number = piv_simulation_parameters['bos_pattern']['lightray_process_number']
+    # % This is the gain of the sensor in decibels to be used in the calibration
+    # % grid simulation
+    pixel_gain = piv_simulation_parameters['bos_pattern']['pixel_gain']
+
+    # % This generates the calibration grid images if specified by the parameters
+    # % structure
+    if generate_bos_pattern_images:
+
+        # % This displays that the calibration images are being simulated
+        # fprintf('\n\n');
+        print 'Simulating bos_pattern images . . . '
+
+        # % This sets the scattering type to diffuse for the calibration grid
+        # % simulation
+        scattering_type = 'diffuse'
+        # % This sets the scattering data to a Null value for the calibration grid
+        scattering_data = None
+
+        field_type = 'calibration'
+
+        #TODO remove
+        calibration_plane_number = 1
+
+        # % This creates the lightfield data for performing the raytracing operation
+        lightfield_source = generate_bos_lightfield_data(piv_simulation_parameters,optical_system)
+        # % This adds the number of lightrays per particle to the
+        # % 'lightfield_source' data
+        lightfield_source['lightray_number_per_particle'] = lightray_number_per_particle
+        # % This adds the number of lightrays to simulateously process to the
+        # % 'lightfield_source' data
+        lightfield_source['lightray_process_number'] = lightray_process_number
+        # save data to mat file
+        # convert none to NAN just for MATLAB
+        scattering_data = np.NAN
+
+        # % This performs the ray tracing to generate the sensor image
+        I, I_raw = perform_ray_tracing_03(piv_simulation_parameters,optical_system,pixel_gain,scattering_data,scattering_type,lightfield_source,field_type)
+
+        # % This is the filename to save the image data to
+        image_filename_write = bos_pattern_image_directory + 'bos_pattern_image_grad.tif'
+
+        # % This saves the image to memory
+        TIFF.imsave(image_filename_write, I)
+
+        # this is the filename to save the raw image data to
+        raw_image_filename_write = bos_pattern_image_directory + 'bos_pattern_image_grad.bin'
+
+        # % This saves the image to memory
+        I_raw.tofile(raw_image_filename_write)
 
 

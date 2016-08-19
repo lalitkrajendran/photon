@@ -50,7 +50,7 @@ def _todict(matobj):
 
 # This function creates a series of PIV images that closely resemble the data that was produced by the PIV Challenge Case E data.
 #top_write_directory = './test_directory_100000_cam5_inc_10/' #_bream_vector_z/'
-top_write_directory = './test_directory_create_params/'
+top_write_directory = './test_directory_bos/'
 
 # Create the top write directory
 if not (os.path.exists(top_write_directory)):
@@ -58,7 +58,7 @@ if not (os.path.exists(top_write_directory)):
     os.mkdir(top_write_directory)
 
 # This is the directory containing the camera simulation parameters to run for each camera
-camera_simulation_parameters_read_directory = './test_parameters/'
+camera_simulation_parameters_read_directory = './bos_parameters/'
 
 # This is the list of camera parameters to run the simulation over
 camera_parameter_list = sorted(glob.glob(camera_simulation_parameters_read_directory + '*.mat'))
@@ -103,6 +103,22 @@ for i in range(1, len(camera_parameter_list) + 1):
         # This creates the calibration image camera directory
         os.mkdir(current_subdirectory)
 
+# This is the name of the bos_pattern image top level directory
+bos_pattern_image_top_directory = top_write_directory + 'camera_images/bos_pattern_images/'
+# This creates the top level calibration image directory
+if not (os.path.exists(bos_pattern_image_top_directory)):
+    # This creates the calibration image directory
+    os.mkdir(bos_pattern_image_top_directory)
+
+# This creates the calibration image data directories
+for i in range(1, len(camera_parameter_list) + 1):
+    # This is the current subdirecotry name
+    current_subdirectory = bos_pattern_image_top_directory + 'camera_' + "%02d" % i + '/'
+    # This creates the current camera calibration image directory
+    if not (os.path.exists(current_subdirectory)):
+        # This creates the calibration image camera directory
+        os.mkdir(current_subdirectory)
+
 ### Creates Particle Position Data
 # This is a uniform velocity field to simulate
 X_Velocity = 01.0e3
@@ -118,6 +134,8 @@ Z_Min = -7.5e3
 Z_Max = +7.5e3
 
 # This is the number of particles to simulate
+# total_particle_number = 10000000
+
 total_particle_number = 100000
 
 # initialize random number seed
@@ -145,6 +163,19 @@ Z1 = Z - Z_Velocity / 2.0
 X2 = X + X_Velocity / 2.0
 Y2 = Y + Y_Velocity / 2.0
 Z2 = Z + Z_Velocity / 2.0
+
+# #TODO remove these lines
+# filepath = '/home/shannon/b/aether/Projects/piv-development/photon/analysis/data/test_sayantan_parameters/images/1e7/particle_positions/Sayantan_generated/'
+# mat_contents = sio.loadmat(filepath + 'particle_data_frame_0001.mat')
+# X1 = np.squeeze(mat_contents['X'])
+# Y1 = np.squeeze(mat_contents['Y'])
+# Z1 = np.squeeze(mat_contents['Z'])
+#
+# filepath = '/home/shannon/b/aether/Projects/piv-development/photon/analysis/data/test_sayantan_parameters/images/1e7/particle_positions/Sayantan_generated/'
+# mat_contents = sio.loadmat(filepath + 'particle_data_frame_0002.mat')
+# X2 = np.squeeze(mat_contents['X'])
+# Y2 = np.squeeze(mat_contents['Y'])
+# Z2 = np.squeeze(mat_contents['Z'])
 
 # This creates the directory to save the particle data positions in
 particle_position_data_directory = top_write_directory + 'particle_positions/'
@@ -181,6 +212,8 @@ start = time.time()
 for i in range(1, len(camera_parameter_list) + 1):
 
     camera_index = i
+    if(camera_index>1):
+        break
     # This displays that the current camera simulation is being ran
     print "\n\n\n\n"
     print "Running camera %d simulation . . . " % camera_index
@@ -200,6 +233,8 @@ for i in range(1, len(camera_parameter_list) + 1):
     else:
         piv_simulation_parameters = mat_contents
 
+    # TODO temp
+    #piv_simulation_parameters = piv_simulation_parameters['piv_simulation_parameters']
     # convert object to dictionary
     if(type(piv_simulation_parameters)!=dict):
         piv_simulation_parameters = _todict(piv_simulation_parameters)
@@ -221,7 +256,7 @@ for i in range(1, len(camera_parameter_list) + 1):
     # This changes the number of particles to simulate out of the list of possible
     # particles (if this number is larger than the number of saved particles,
     # an error will be returned)
-    piv_simulation_parameters['particle_field']['particle_number'] = total_particle_number
+    piv_simulation_parameters['particle_field']['particle_number'] = 1000000 #total_particle_number
 
     # This changes the directory to save the particle images in parameters structure
     piv_simulation_parameters['output_data']['particle_image_directory'] = particle_image_top_directory + 'camera_%02d' % camera_index + '/'
@@ -229,6 +264,10 @@ for i in range(1, len(camera_parameter_list) + 1):
     # This changes the directory to save the calibration grid images in
     # parameters structure
     piv_simulation_parameters['output_data']['calibration_grid_image_directory'] = calibration_image_top_directory + 'camera_%02d' % camera_index + '/'
+
+    # This changes the directory to save the calibration grid images in
+    # parameters structure
+    piv_simulation_parameters['output_data']['bos_pattern_image_directory'] = bos_pattern_image_top_directory + 'camera_%02d' % camera_index + '/'
 
     # convert int variables to float
     for i in piv_simulation_parameters:
@@ -241,6 +280,7 @@ for i in range(1, len(camera_parameter_list) + 1):
     piv_simulation_parameters['particle_field']['beam_propogation_vector'] = \
     piv_simulation_parameters['particle_field']['beam_propogation_vector'].astype('float')
 
+    piv_simulation_parameters['particle_field']['generate_particle_field_images'] = False
 
     # This runs the camera simulation for the current camera
     run_piv_simulation_02(piv_simulation_parameters)

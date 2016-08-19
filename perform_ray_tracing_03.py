@@ -2044,11 +2044,11 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     psi_temp.tofile('random2.bin')
 
     # this is the name of the file which contains the density dataset for the volume
-    simulate_density_gradients = False
-    density_grad_filename = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/test.nrrd"
+    # simulate_density_gradients = False
+    # density_grad_filename = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/test.nrrd"
 
-    # simulate_density_gradients = True
-    # density_grad_filename = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/const_grad_BOS_grad_x_20.nrrd"
+    simulate_density_gradients = True
+    density_grad_filename = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/const_grad_BOS_grad_x_20.nrrd"
 
     # convert the data to ctypes compatible format and call the CUDA function
     I = prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, scattering_type,

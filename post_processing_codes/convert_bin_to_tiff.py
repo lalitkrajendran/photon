@@ -14,7 +14,8 @@ import tifffile as TIFF
 from skimage import exposure
 
 # specify directory contatining images
-read_directory = '/home/barracuda/a/lrajendr/Projects/camera_simulation/test_directory_100000_bream_vector_z/camera_images/'
+read_directory = '/home/shannon/b/aether/Projects/piv-development/photon/analysis/data/test_sayantan_parameters/images/25e4/camera_images/'
+
 #read_directory = '/home/barracuda/a/lrajendr/Projects/photon/analysis/src/matlab_camera_simulation/from_kolmogorov/matlab_camera_simulation/test_directory_250000/camera_images/'
 
 # types of images to read
@@ -27,7 +28,12 @@ num_cameras = 1
 pixel_gain = 25.0
 
 # this is the pixel_bit_depth
-pixel_bit_depth = 16.0
+pixel_bit_depth = 10.0
+
+# this specifies if the images have to be transposed or not 
+# (True if images were saved in matlab)
+transpose_images = False
+
 
 for field in field_types:
   for camera_index in range(1,num_cameras+1):
@@ -48,7 +54,8 @@ for field in field_types:
       I = np.reshape(I, (1024,1024))
 
       # transpose array since it was saved in matlab
-      I = np.transpose(I)
+      if(transpose_images):
+        I = np.transpose(I)
 
       # % This rescales the image intensity to account for the pixel gain
       I *= 10 ** (pixel_gain/ 20.0)
@@ -66,14 +73,14 @@ for field in field_types:
       # % This converts the image from double precision to 16 bit precision
       I = np.uint16(I)
 
-      plt.imshow(I,cmap='gray')
-      plt.show()
-      '''
+      #plt.imshow(I,cmap='gray')
+      #plt.show()
+      
       # Contrast stretching (http://homepages.inf.ed.ac.uk/rbf/HIPR2/stretch.htm)
 
       # These are the percentile thresholds of the intensity values to rescale the image
       threshold_lo = 0
-      threshold_hi = 99.8
+      threshold_hi = 99.95
 
       # These are the intensities correspoding to the high and low thresholds
       p_lo, p_hi = np.percentile(I, (threshold_lo, threshold_hi))
@@ -82,11 +89,11 @@ for field in field_types:
       I = exposure.rescale_intensity(I, in_range=(p_lo, p_hi))
 
       # this is the name of the file to save the image
-      image_filename_write = filename[:-3] + 'tif'
+      image_filename_write = filename[:-4] + '_rescaled.tif'
 
       print 'writing to ' + image_filename_write
       
       #print 'I.shape: ', I.shape
       # this saves the image to memory
       TIFF.imsave(image_filename_write, I)
-      '''
+      
