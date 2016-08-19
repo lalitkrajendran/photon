@@ -1,0 +1,1 @@
+# This program creates a BOS pattern consisting of black or white dots
