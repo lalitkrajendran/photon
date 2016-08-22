@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="c90bfca8-8f44-482f-ae09-651496f61998" name="Default" comment="">
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/create_circles.py" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/1000 particles, 10000 rays.png" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/Untitled.ipynb" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/bhmie.f" afterPath="" />
@@ -122,6 +123,8 @@
       <change type="DELETED" beforePath="$PROJECT_DIR$/test_directory_sayantan_params/particle_positions/particle_data_frame_0001.p" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/test_directory_sayantan_params/particle_positions/particle_data_frame_0002.p" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/test_py.png" afterPath="" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/bos_scatter_test.png" afterPath="$PROJECT_DIR$/bos_scatter_test.png" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/create_bos_texture.py" afterPath="$PROJECT_DIR$/create_bos_texture.py" />
     </list>
     <ignored path="camera_simulation.iws" />
@@ -170,10 +173,22 @@
       <file leaf-file-name="create_bos_texture.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/create_bos_texture.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="435">
-              <caret line="38" column="0" selection-start-line="38" selection-start-column="0" selection-end-line="38" selection-end-column="0" />
+            <state relative-caret-position="390">
+              <caret line="118" column="27" selection-start-line="118" selection-start-column="27" selection-end-line="118" selection-end-column="27" />
               <folding>
                 <element signature="e#72#90#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="create_circles.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/create_circles.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="366">
+              <caret line="70" column="0" selection-start-line="70" selection-start-column="0" selection-end-line="72" selection-end-column="0" />
+              <folding>
+                <element signature="e#0#18#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -268,12 +283,14 @@
         <option value="$PROJECT_DIR$/run_piv_challenge_simulation_01.py" />
         <option value="$PROJECT_DIR$/perform_ray_tracing_03.py" />
         <option value="$PROJECT_DIR$/run_piv_simulation_02.py" />
+        <option value="$PROJECT_DIR$/create_circles.py" />
         <option value="$PROJECT_DIR$/create_bos_texture.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="y" value="24" />
+    <option name="x" value="1" />
+    <option name="y" value="2" />
     <option name="width" value="1280" />
     <option name="height" value="997" />
   </component>
@@ -375,23 +392,6 @@
       <option name="SHOW_COMMAND_LINE" value="false" />
       <method />
     </configuration>
-    <configuration default="false" name="test_progressbar" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <module name="camera_simulation" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/test_progressbar.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <method />
-    </configuration>
     <configuration default="false" name="test_cython" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -439,6 +439,23 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <module name="camera_simulation" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/create_bos_texture.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <method />
+    </configuration>
+    <configuration default="false" name="create_circles" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="camera_simulation" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/create_circles.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <method />
@@ -579,18 +596,18 @@
     </configuration>
     <list size="5">
       <item index="0" class="java.lang.String" itemvalue="Python.run_piv_challenge_simulation_01" />
-      <item index="1" class="java.lang.String" itemvalue="Python.test_progressbar" />
-      <item index="2" class="java.lang.String" itemvalue="Python.test_cython" />
-      <item index="3" class="java.lang.String" itemvalue="Python.create_bos_simulation_parameters" />
-      <item index="4" class="java.lang.String" itemvalue="Python.create_bos_texture" />
+      <item index="1" class="java.lang.String" itemvalue="Python.test_cython" />
+      <item index="2" class="java.lang.String" itemvalue="Python.create_bos_simulation_parameters" />
+      <item index="3" class="java.lang.String" itemvalue="Python.create_bos_texture" />
+      <item index="4" class="java.lang.String" itemvalue="Python.create_circles" />
     </list>
     <recent_temporary>
       <list size="5">
         <item index="0" class="java.lang.String" itemvalue="Python.create_bos_texture" />
-        <item index="1" class="java.lang.String" itemvalue="Python.run_piv_challenge_simulation_01" />
-        <item index="2" class="java.lang.String" itemvalue="Python.create_bos_simulation_parameters" />
-        <item index="3" class="java.lang.String" itemvalue="Python.test_cython" />
-        <item index="4" class="java.lang.String" itemvalue="Python.test_progressbar" />
+        <item index="1" class="java.lang.String" itemvalue="Python.create_circles" />
+        <item index="2" class="java.lang.String" itemvalue="Python.run_piv_challenge_simulation_01" />
+        <item index="3" class="java.lang.String" itemvalue="Python.create_bos_simulation_parameters" />
+        <item index="4" class="java.lang.String" itemvalue="Python.test_cython" />
       </list>
     </recent_temporary>
   </component>
@@ -687,7 +704,7 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="24" width="1280" height="997" extended-state="0" />
+    <frame x="1" y="2" width="1280" height="997" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.23108219" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
@@ -747,26 +764,19 @@
           <option name="timeStamp" value="256" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="python-line">
-          <url>file://$PROJECT_DIR$/create_bos_texture.py</url>
-          <line>46</line>
-          <option name="timeStamp" value="258" />
+          <url>file://$PROJECT_DIR$/create_circles.py</url>
+          <line>49</line>
+          <option name="timeStamp" value="261" />
         </line-breakpoint>
       </breakpoints>
       <breakpoints-dialog>
         <breakpoints-dialog />
       </breakpoints-dialog>
-      <option name="time" value="259" />
+      <option name="time" value="265" />
     </breakpoint-manager>
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/bhmie.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="157" column="0" selection-start-line="157" selection-start-column="0" selection-end-line="157" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/test_bhmie.py" />
     <entry file="file://$PROJECT_DIR$/bhmie_lkr.py" />
     <entry file="file://$PROJECT_DIR$/run_piv_challenge_simulation_01.py">
@@ -1010,10 +1020,20 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/create_circles.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="366">
+          <caret line="70" column="0" selection-start-line="70" selection-start-column="0" selection-end-line="72" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/create_bos_texture.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="435">
-          <caret line="38" column="0" selection-start-line="38" selection-start-column="0" selection-end-line="38" selection-end-column="0" />
+        <state relative-caret-position="390">
+          <caret line="118" column="27" selection-start-line="118" selection-start-column="27" selection-end-line="118" selection-end-column="27" />
           <folding>
             <element signature="e#72#90#0" expanded="true" />
           </folding>
