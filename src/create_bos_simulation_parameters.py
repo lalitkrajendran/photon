@@ -180,7 +180,7 @@ def create_bos_simulation_parameters():
     piv_simulation_parameters['bos_pattern']['particle_number_per_grid_point'] = 1000
     # % This is the number of lightrays to simulate per 'particle' (ie lightray
     # % source point) in the calibration grid
-    piv_simulation_parameters['bos_pattern']['lightray_number_per_particle'] = 10e3
+    piv_simulation_parameters['bos_pattern']['lightray_number_per_particle'] = 5e2
     # % This is the number of lightrays to propogate per iteration (this is a
     # % function of the RAM available on the computer)
     piv_simulation_parameters['bos_pattern']['lightray_process_number'] = 1e6
@@ -196,7 +196,7 @@ def create_bos_simulation_parameters():
 
     piv_simulation_parameters['density_gradients']['simulate_density_gradients'] = False
     # This specifies the path to the file containing the density gradient data
-    piv_simulation_parameters['density_gradients']['density_gradient_filename'] = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/test.nrrd"
+    piv_simulation_parameters['density_gradients']['density_gradient_filename'] = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/const_grad_BOS_grad_x_20.nrrd"
 
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # % Image Writing Parameters                                                %
