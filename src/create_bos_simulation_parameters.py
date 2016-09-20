@@ -171,7 +171,7 @@ def create_bos_simulation_parameters():
     # % images to the structure
     piv_simulation_parameters['bos_pattern']['generate_bos_pattern_images'] = True
     # % This adds the grid point diameter to the structure
-    piv_simulation_parameters['bos_pattern']['grid_point_diameter'] = 3.0e2
+    piv_simulation_parameters['bos_pattern']['grid_point_diameter'] = 6.0e2
     # % This adds the grid point number to the calibration structure
     piv_simulation_parameters['bos_pattern']['x_grid_point_number'] = 10
     piv_simulation_parameters['bos_pattern']['y_grid_point_number'] = 10
@@ -192,6 +192,8 @@ def create_bos_simulation_parameters():
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # % Density Gradient Parameters
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    piv_simulation_parameters['density_gradients'] = {}
+
     piv_simulation_parameters['density_gradients']['simulate_density_gradients'] = False
     # This specifies the path to the file containing the density gradient data
     piv_simulation_parameters['density_gradients']['density_gradient_filename'] = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/test.nrrd"

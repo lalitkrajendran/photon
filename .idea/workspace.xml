@@ -2,9 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="c90bfca8-8f44-482f-ae09-651496f61998" name="Default" comment="">
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/batch_create_bos_params.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/create_bos_simulation_parameters.py" afterPath="$PROJECT_DIR$/src/create_bos_simulation_parameters.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/perform_ray_tracing_03.py" afterPath="$PROJECT_DIR$/src/perform_ray_tracing_03.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/run_piv_challenge_simulation_01.py" afterPath="$PROJECT_DIR$/src/run_piv_challenge_simulation_01.py" />
     </list>
     <ignored path="camera_simulation.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -28,8 +27,8 @@
       <file leaf-file-name="run_piv_challenge_simulation_01.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/run_piv_challenge_simulation_01.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="249">
-              <caret line="57" column="33" selection-start-line="57" selection-start-column="33" selection-end-line="57" selection-end-column="33" />
+            <state relative-caret-position="294">
+              <caret line="60" column="49" selection-start-line="60" selection-start-column="49" selection-end-line="60" selection-end-column="49" />
               <folding />
             </state>
           </provider>
@@ -50,8 +49,8 @@
       <file leaf-file-name="create_bos_simulation_parameters.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/create_bos_simulation_parameters.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="504">
-              <caret line="194" column="88" selection-start-line="194" selection-start-column="88" selection-end-line="194" selection-end-column="88" />
+            <state relative-caret-position="535">
+              <caret line="236" column="0" selection-start-line="236" selection-start-column="0" selection-end-line="237" selection-end-column="0" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -59,11 +58,23 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="perform_ray_tracing_03.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="batch_create_bos_params.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/batch_create_bos_params.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="540">
+              <caret line="36" column="0" selection-start-line="36" selection-start-column="0" selection-end-line="36" selection-end-column="0" />
+              <folding>
+                <element signature="e#0#77#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="perform_ray_tracing_03.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/perform_ray_tracing_03.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="342">
-              <caret line="2046" column="74" selection-start-line="2046" selection-start-column="74" selection-end-line="2046" selection-end-column="74" />
+            <state relative-caret-position="102">
+              <caret line="2030" column="68" selection-start-line="2030" selection-start-column="67" selection-end-line="2030" selection-end-column="68" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -124,6 +135,7 @@
         <option value="$PROJECT_DIR$/src/run_piv_challenge_simulation_01.py" />
         <option value="$PROJECT_DIR$/src/perform_ray_tracing_03.py" />
         <option value="$PROJECT_DIR$/src/create_bos_simulation_parameters.py" />
+        <option value="$PROJECT_DIR$/src/batch_create_bos_params.py" />
       </list>
     </option>
   </component>
@@ -227,7 +239,7 @@
       <recent name="$PROJECT_DIR$/../../../../../scp-dump" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.run_piv_challenge_simulation_01 (1)">
+  <component name="RunManager" selected="Python.batch_create_bos_params">
     <configuration default="false" name="run_piv_challenge_simulation_01" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -262,23 +274,6 @@
       <option name="SHOW_COMMAND_LINE" value="false" />
       <method />
     </configuration>
-    <configuration default="false" name="run_piv_simulation_02" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <module name="camera_simulation" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/run_piv_simulation_02.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <method />
-    </configuration>
     <configuration default="false" name="run_piv_challenge_simulation_01 (1)" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -309,6 +304,23 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <module name="camera_simulation" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/create_bos_simulation_parameters.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <method />
+    </configuration>
+    <configuration default="false" name="batch_create_bos_params" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="camera_simulation" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/batch_create_bos_params.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <method />
@@ -450,17 +462,17 @@
     <list size="5">
       <item index="0" class="java.lang.String" itemvalue="Python.run_piv_challenge_simulation_01" />
       <item index="1" class="java.lang.String" itemvalue="Python.create_bos_texture" />
-      <item index="2" class="java.lang.String" itemvalue="Python.run_piv_simulation_02" />
-      <item index="3" class="java.lang.String" itemvalue="Python.run_piv_challenge_simulation_01 (1)" />
-      <item index="4" class="java.lang.String" itemvalue="Python.create_bos_simulation_parameters" />
+      <item index="2" class="java.lang.String" itemvalue="Python.run_piv_challenge_simulation_01 (1)" />
+      <item index="3" class="java.lang.String" itemvalue="Python.create_bos_simulation_parameters" />
+      <item index="4" class="java.lang.String" itemvalue="Python.batch_create_bos_params" />
     </list>
     <recent_temporary>
       <list size="5">
-        <item index="0" class="java.lang.String" itemvalue="Python.run_piv_challenge_simulation_01 (1)" />
-        <item index="1" class="java.lang.String" itemvalue="Python.create_bos_simulation_parameters" />
-        <item index="2" class="java.lang.String" itemvalue="Python.run_piv_challenge_simulation_01" />
-        <item index="3" class="java.lang.String" itemvalue="Python.create_bos_texture" />
-        <item index="4" class="java.lang.String" itemvalue="Python.run_piv_simulation_02" />
+        <item index="0" class="java.lang.String" itemvalue="Python.batch_create_bos_params" />
+        <item index="1" class="java.lang.String" itemvalue="Python.run_piv_challenge_simulation_01 (1)" />
+        <item index="2" class="java.lang.String" itemvalue="Python.create_bos_simulation_parameters" />
+        <item index="3" class="java.lang.String" itemvalue="Python.run_piv_challenge_simulation_01" />
+        <item index="4" class="java.lang.String" itemvalue="Python.create_bos_texture" />
       </list>
     </recent_temporary>
   </component>
@@ -565,11 +577,11 @@
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32851985" sideWeight="0.50436854" order="11" side_tool="true" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.30384168" sideWeight="0.49717513" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3275649" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.2078978" sideWeight="0.49717513" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2078978" sideWeight="0.49717513" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.20308693" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.41694915" sideWeight="0.49717513" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="true" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.31358886" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.31358886" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -621,16 +633,20 @@
           <line>2089</line>
           <option name="timeStamp" value="291" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" type="python-line">
+          <url>file://$PROJECT_DIR$/src/batch_create_bos_params.py</url>
+          <line>33</line>
+          <option name="timeStamp" value="292" />
+        </line-breakpoint>
       </breakpoints>
       <breakpoints-dialog>
         <breakpoints-dialog />
       </breakpoints-dialog>
-      <option name="time" value="292" />
+      <option name="time" value="293" />
     </breakpoint-manager>
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/bhmie_lkr.py" />
     <entry file="file://$PROJECT_DIR$/run_piv_challenge_simulation_01.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
@@ -827,24 +843,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/run_piv_challenge_simulation_01.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="249">
-          <caret line="57" column="33" selection-start-line="57" selection-start-column="33" selection-end-line="57" selection-end-column="33" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/create_bos_simulation_parameters.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="504">
-          <caret line="194" column="88" selection-start-line="194" selection-start-column="88" selection-end-line="194" selection-end-column="88" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/run_piv_simulation_02.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="447">
@@ -857,10 +855,38 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/perform_ray_tracing_03.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="342">
-          <caret line="2046" column="74" selection-start-line="2046" selection-start-column="74" selection-end-line="2046" selection-end-column="74" />
+        <state relative-caret-position="102">
+          <caret line="2030" column="68" selection-start-line="2030" selection-start-column="67" selection-end-line="2030" selection-end-column="68" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/run_piv_challenge_simulation_01.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="294">
+          <caret line="60" column="49" selection-start-line="60" selection-start-column="49" selection-end-line="60" selection-end-column="49" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/create_bos_simulation_parameters.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="535">
+          <caret line="236" column="0" selection-start-line="236" selection-start-column="0" selection-end-line="237" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/batch_create_bos_params.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="540">
+          <caret line="36" column="0" selection-start-line="36" selection-start-column="0" selection-end-line="36" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#77#0" expanded="true" />
           </folding>
         </state>
       </provider>
