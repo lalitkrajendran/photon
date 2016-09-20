@@ -219,8 +219,6 @@
       <change type="DELETED" beforePath="$PROJECT_DIR$/test_py.png" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/tifffile.py" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/transpose_images.py" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/perform_ray_tracing_03.py" afterPath="$PROJECT_DIR$/src/perform_ray_tracing_03.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/run_piv_challenge_simulation_01.py" afterPath="$PROJECT_DIR$/src/run_piv_challenge_simulation_01.py" />
     </list>
     <ignored path="camera_simulation.iws" />
     <ignored path=".idea/workspace.xml" />

@@ -1,9 +1,9 @@
 #.mat files
-*.mat
+**.mat
 
 #.tif images
-*.tif
-*.bin
+**.tif
+**.bin
 *~
 .DS_Store
 .nrrd
