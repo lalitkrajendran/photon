@@ -19,3 +19,4 @@ test_directory/particle_positions/particle_data_frame_0001.p
 test.bin
 test_directory_sayantan_params/1e6/particle_positions/*.p
 test_directory_sayantan_params/*/particle_positions/*.p
+test_directory_sayantan_params/particle_positions/*.p
