@@ -1,6 +1,9 @@
 #.mat files
 **.mat
 
+# pickle files
+**.p
+
 #.tif images
 **.tif
 **.bin
