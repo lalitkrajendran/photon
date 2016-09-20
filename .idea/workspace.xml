@@ -3,6 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="c90bfca8-8f44-482f-ae09-651496f61998" name="Default" comment="">
       <change type="DELETED" beforePath="$PROJECT_DIR$/1000 particles, 10000 rays.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/RemoteSystemsTempFiles/.project" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/Untitled.ipynb" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/bhmie.f" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/bhmie.o" afterPath="" />
@@ -29,6 +30,7 @@
       <change type="DELETED" beforePath="$PROJECT_DIR$/c_functions.c" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/c_functions.pyx" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/c_functions.so" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/check_marker_size.py" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/compareImages.py" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/compareParams.m" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/const_grad.nrrd" afterPath="" />
@@ -37,9 +39,11 @@
       <change type="DELETED" beforePath="$PROJECT_DIR$/create_bos_simulation_parameters.py" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/create_bos_texture.py" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/create_circles.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/create_circles_pattern.py" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/create_piv_simulation_parameters_02.py" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/cuda_particles.png" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/cython_profile_1e5_particles_2.profile" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/deleted_code.txt" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/display_calculation_progress.m" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/display_calculation_progress.py" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/display_image.py" afterPath="" />
@@ -82,6 +86,7 @@
       <change type="DELETED" beforePath="$PROJECT_DIR$/original_version/callbhmie.f" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/original_version/callbhmie.out" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/original_version/callbhmie.outS_j" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/outfile.txt" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/parallel_ray_tracing.py" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/particle_image_frame_0001.tif" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/particle_image_frame_0002.tif" afterPath="" />
@@ -214,7 +219,6 @@
       <change type="DELETED" beforePath="$PROJECT_DIR$/test_py.png" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/tifffile.py" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/transpose_images.py" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="camera_simulation.iws" />
     <ignored path=".idea/workspace.xml" />
