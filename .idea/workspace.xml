@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="c90bfca8-8f44-482f-ae09-651496f61998" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/batch_create_bos_params.py" afterPath="$PROJECT_DIR$/src/batch_create_bos_params.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/create_bos_simulation_parameters.py" afterPath="$PROJECT_DIR$/src/create_bos_simulation_parameters.py" />
-    </list>
+    <list default="true" id="c90bfca8-8f44-482f-ae09-651496f61998" name="Default" comment="" />
     <ignored path="camera_simulation.iws" />
     <ignored path=".idea/workspace.xml" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
