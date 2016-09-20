@@ -112,6 +112,48 @@
       <change type="DELETED" beforePath="$PROJECT_DIR$/post_processing_codes/rescale_images.py" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/python_images/particle_data_frame_0001.p" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/python_images/particle_data_frame_0002.p" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/results/images/bos/black-vs-white/bos_pattern.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/results/images/bos/black-vs-white/bos_pattern_black_dot.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/results/images/bos/black-vs-white/bos_pattern_black_dot_1080.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/results/images/bos/black-vs-white/bos_pattern_black_dot_144.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/results/images/bos/black-vs-white/bos_pattern_black_dot_432.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/results/images/bos/black-vs-white/bos_pattern_black_dot_72.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/results/images/bos/black-vs-white/bos_pattern_black_dot_720.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/results/images/bos/black-vs-white/bos_pattern_black_dot_864.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/results/images/bos/black-vs-white/bos_pattern_black_dot_936.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/results/images/bos/black-vs-white/bos_pattern_image_black_dot_1080_unscaled.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/results/images/bos/black-vs-white/bos_pattern_white_dot.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/results/images/bos/black-vs-white/bos_pattern_white_dot_936.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/results/images/bos/black-vs-white/bos_scatter_test.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/results/images/bos/black-vs-white/bos_scatter_test_circles.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/results/images/bos/black-vs-white/bos_scatter_test_dot.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/results/images/bos/black-vs-white/bos_scatter_test_dot_black.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/results/images/bos/black-vs-white/circle_test.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/results/images/bos/black-vs-white/circle_test_bos.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/results/images/bos/black-vs-white/mie_polar_10micron_air.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/results/images/bos/bos_comparison.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/results/images/bos/bos_comparison_grad_x=2.5.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/results/images/bos/bos_comparison_grad_x=2.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/results/images/bos/bos_comparison_grad_x=3.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/results/images/bos/bos_ref.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/results/images/bos/bos_scatter.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/results/images/bos/bos_test.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/results/images/bos_test/bos_comparison.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/results/images/bos_test/bos_ref.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/results/images/bos_test/bos_test.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/results/images/bos_test/grad_x=2" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/results/images/matlab_cuda_comparison/camera_01_difference.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/results/images/matlab_cuda_comparison/camera_02_difference.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/results/images/matlab_cuda_comparison/camera_03_difference.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/results/images/matlab_cuda_comparison/camera_04_difference.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/results/images/matlab_cuda_comparison/camera_05_difference.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/results/images/python_images/particle_data_frame_0001.p" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/results/images/python_images/particle_data_frame_0002.p" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/results/plots/mie_oil_air_1.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/results/plots/mie_oil_air_10.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/results/plots/python_oil_air_10_micron.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/results/test_directory_bos_image/particle_positions/particle_data_frame_0001.p" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/results/test_directory_bos_image/particle_positions/particle_data_frame_0002.p" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/run_perform_ray_tracing.m" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/run_piv_challenge_simulation_01.m" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/run_piv_challenge_simulation_01.py" afterPath="" />
@@ -219,7 +261,6 @@
       <change type="DELETED" beforePath="$PROJECT_DIR$/test_py.png" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/tifffile.py" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/transpose_images.py" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/run_piv_simulation_02.py" afterPath="$PROJECT_DIR$/src/run_piv_simulation_02.py" />
     </list>
     <ignored path="camera_simulation.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -382,38 +423,7 @@
       <pane id="Scope" />
       <pane id="Scratches" />
       <pane id="ProjectPane">
-        <subPane>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="camera_simulation" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="camera_simulation" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="camera_simulation" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="camera_simulation" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="camera_simulation" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="src" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-        </subPane>
+        <subPane />
       </pane>
     </panes>
   </component>
