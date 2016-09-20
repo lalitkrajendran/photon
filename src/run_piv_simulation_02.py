@@ -1649,8 +1649,8 @@ def run_piv_simulation_02(piv_simulation_parameters):
         calibration_plane_number = 1
 
         # % This creates the lightfield data for performing the raytracing operation
-        lightfield_source = generate_bos_image_lightfield_data(piv_simulation_parameters,optical_system)
-        # lightfield_source = generate_bos_lightfield_data(piv_simulation_parameters, optical_system)
+        # lightfield_source = generate_bos_image_lightfield_data(piv_simulation_parameters,optical_system)
+        lightfield_source = generate_bos_lightfield_data(piv_simulation_parameters, optical_system)
 
         # % This adds the number of lightrays per particle to the
         # % 'lightfield_source' data
