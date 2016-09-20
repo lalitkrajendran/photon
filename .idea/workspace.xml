@@ -2,11 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="c90bfca8-8f44-482f-ae09-651496f61998" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/create_circles.py" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/1000 particles, 10000 rays.png" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/Untitled.ipynb" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/bhmie.f" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/bhmie.o" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/bhmie.py" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/bhmie_2.so" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/bhmie_lkr.py" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/bhmie_modified.py" afterPath="" />
@@ -18,6 +18,8 @@
       <change type="DELETED" beforePath="$PROJECT_DIR$/bos_comparison_grad_x=2.png" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/bos_comparison_grad_x=3.png" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/bos_ref.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/bos_scatter_test.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/bos_scatter_test_circles.png" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/bos_test.png" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/bos_test/bos_comparison.png" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/bos_test/bos_ref.png" afterPath="" />
@@ -31,16 +33,42 @@
       <change type="DELETED" beforePath="$PROJECT_DIR$/compareParams.m" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/const_grad.nrrd" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/const_grad.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/createNRRD.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/create_bos_simulation_parameters.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/create_bos_texture.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/create_circles.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/create_piv_simulation_parameters_02.py" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/cuda_particles.png" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/cython_profile_1e5_particles_2.profile" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/display_calculation_progress.m" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/display_calculation_progress.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/display_image.py" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/fort.6" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/hello_world.pyx" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/image_comparison.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/images/bos/bos_comparison.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/images/bos/bos_comparison_grad_x=2.5.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/images/bos/bos_comparison_grad_x=2.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/images/bos/bos_comparison_grad_x=3.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/images/bos/bos_ref.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/images/bos/bos_scatter.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/images/bos/bos_test.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/images/bos_test/bos_comparison.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/images/bos_test/bos_ref.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/images/bos_test/bos_test.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/images/bos_test/grad_x=2" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/images/matlab_cuda_comparison/camera_01_difference.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/images/matlab_cuda_comparison/camera_02_difference.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/images/matlab_cuda_comparison/camera_03_difference.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/images/matlab_cuda_comparison/camera_04_difference.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/images/matlab_cuda_comparison/camera_05_difference.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/images/python_images/particle_data_frame_0001.p" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/images/python_images/particle_data_frame_0002.p" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/img_0001.png" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/img_0002.png" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/increment_pixel_radiance.pyx" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/makebospattern.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/mie_polar_10micron_air.png" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/mie_scattering_data.m" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/mie_scattering_functions.ipynb" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/mie_table_oil.dat" afterPath="" />
@@ -58,13 +86,73 @@
       <change type="DELETED" beforePath="$PROJECT_DIR$/particle_image_frame_0001.tif" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/particle_image_frame_0002.tif" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/perform_ray_tracing_03.m" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/perform_ray_tracing_03.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/piv_challenge_simulation_parameters/camera_01_parameters.mat" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/piv_challenge_simulation_parameters/camera_02_parameters.mat" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/piv_challenge_simulation_parameters/camera_03_parameters.mat" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/piv_challenge_simulation_parameters/camera_04_parameters.mat" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/piv_challenge_simulation_parameters/camera_05_parameters.mat" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/plotMiepolar.m" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/plots/mie_oil_air_1.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/plots/mie_oil_air_10.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/plots/python_oil_air_10_micron.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/post_processing_codes/compareImages.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/post_processing_codes/compareImages_BOS.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/post_processing_codes/compare_particle_positions.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/post_processing_codes/convert_bin_to_tiff.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/post_processing_codes/plot_final_directions.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/post_processing_codes/plot_final_positions.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/post_processing_codes/plot_mie_polar.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/post_processing_codes/plot_velocity_contours_and_histograms.m" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/post_processing_codes/rescale_images.py" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/python_images/particle_data_frame_0001.p" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/python_images/particle_data_frame_0002.p" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/run_perform_ray_tracing.m" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/run_piv_challenge_simulation_01.m" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/run_piv_challenge_simulation_01.py" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/run_piv_simulation_02.m" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/run_piv_simulation_02.py" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/sample_image.tif" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/serial codes/build/temp.linux-x86_64-2.7/c_functions.o" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/serial codes/c_functions.c" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/serial codes/c_functions.pyx" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/serial codes/c_functions.so" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/serial codes/display_calculation_progress.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/serial codes/hello_world.pyx" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/serial codes/increment_pixel_radiance.pyx" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/serial codes/matlab_version/compareParams.m" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/serial codes/matlab_version/display_calculation_progress.m" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/serial codes/matlab_version/mie_scattering_data.m" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/serial codes/matlab_version/perform_ray_tracing_03.m" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/serial codes/matlab_version/plotMiepolar.m" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/serial codes/matlab_version/run_perform_ray_tracing.m" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/serial codes/matlab_version/run_piv_challenge_simulation_01.m" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/serial codes/matlab_version/run_piv_simulation_02.m" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/serial codes/mie_scattering_codes/bhmie.f" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/serial codes/mie_scattering_codes/bhmie.o" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/serial codes/mie_scattering_codes/bhmie.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/serial codes/mie_scattering_codes/bhmie_2.so" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/serial codes/mie_scattering_codes/bhmie_lkr.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/serial codes/mie_scattering_codes/bhmie_modified.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/serial codes/mie_scattering_codes/bhmie_table" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/serial codes/mie_scattering_codes/bhmie_table.f" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/serial codes/mie_scattering_codes/bhmie_table.out" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/serial codes/mie_scattering_codes/fort.6" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/serial codes/mie_scattering_codes/mie_scattering_functions.ipynb" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/serial codes/mie_scattering_codes/mie_table_oil.dat" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/serial codes/mie_scattering_codes/mie_table_oil_air.dat" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/serial codes/mie_scattering_codes/mie_table_oil_air_10micron.dat" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/serial codes/mie_scattering_codes/mie_table_oil_air_1micron.dat" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/serial codes/mie_scattering_codes/original_version/bhmie.f" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/serial codes/mie_scattering_codes/original_version/bhmie.o" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/serial codes/mie_scattering_codes/original_version/callbhmie" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/serial codes/mie_scattering_codes/original_version/callbhmie.f" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/serial codes/mie_scattering_codes/original_version/callbhmie.out" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/serial codes/mie_scattering_codes/original_version/callbhmie.outS_j" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/serial codes/mie_scattering_codes/test_bhmie.ipynb" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/serial codes/mie_scattering_codes/test_bhmie.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/serial codes/setup.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/setup.py" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/temp.tif" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/test.bin" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/test.nrrd" afterPath="" />
@@ -122,10 +210,11 @@
       <change type="DELETED" beforePath="$PROJECT_DIR$/test_directory_sayantan_params/30e4/particle_positions/particle_data_frame_0002.p" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/test_directory_sayantan_params/particle_positions/particle_data_frame_0001.p" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/test_directory_sayantan_params/particle_positions/particle_data_frame_0002.p" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/test_progressbar.py" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/test_py.png" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/bos_scatter_test.png" afterPath="$PROJECT_DIR$/bos_scatter_test.png" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/tifffile.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/transpose_images.py" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/create_bos_texture.py" afterPath="$PROJECT_DIR$/create_bos_texture.py" />
     </list>
     <ignored path="camera_simulation.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -145,100 +234,7 @@
     <favorites_list name="camera_simulation" />
   </component>
   <component name="FileEditorManager">
-    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="run_piv_challenge_simulation_01.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/run_piv_challenge_simulation_01.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-615">
-              <caret line="55" column="45" selection-start-line="55" selection-start-column="45" selection-end-line="55" selection-end-column="45" />
-              <folding>
-                <element signature="e#16#27#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="run_piv_simulation_02.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/run_piv_simulation_02.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="17685">
-              <caret line="1179" column="18" selection-start-line="1179" selection-start-column="18" selection-end-line="1179" selection-end-column="18" />
-              <folding>
-                <element signature="e#0#11#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="create_bos_texture.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/create_bos_texture.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="390">
-              <caret line="118" column="27" selection-start-line="118" selection-start-column="27" selection-end-line="118" selection-end-column="27" />
-              <folding>
-                <element signature="e#72#90#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="create_circles.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/create_circles.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="366">
-              <caret line="70" column="0" selection-start-line="70" selection-start-column="0" selection-end-line="72" selection-end-column="0" />
-              <folding>
-                <element signature="e#0#18#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="create_bos_simulation_parameters.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/create_bos_simulation_parameters.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2070">
-              <caret line="139" column="80" selection-start-line="139" selection-start-column="80" selection-end-line="139" selection-end-column="80" />
-              <folding>
-                <element signature="e#0#18#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="create_piv_simulation_parameters_02.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/create_piv_simulation_parameters_02.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2610">
-              <caret line="175" column="39" selection-start-line="0" selection-start-column="0" selection-end-line="196" selection-end-column="0" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="perform_ray_tracing_03.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/perform_ray_tracing_03.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="30450">
-              <caret line="2040" column="29" selection-start-line="2040" selection-start-column="29" selection-end-line="2040" selection-end-column="29" />
-              <folding>
-                <element signature="e#0#18#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="deleted_code.txt" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/deleted_code.txt">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="5205">
-              <caret line="347" column="0" selection-start-line="347" selection-start-column="0" selection-end-line="347" selection-end-column="0" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-    </leaf>
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300" />
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -279,20 +275,22 @@
         <option value="$PROJECT_DIR$/deleted_code.txt" />
         <option value="$PROJECT_DIR$/create_piv_simulation_parameters_02.py" />
         <option value="$PROJECT_DIR$/makebospattern.py" />
-        <option value="$PROJECT_DIR$/create_bos_simulation_parameters.py" />
         <option value="$PROJECT_DIR$/run_piv_challenge_simulation_01.py" />
-        <option value="$PROJECT_DIR$/perform_ray_tracing_03.py" />
-        <option value="$PROJECT_DIR$/run_piv_simulation_02.py" />
+        <option value="$PROJECT_DIR$/check_marker_size.py" />
+        <option value="$PROJECT_DIR$/create_bos_simulation_parameters.py" />
         <option value="$PROJECT_DIR$/create_circles.py" />
+        <option value="$PROJECT_DIR$/create_circles_pattern.py" />
+        <option value="$PROJECT_DIR$/perform_ray_tracing_03.py" />
         <option value="$PROJECT_DIR$/create_bos_texture.py" />
+        <option value="$PROJECT_DIR$/run_piv_simulation_02.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="1" />
+    <option name="x" value="-2" />
     <option name="y" value="2" />
-    <option name="width" value="1280" />
-    <option name="height" value="997" />
+    <option name="width" value="1252" />
+    <option name="height" value="975" />
   </component>
   <component name="ProjectInspectionProfilesVisibleTreeState">
     <entry key="Project Default">
@@ -338,6 +336,8 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
+      <pane id="Scratches" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -356,10 +356,22 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="camera_simulation" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="camera_simulation" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
         </subPane>
       </pane>
-      <pane id="Scope" />
-      <pane id="Scratches" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -374,7 +386,7 @@
       <recent name="$PROJECT_DIR$/../../../../../scp-dump" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.create_bos_texture">
+  <component name="RunManager" selected="Python.run_piv_challenge_simulation_01">
     <configuration default="false" name="run_piv_challenge_simulation_01" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -388,23 +400,6 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <module name="camera_simulation" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/run_piv_challenge_simulation_01.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <method />
-    </configuration>
-    <configuration default="false" name="test_cython" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <module name="camera_simulation" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/test_cython.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <method />
@@ -443,7 +438,7 @@
       <option name="SHOW_COMMAND_LINE" value="false" />
       <method />
     </configuration>
-    <configuration default="false" name="create_circles" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration default="false" name="create_circles_pattern" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -455,7 +450,24 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <module name="camera_simulation" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/create_circles.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/create_circles_pattern.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <method />
+    </configuration>
+    <configuration default="false" name="run_piv_simulation_02" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="camera_simulation" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/run_piv_simulation_02.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <method />
@@ -596,18 +608,18 @@
     </configuration>
     <list size="5">
       <item index="0" class="java.lang.String" itemvalue="Python.run_piv_challenge_simulation_01" />
-      <item index="1" class="java.lang.String" itemvalue="Python.test_cython" />
-      <item index="2" class="java.lang.String" itemvalue="Python.create_bos_simulation_parameters" />
-      <item index="3" class="java.lang.String" itemvalue="Python.create_bos_texture" />
-      <item index="4" class="java.lang.String" itemvalue="Python.create_circles" />
+      <item index="1" class="java.lang.String" itemvalue="Python.create_bos_simulation_parameters" />
+      <item index="2" class="java.lang.String" itemvalue="Python.create_bos_texture" />
+      <item index="3" class="java.lang.String" itemvalue="Python.create_circles_pattern" />
+      <item index="4" class="java.lang.String" itemvalue="Python.run_piv_simulation_02" />
     </list>
     <recent_temporary>
       <list size="5">
-        <item index="0" class="java.lang.String" itemvalue="Python.create_bos_texture" />
-        <item index="1" class="java.lang.String" itemvalue="Python.create_circles" />
-        <item index="2" class="java.lang.String" itemvalue="Python.run_piv_challenge_simulation_01" />
-        <item index="3" class="java.lang.String" itemvalue="Python.create_bos_simulation_parameters" />
-        <item index="4" class="java.lang.String" itemvalue="Python.test_cython" />
+        <item index="0" class="java.lang.String" itemvalue="Python.run_piv_challenge_simulation_01" />
+        <item index="1" class="java.lang.String" itemvalue="Python.create_bos_texture" />
+        <item index="2" class="java.lang.String" itemvalue="Python.run_piv_simulation_02" />
+        <item index="3" class="java.lang.String" itemvalue="Python.create_circles_pattern" />
+        <item index="4" class="java.lang.String" itemvalue="Python.create_bos_simulation_parameters" />
       </list>
     </recent_temporary>
   </component>
@@ -704,27 +716,27 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="1" y="2" width="1280" height="997" extended-state="0" />
-    <editor active="true" />
+    <frame x="-2" y="2" width="1252" height="975" extended-state="0" />
+    <editor active="false" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.23108219" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.22908205" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32792583" sideWeight="0.49563146" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32851985" sideWeight="0.50436854" order="11" side_tool="true" content_ui="tabs" />
-      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.304248" sideWeight="0.49717513" order="8" side_tool="false" content_ui="tabs" />
+      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.30384168" sideWeight="0.49717513" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3275649" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.217695" sideWeight="0.49717513" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2112788" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.41942856" sideWeight="0.49717513" order="10" side_tool="false" content_ui="tabs" />
-      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.31548312" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.20386785" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.41694915" sideWeight="0.49717513" order="10" side_tool="false" content_ui="tabs" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="true" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.2086659" sideWeight="0.49717513" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.31461987" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
     </layout>
   </component>
   <component name="Vcs.Log.UiProperties">
@@ -752,63 +764,23 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="python-line">
-          <url>file://$PROJECT_DIR$/run_piv_simulation_02.py</url>
-          <line>1392</line>
-          <option name="timeStamp" value="255" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="python-line">
-          <url>file://$PROJECT_DIR$/run_piv_simulation_02.py</url>
-          <line>1003</line>
-          <option name="timeStamp" value="256" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="python-line">
-          <url>file://$PROJECT_DIR$/create_circles.py</url>
-          <line>49</line>
-          <option name="timeStamp" value="261" />
-        </line-breakpoint>
-      </breakpoints>
       <breakpoints-dialog>
         <breakpoints-dialog />
       </breakpoints-dialog>
-      <option name="time" value="265" />
+      <option name="time" value="289" />
     </breakpoint-manager>
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/test_bhmie.py" />
-    <entry file="file://$PROJECT_DIR$/bhmie_lkr.py" />
-    <entry file="file://$PROJECT_DIR$/run_piv_challenge_simulation_01.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="208" column="0" selection-start-line="208" selection-start-column="0" selection-end-line="208" selection-end-column="0" />
-          <folding>
-            <element signature="e#16#27#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/run_piv_simulation_02.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="1415" column="14" selection-start-line="1415" selection-start-column="14" selection-end-line="1415" selection-end-column="14" />
-          <folding>
-            <element signature="e#0#11#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/perform_ray_tracing_03.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/perform_ray_tracing_03.py" />
     <entry file="file://$PROJECT_DIR$/bhmie.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
@@ -822,9 +794,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="e#16#27#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -832,9 +802,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="879" column="8" selection-start-line="879" selection-start-column="8" selection-end-line="879" selection-end-column="8" />
-          <folding>
-            <element signature="e#0#11#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -842,9 +810,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="e#16#27#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -852,19 +818,16 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="e#16#27#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/perform_ray_tracing_03.py">
+    <entry file="file://$PROJECT_DIR$/perform_ray_tracing_03.py" />
+    <entry file="file://$PROJECT_DIR$/run_piv_challenge_simulation_01.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -872,19 +835,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="e#16#27#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/run_piv_challenge_simulation_01.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="e#16#27#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -961,7 +912,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="5205">
           <caret line="347" column="0" selection-start-line="347" selection-start-column="0" selection-end-line="347" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -976,67 +926,63 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2610">
           <caret line="175" column="39" selection-start-line="0" selection-start-column="0" selection-end-line="196" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/check_marker_size.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="321">
+          <caret line="28" column="68" selection-start-line="28" selection-start-column="68" selection-end-line="28" selection-end-column="68" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/perform_ray_tracing_03.py">
+    <entry file="file://$PROJECT_DIR$/post_processing_codes/compareImages.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="30450">
-          <caret line="2040" column="29" selection-start-line="2040" selection-start-column="29" selection-end-line="2040" selection-end-column="29" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/create_bos_simulation_parameters.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2070">
-          <caret line="139" column="80" selection-start-line="139" selection-start-column="80" selection-end-line="139" selection-end-column="80" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/run_piv_simulation_02.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="17685">
-          <caret line="1179" column="18" selection-start-line="1179" selection-start-column="18" selection-end-line="1179" selection-end-column="18" />
-          <folding>
-            <element signature="e#0#11#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/run_piv_challenge_simulation_01.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-615">
-          <caret line="55" column="45" selection-start-line="55" selection-start-column="45" selection-end-line="55" selection-end-column="45" />
-          <folding>
-            <element signature="e#16#27#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="-180">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/create_circles.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="366">
-          <caret line="70" column="0" selection-start-line="70" selection-start-column="0" selection-end-line="72" selection-end-column="0" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="581">
+          <caret line="72" column="0" selection-start-line="72" selection-start-column="0" selection-end-line="72" selection-end-column="0" />
+          <folding />
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/create_circles_pattern.py" />
     <entry file="file://$PROJECT_DIR$/create_bos_texture.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="390">
-          <caret line="118" column="27" selection-start-line="118" selection-start-column="27" selection-end-line="118" selection-end-column="27" />
-          <folding>
-            <element signature="e#72#90#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="804">
+          <caret line="80" column="16" selection-start-line="80" selection-start-column="16" selection-end-line="80" selection-end-column="16" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/create_bos_simulation_parameters.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2595">
+          <caret line="174" column="68" selection-start-line="174" selection-start-column="68" selection-end-line="174" selection-end-column="68" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/run_piv_challenge_simulation_01.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="129" column="14" selection-start-line="129" selection-start-column="14" selection-end-line="129" selection-end-column="14" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/perform_ray_tracing_03.py" />
+    <entry file="file://$PROJECT_DIR$/run_piv_simulation_02.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="16620">
+          <caret line="1108" column="4" selection-start-line="1108" selection-start-column="4" selection-end-line="1108" selection-end-column="4" />
+          <folding />
         </state>
       </provider>
     </entry>

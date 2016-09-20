@@ -1,0 +1,347 @@
+# % This iterates through the rays in blocks of less then or equal to
+    # % lightray_process_number in size
+    # pbar = ProgressBar(maxval=len(lightfield_vector)-2).start()
+    #
+    # for m in range(0, len(lightfield_vector) - 1):
+    #     # print "%d out of %d particles have been simulated" % (m*lightfield_N,lightfield_vector[-1])
+    #     # % This displays the progress of the sensor rendering
+    #     pbar.update(m)
+    #     # time.sleep(1)
+    #     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    #     # % Generate lightfield and propogate it through the optical system     %
+    #     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    #     #
+    #
+    #     # I[:-1,:-1] = prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, scattering_type,
+    #     #                    lightfield_source, lightray_number_per_particle, int(lightfield_vector[m]),
+    #     #                    int(lightfield_vector[m + 1]),beam_wavelength,aperture_f_number, element_data, element_center,
+    #     #                    element_plane_parameters, element_system_index,piv_simulation_parameters['camera_design'],I[:-1,:-1])
+    #
+    #
+    #     # I2 = prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, scattering_type,
+    #     #                    lightfield_source, lightray_number_per_particle, int(lightfield_vector[m]),
+    #     #                    int(lightfield_vector[m + 1]),beam_wavelength,aperture_f_number, element_data, element_center,
+    #     #                    element_plane_parameters, element_system_index,piv_simulation_parameters['camera_design'],I[:-1,:-1])
+    #     #
+    #     # % This generates the lightfield data for the current set of source points
+    #     lightfield_data = generate_lightfield_angular_data(lens_pitch, image_distance, scattering_data, scattering_type,
+    #                                                        lightfield_source, lightray_number_per_particle,
+    #                                                        int(lightfield_vector[m]), int(lightfield_vector[m + 1]))
+    #     # % This extracts the light ray source coordinates
+    #     light_ray_data['ray_source_coordinates'] = np.array(
+    #         [lightfield_data['x'], lightfield_data['y'], lightfield_data['z']]).T
+    #     # % This extracts the propogation direction of the light rays
+    #     light_ray_data['ray_propogation_direction'] = np.array(
+    #         [lightfield_data['theta'], lightfield_data['phi'], -np.ones(lightfield_data['theta'].size)]).T
+    #     # % This ensures that the light ray propogation direction vector has a
+    #     # % unit magnitude
+    #     light_ray_data['ray_propogation_direction'] /= la.norm(light_ray_data['ray_propogation_direction'], axis=1)[:,
+    #                                                    None]
+    #
+    #     # % This extracts the wavelength of the light rays
+    #     light_ray_data['ray_wavelength'] = beam_wavelength * np.ones(lightfield_data['theta'].size)
+    #     # % This extracts the light ray radiance
+    #     # %light_ray_data.ray_radiance=ones(size(lightfield_data.theta))';
+    #     light_ray_data['ray_radiance'] = (1.0 / aperture_f_number ** 2) * np.transpose(lightfield_data['radiance'])
+    #
+    #     # This traces the light rays through a medium containing density gradients
+    #     #light_ray_data = trace_rays_through_density_gradients(light_ray_data)
+    #
+    #
+    #     # % This propogates some imaginary light rays through the optical system
+    #     light_ray_data = propogate_rays_through_optical_system(element_data, element_center, element_plane_parameters,
+    #                                                            element_system_index, light_ray_data)
+    #
+    #     # # read light ray data from file
+    #     # a = np.fromfile('LRD_pos.bin', dtype=np.float32)
+    #     # a2 = a.reshape((a.size / 3, 3))
+    #     # diff = np.nanmax(abs(light_ray_data['ray_source_coordinates'] - a2))
+    #     # print "ray_source_coordinates: max diff = " + str(diff)
+    #     # light_ray_data['ray_source_coordinates'] = a2
+    #     #
+    #     #
+    #     # a = np.fromfile('LRD_dir.bin', dtype=np.float32)
+    #     # a2 = a.reshape((a.size / 3, 3))
+    #     # diff = np.nanmax(abs(light_ray_data['ray_propogation_direction'] - a2))
+    #     # print "ray_propogation_direction: max diff = " + str(diff)
+    #     # light_ray_data['ray_propogation_direction'] = a2
+    #     #
+    #     # a = np.fromfile('LRD_wavelength.bin', dtype=np.float32)
+    #     # diff = np.nanmax(abs(light_ray_data['ray_wavelength'] - a))
+    #     # print "ray_wavelength: max diff = " + str(diff)
+    #     # light_ray_data['ray_wavelength'] = a
+    #     #
+    #     # a = np.fromfile('LRD_radiance.bin', dtype=np.float64)
+    #     # diff = np.nanmax(abs(light_ray_data['ray_radiance'] - a))
+    #     # print "ray_radiance: max diff = " + str(diff)
+    #     # light_ray_data['ray_radiance'] = a
+    #     #
+    #     # # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    #     # # % Propogation of the light rays to the sensor                         %
+    #     # # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    #
+    #     # % This extracts the propogation direction of the light rays
+    #     ray_propogation_direction = light_ray_data['ray_propogation_direction'].astype('float64')
+    #     # % This extracts the light ray source coordinates
+    #     ray_source_coordinates = light_ray_data['ray_source_coordinates'].astype('float64')
+    #
+    #     # % This extracts the individual plane parameters for the sensor
+    #     a = 0.0
+    #     b = 0.0
+    #     c = 1.0
+    #     d = -z_sensor
+    #
+    #     # % This is the independent intersection time between the light rays and
+    #     # % the first plane of the aperture stop
+    #     intersection_time = -(
+    #     a * ray_source_coordinates[:,0] + b * ray_source_coordinates[:,1] + c * ray_source_coordinates[:,2] + d) / (
+    #                         a * ray_propogation_direction[:,0] + b * ray_propogation_direction[:,1] + c *
+    #                         ray_propogation_direction[:,2])
+    #
+    #     # % This calculates the intersection points
+    #     x_intersect = ray_source_coordinates[:,0] + ray_propogation_direction[:,0] * intersection_time
+    #     y_intersect = ray_source_coordinates[:,1] + ray_propogation_direction[:,1] * intersection_time
+    #     z_intersect = ray_source_coordinates[:,2] + ray_propogation_direction[:,2] * intersection_time
+    #
+    #     # % This sets the new light ray origin to the intersection point with the
+    #     # % front surface of the lens
+    #     ray_source_coordinates = np.array([x_intersect, y_intersect, z_intersect])
+    #     ray_source_coordinates = ray_source_coordinates.T
+    #     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    #     # % Add lightray radiance to sensor integration                         %
+    #     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    #     #
+    #     # % This is the angle between the lightray and the sensor (ie a lightray
+    #     # % normal to the sensor would yield an angle of zero)
+    #     alpha = np.arctan(np.sqrt((ray_propogation_direction[:,0] / ray_propogation_direction[:,2]) ** 2 + (
+    #         ray_propogation_direction[:,1] / ray_propogation_direction[:,2]) ** 2))
+    #
+    #
+    #     # % This calculates the cos^4(alpha) term which controls the contribution
+    #     # % of the incident light rays onto the measured energy in the sensor
+    #     cos_4_alpha = np.cos(alpha) ** 4
+    #
+    #     # % This calculates the indicies of the pixel on the sensor that the ray
+    #     # % intersects and the relative weighting between the pixels
+    #     [ii_indices, jj_indices, pixel_weights] = intersect_sensor_better(piv_simulation_parameters['camera_design'],
+    #                                                                       ray_source_coordinates[:,0],
+    #                                                                       ray_source_coordinates[:,1])
+    #
+    #     ii_indices = ii_indices.astype('int32')
+    #     jj_indices = jj_indices.astype('int32')
+    #
+    #     jj_indices[(jj_indices < 0)] = x_pixel_number + 1
+    #     jj_indices[(x_pixel_number <= jj_indices)] = x_pixel_number + 1
+    #
+    #     ii_indices[(ii_indices < 0)] = y_pixel_number + 1
+    #     ii_indices[(y_pixel_number <= ii_indices)] = y_pixel_number + 1
+    #
+    #     I = c_functions.increment_pixel_radiance(I, pixel_weights, ii_indices.astype('int32'),
+    #                                                           jj_indices.astype('int32'), \
+    #                                                           light_ray_data['ray_radiance'], cos_4_alpha, \
+    #                                                           ray_source_coordinates.shape[0])
+
+        # # read image array from file
+        # a = np.fromfile('image_array.bin',dtype=np.float64)
+        # a2 = np.reshape(a,(x_pixel_number,y_pixel_number))
+        # diff = np.nanmax(abs(a2-I[:-1,:-1]))
+        # print "image_array : max_diff = " + str(diff)
+        # I[:-1,:-1] = a2
+
+    # pbar.finish()
+
+
+
+
+
+def mie_scattering_data(n_medium,n_particle,r_particle,lambda_laser,angle_number):
+# % This function calculates the Mie scattering about a particle within a
+# % medium with a real refractive index of 'n_medium', with a particle with a
+# % complex refractive index of 'n_particle', a radius of 'r_particle', with
+# % light of wavelength 'lambda', and 'angle_number' angles computed between
+# % 0 degrees and 180 degrees inclusive.  The code assumes that the particle
+# % is spherical.  The particle radius and light wavelength are in arbitrary
+# % units.
+# %
+# % The output argument 'angle_data' is the vector of length 'angle_number'
+# % giving the angles between 0 and 180 degrees, the output argument
+# % 's1_data' gives the magnitude of the scattered light that is
+# % perpendicular to the scattering plane, and the output argument 's2_data'
+# % gives the magnitude of the scattered light that is parallel to the
+# % scattering plane.
+# %
+# % The code calls the fortran function 'bhmie_table' to create a table of
+# % the scattering values; this code uses the fortran function 'bhmie'. These
+# % two functions must be compiled (in the terminal) using the commands
+# %
+# %   f77 -c -fPIC bhmie.f
+# %   f77 -o bhmie_table bhmie.o bhmie_table.f
+# %
+# % before this matlab function will run correctly.  The code will also
+# % correctly compile with the 'f95' and 'gfortran' compilers, but these are
+# % less compatible with matlab and may produce unexpected results.
+# %
+# % Authors: Rod La Foy
+# % Created On: 23 August 2013
+# % Modified On: 19 March 2015
+# % Notes: This code calls 'bhmie_table' which is based up the code
+# % 'callbhmie.f' and 'bhmie.f' written by B.T.Draine, Princeton Univ. Obs.
+
+    # This extracts the real part of the particle refractive index
+    n_particle_real = n_particle.real
+
+    # This extracts the imaginary part of the particle refractive index
+    n_particle_imag = n_particle.imag
+
+    # This converts the medium's refractive index to a string
+    n_medium_string = "%6f" % n_medium
+
+    # This converts the particle's real refractive index to a string
+    n_particle_real_string = "%6f" % n_particle_real
+
+    # This converts the particle's imaginary refractive index to a string
+    n_particle_imag_string = "%6f" % n_particle_imag
+
+    # This converts the particle's radius to a string
+    r_particle_string = "%6f" % r_particle
+
+    # This converts the indcident light's wavelength to a string
+    lambda_laser_string = "%6f" % lambda_laser
+
+    # This converts the number of angles to a string
+    angle_number_string = "%d" % angle_number
+
+    # This is the directory path of this m-file
+    code_filename = os.path.realpath(__file__)
+
+    # This is the code_directory
+    code_directory = os.getcwd()
+
+    # This is the filename to save the data to (this uses the 'tempname' matlab
+    # function which creates a (likely) unique temporary file name
+    table_filename = 'mie_table.dat'
+
+    # This checks whether the table data already exists and deletes it if so
+    if os.path.exists(code_directory + table_filename):
+         # This deletes the file containing the Mie scattering data
+         os.remove(code_directory + table_filename)
+
+    # This is the string to execute to create the mie scattering table (the
+    # change directory command is to ensure that the code is in the current
+    # system search path - doing this by setting the environment variables
+    # wasn't working)
+    shell_command_string = './bhmie_table ' + n_medium_string + ' ' + n_particle_real_string + ' ' + n_particle_imag_string + ' ' + r_particle_string + ' ' + lambda_laser_string + ' ' + angle_number_string + ' > ' + table_filename
+
+    # This runs the system command string to calculate the Mie scattering
+    subprocess.call(shell_command_string,shell=True)
+
+    # # This initializes a variable stating the number of attempts that have been
+    # # made to load the Mie scattering data
+    # load_attempt_number = 0
+    #
+    # # This tries loading the Mie scattering data and if the file doesn't exist,
+    # # this pauses and waits
+    # while True:
+    #     # This checks whether the file exists and if so loads it and if not,
+    #     # the code waits a short period
+    #     print 'load_attempt_number %d' % load_attempt_number
+    #     if os.path.exists(table_filename):
+    #         # This reads in the output file containing the Mie scattering data
+    #         scattering_data = np.loadtxt(table_filename,skiprows = 5,unpack = True)
+    #         # This breaks the loop since the data was succesfully loaded
+    #         break
+    #     else:
+    #         # This increments the variable storing the number of load attempts
+    #         load_attempt_number = load_attempt_number + 1;
+    #         # If the number of load attempts exceeds 10, this displays an error
+    #         if load_attempt_number>10:
+    #             # This displays an error stating that the maximum number of
+    #             # load attempts has been exceeded
+    #             raise OSError('The Mie scattering data has not be created and the maximum number of loading attempts for the data has been exceeded.');
+    #         # This pauses for a short period
+    #         time.sleep(0.1)
+
+    # This reads in the output file containing the Mie scattering data
+    scattering_data = np.loadtxt(table_filename,skiprows = 5,unpack = True)
+    scattering_data = scattering_data.T
+    # This deletes the file containing the Mie scattering data
+    os.remove(table_filename)
+
+    # This extracts the independent variable giving the angle for the rays
+    angle_data = np.array(scattering_data[:,0])
+
+    # This converts the angular data from degrees to radians
+    angle_data = np.radians(angle_data)
+
+    # This extracts the dependent variable giving the unpolarized scattering
+    # magnitude
+    s11_data = np.array(scattering_data[:,1])
+
+    # This extracts the dependent variable giving the quantity of polarization
+    # (ie this will be zero for unpolarized scattering . . . I think)
+    pol_data = np.array(scattering_data[:,2])
+
+    # This computes the dependent variable giving the differences between the
+    # perpendicular and parallel polarization magnitudes
+    s12_data = -s11_data * pol_data
+
+    # This computes the dependent variable giving the scattering magnitude
+    # perpendicular to the scattering plane
+    s1_data = s11_data - s12_data
+
+    # This computes the dependent variable giving the scattering magnitude
+    # parallel to the scattering plane
+    s2_data = s11_data + s12_data
+
+    return [angle_data,s1_data,s2_data]
+
+
+
+# This loads the current parameter data
+    # NOTE: the mat file is being loaded as an object array of one dimension. this helps to maintain
+    # similarity in syntax from the matlab code, since since matlab structures and python objects
+    # have similar syntax for accessing their contents
+    mat_contents = sio.loadmat(parameter_filename_read, struct_as_record=False, squeeze_me=True)
+    piv_simulation_parameters = mat_contents['piv_simulation_parameters']
+
+    # This changes the directory containing the particle locations in the
+    # parameters structure
+    piv_simulation_parameters.particle_field.data_directory = particle_position_data_directory
+
+
+    # This changes the vector giving the frames of particle positions to load in
+    # the parameters structure (this indexes into the list generated by the
+    # command 'dir([data_directory,data_filename_prefix,'*.mat'])')
+    piv_simulation_parameters.particle_field.frame_vector = np.linspace(1, 2, 2).astype('int')
+
+    # This changes the number of particles to simulate out of the list of possible
+    # particles (if this number is larger than the number of saved particles,
+    # an error will be returned)
+    piv_simulation_parameters.particle_field.particle_number = 250000
+    # piv_simulation_parameters.particle_field.particle_number = 1000
+    # piv_simulation_parameters.particle_field.particle_number = 100
+
+    # This changes the directory to save the particle images in parameters structure
+    piv_simulation_parameters.output_data.particle_image_directory = particle_image_top_directory + 'camera_%02d' % camera_index + '/'
+
+    # This changes the directory to save the calibration grid images in
+    # parameters structure
+    piv_simulation_parameters.output_data.calibration_grid_image_directory = calibration_image_top_directory + 'camera_%02d' % camera_index + '/'
+
+    # This runs the camera simulation for the current camera
+    piv_simulation_parameters_temp = piv_simulation_parameters
+    # convert object to dictionary
+    piv_simulation_parameters = _todict(piv_simulation_parameters)
+
+    # convert int variables to float
+    for i in piv_simulation_parameters:
+        for j in piv_simulation_parameters[i]:
+            if (type(piv_simulation_parameters[i][j]) is int):
+                piv_simulation_parameters[i][j] = float(piv_simulation_parameters[i][j])
+
+    piv_simulation_parameters['particle_field']['beam_propogation_vector'] = \
+    piv_simulation_parameters['particle_field']['beam_propogation_vector'].astype('float')
+
+    # # save dictionary to mat-file
+    sio.savemat('mat_files/piv_simulation_parameters.mat', {'piv_simulation_parameters': piv_simulation_parameters},
+                long_field_names=True)
