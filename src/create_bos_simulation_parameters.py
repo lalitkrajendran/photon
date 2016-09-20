@@ -171,22 +171,30 @@ def create_bos_simulation_parameters():
     # % images to the structure
     piv_simulation_parameters['bos_pattern']['generate_bos_pattern_images'] = True
     # % This adds the grid point diameter to the structure
-    piv_simulation_parameters['bos_pattern']['grid_point_diameter'] = 1.5e2
+    piv_simulation_parameters['bos_pattern']['grid_point_diameter'] = 3.0e2
     # % This adds the grid point number to the calibration structure
     piv_simulation_parameters['bos_pattern']['x_grid_point_number'] = 10
     piv_simulation_parameters['bos_pattern']['y_grid_point_number'] = 10
     # % This adds the number of 'particles' (ie lightray source points) per grid
     # % point to the calibration structure
-    piv_simulation_parameters['bos_pattern']['particle_number_per_grid_point'] = 10
+    piv_simulation_parameters['bos_pattern']['particle_number_per_grid_point'] = 1000
     # % This is the number of lightrays to simulate per 'particle' (ie lightray
     # % source point) in the calibration grid
-    piv_simulation_parameters['bos_pattern']['lightray_number_per_particle'] = 5e2
+    piv_simulation_parameters['bos_pattern']['lightray_number_per_particle'] = 10e3
     # % This is the number of lightrays to propogate per iteration (this is a
     # % function of the RAM available on the computer)
     piv_simulation_parameters['bos_pattern']['lightray_process_number'] = 1e6
     # % This is the gain of the sensor in decibels to be used in the calibration
     # % grid simulation
     piv_simulation_parameters['bos_pattern']['pixel_gain'] = 25
+    # This specifies whether density gradients are to be simulated or not
+
+    # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    # % Density Gradient Parameters
+    # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    piv_simulation_parameters['density_gradients']['simulate_density_gradients'] = False
+    # This specifies the path to the file containing the density gradient data
+    piv_simulation_parameters['density_gradients']['density_gradient_filename'] = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/test.nrrd"
 
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # % Image Writing Parameters                                                %
@@ -212,7 +220,7 @@ def create_bos_simulation_parameters():
 
 
 # This is the path where the parameter file will be saved
-filepath = '/home/barracuda/a/lrajendr/Projects/camera_simulation/bos_parameters/'
+filepath = '/home/barracuda/a/lrajendr/Projects/data/bos_parameters/'
 
 # This is the name of the parameter file
 filename = 'test_bos_simulation_parameter.mat'

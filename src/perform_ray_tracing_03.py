@@ -2035,17 +2035,17 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     # % on the lens
     np.random.seed(1105)
     r_temp = np.random.rand(1, lightray_number_per_particle).astype('float32')
-    r_temp.tofile('../data/random1.bin')
+    r_temp.tofile('../../data/random1.bin')
 
     # % This creates random angular coordinates for the lightrays to
     # % intersect on the lens
     np.random.seed(4092)
     psi_temp = np.random.rand(1, lightray_number_per_particle).astype('float32')
-    psi_temp.tofile('../data/random2.bin')
+    psi_temp.tofile('../../data/random2.bin')
 
     # this is the name of the file which contains the density dataset for the volume
-    simulate_density_gradients = False
-    density_grad_filename = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/test.nrrd"
+    simulate_density_gradients = piv_simulation_parameters['density_gradients']['simulate_density_gradients']
+    density_grad_filename = piv_simulation_parameters['density_gradients']['density_gradient_filename']
 
     # simulate_density_gradients = True
     # density_grad_filename = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/const_grad_BOS_grad_x_20.nrrd"
@@ -2095,13 +2095,13 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     # Contrast stretching (http://homepages.inf.ed.ac.uk/rbf/HIPR2/stretch.htm)
 
     # These are the percentile thresholds of the intensity values to rescale the image
-    threshold_lo = 0
-    threshold_hi = 99.8
-
-    # These are the intensities correspoding to the high and low thresholds
-    p_lo, p_hi = np.percentile(I, (threshold_lo, threshold_hi))
-
-    # This rescales the image
-    I = exposure.rescale_intensity(I, in_range=(p_lo, p_hi))
+    # threshold_lo = 0
+    # threshold_hi = 99.8
+    #
+    # # These are the intensities correspoding to the high and low thresholds
+    # p_lo, p_hi = np.percentile(I, (threshold_lo, threshold_hi))
+    #
+    # # This rescales the image
+    # I = exposure.rescale_intensity(I, in_range=(p_lo, p_hi))
 
     return I, I_raw
