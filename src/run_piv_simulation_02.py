@@ -1662,19 +1662,44 @@ def run_piv_simulation_02(piv_simulation_parameters):
         # convert none to NAN just for MATLAB
         scattering_data = np.NAN
 
+        ################################################################################################################
+        # render the reference image without density gradients
+        ################################################################################################################
+
+        piv_simulation_parameters['density_gradients']['simulate_density_gradients'] = False
         # % This performs the ray tracing to generate the sensor image
         I, I_raw = perform_ray_tracing_03(piv_simulation_parameters,optical_system,pixel_gain,scattering_data,scattering_type,lightfield_source,field_type)
 
         # % This is the filename to save the image data to
-        image_filename_write = bos_pattern_image_directory + 'bos_pattern_image_black_dot_936_2e2_ref.tif'
+        image_filename_write = bos_pattern_image_directory + 'bos_pattern_image_1.tif'
 
         # % This saves the image to memory
         TIFF.imsave(image_filename_write, I)
 
         # this is the filename to save the raw image data to
-        raw_image_filename_write = bos_pattern_image_directory + 'bos_pattern_image_black_dot_936_2e2_ref.bin'
+        raw_image_filename_write = bos_pattern_image_directory + 'bos_pattern_image_1.bin'
 
         # % This saves the image to memory
         I_raw.tofile(raw_image_filename_write)
 
+        ################################################################################################################
+        # render the image with density gradients
+        ################################################################################################################
+
+        piv_simulation_parameters['density_gradients']['simulate_density_gradients'] = True
+        # % This performs the ray tracing to generate the sensor image
+        I, I_raw = perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain, scattering_data,
+                                          scattering_type, lightfield_source, field_type)
+
+        # % This is the filename to save the image data to
+        image_filename_write = bos_pattern_image_directory + 'bos_pattern_image_2.tif'
+
+        # % This saves the image to memory
+        TIFF.imsave(image_filename_write, I)
+
+        # this is the filename to save the raw image data to
+        raw_image_filename_write = bos_pattern_image_directory + 'bos_pattern_image_2.bin'
+
+        # % This saves the image to memory
+        I_raw.tofile(raw_image_filename_write)
 

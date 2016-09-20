@@ -27,6 +27,10 @@ for i in range(0,len(dot_size_microns)):
     # modify the dot size parameter
     piv_simulation_parameters['bos_pattern']['grid_point_diameter'] = dot_size_microns[i]
 
+    # set the location where the rendered images will be save
+    piv_simulation_parameters['bos_pattern']['output_data']['bos_pattern_image_directory'] = \
+        '/home/barracuda/a/lrajendr/Projects/results/images/bos/error-analysis/dot-size/' + '%02d' % dot_size_microns[i] '/'
+    
     # create the full filename where the parameters will be saved
     filename_full = filename_base + '%02d' % (i+1) + '.mat'
 

@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="c90bfca8-8f44-482f-ae09-651496f61998" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/batch_create_bos_params.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/create_bos_simulation_parameters.py" afterPath="$PROJECT_DIR$/src/create_bos_simulation_parameters.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/batch_create_bos_params.py" afterPath="$PROJECT_DIR$/src/batch_create_bos_params.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/run_piv_simulation_02.py" afterPath="$PROJECT_DIR$/src/run_piv_simulation_02.py" />
     </list>
     <ignored path="camera_simulation.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -37,8 +37,8 @@
       <file leaf-file-name="run_piv_simulation_02.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/run_piv_simulation_02.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="447">
-              <caret line="1668" column="0" selection-start-line="1668" selection-start-column="0" selection-end-line="1668" selection-end-column="0" />
+            <state relative-caret-position="191">
+              <caret line="1688" column="0" selection-start-line="1688" selection-start-column="0" selection-end-line="1688" selection-end-column="0" />
               <folding>
                 <element signature="e#0#11#0" expanded="true" />
               </folding>
@@ -49,8 +49,8 @@
       <file leaf-file-name="create_bos_simulation_parameters.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/create_bos_simulation_parameters.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="535">
-              <caret line="236" column="0" selection-start-line="236" selection-start-column="0" selection-end-line="237" selection-end-column="0" />
+            <state relative-caret-position="445">
+              <caret line="218" column="79" selection-start-line="218" selection-start-column="79" selection-end-line="218" selection-end-column="79" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -61,8 +61,8 @@
       <file leaf-file-name="batch_create_bos_params.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/batch_create_bos_params.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="540">
-              <caret line="36" column="0" selection-start-line="36" selection-start-column="0" selection-end-line="36" selection-end-column="0" />
+            <state relative-caret-position="480">
+              <caret line="32" column="4" selection-start-line="32" selection-start-column="4" selection-end-line="32" selection-end-column="4" />
               <folding>
                 <element signature="e#0#77#0" expanded="true" />
               </folding>
@@ -131,9 +131,9 @@
         <option value="$PROJECT_DIR$/perform_ray_tracing_03.py" />
         <option value="$PROJECT_DIR$/create_bos_texture.py" />
         <option value="$PROJECT_DIR$/run_piv_simulation_02.py" />
-        <option value="$PROJECT_DIR$/src/run_piv_simulation_02.py" />
         <option value="$PROJECT_DIR$/src/run_piv_challenge_simulation_01.py" />
         <option value="$PROJECT_DIR$/src/perform_ray_tracing_03.py" />
+        <option value="$PROJECT_DIR$/src/run_piv_simulation_02.py" />
         <option value="$PROJECT_DIR$/src/create_bos_simulation_parameters.py" />
         <option value="$PROJECT_DIR$/src/batch_create_bos_params.py" />
       </list>
@@ -239,7 +239,7 @@
       <recent name="$PROJECT_DIR$/../../../../../scp-dump" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.batch_create_bos_params">
+  <component name="RunManager" selected="Python.run_piv_challenge_simulation_01 (1)">
     <configuration default="false" name="run_piv_challenge_simulation_01" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -468,8 +468,8 @@
     </list>
     <recent_temporary>
       <list size="5">
-        <item index="0" class="java.lang.String" itemvalue="Python.batch_create_bos_params" />
-        <item index="1" class="java.lang.String" itemvalue="Python.run_piv_challenge_simulation_01 (1)" />
+        <item index="0" class="java.lang.String" itemvalue="Python.run_piv_challenge_simulation_01 (1)" />
+        <item index="1" class="java.lang.String" itemvalue="Python.batch_create_bos_params" />
         <item index="2" class="java.lang.String" itemvalue="Python.create_bos_simulation_parameters" />
         <item index="3" class="java.lang.String" itemvalue="Python.run_piv_challenge_simulation_01" />
         <item index="4" class="java.lang.String" itemvalue="Python.create_bos_texture" />
@@ -577,11 +577,11 @@
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32851985" sideWeight="0.50436854" order="11" side_tool="true" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.30384168" sideWeight="0.49717513" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3275649" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2078978" sideWeight="0.49717513" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.2078978" sideWeight="0.49717513" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.20308693" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.41694915" sideWeight="0.49717513" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="true" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.31358886" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.31358886" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -620,7 +620,7 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="python-line">
           <url>file://$PROJECT_DIR$/src/run_piv_simulation_02.py</url>
-          <line>1668</line>
+          <line>1673</line>
           <option name="timeStamp" value="289" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="python-line">
@@ -635,7 +635,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="python-line">
           <url>file://$PROJECT_DIR$/src/batch_create_bos_params.py</url>
-          <line>33</line>
+          <line>37</line>
           <option name="timeStamp" value="292" />
         </line-breakpoint>
       </breakpoints>
@@ -843,22 +843,22 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/run_piv_simulation_02.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="447">
-          <caret line="1668" column="0" selection-start-line="1668" selection-start-column="0" selection-end-line="1668" selection-end-column="0" />
-          <folding>
-            <element signature="e#0#11#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/perform_ray_tracing_03.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="102">
           <caret line="2030" column="68" selection-start-line="2030" selection-start-column="67" selection-end-line="2030" selection-end-column="68" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/run_piv_simulation_02.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="191">
+          <caret line="1688" column="0" selection-start-line="1688" selection-start-column="0" selection-end-line="1688" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#11#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -873,8 +873,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/create_bos_simulation_parameters.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="535">
-          <caret line="236" column="0" selection-start-line="236" selection-start-column="0" selection-end-line="237" selection-end-column="0" />
+        <state relative-caret-position="445">
+          <caret line="218" column="79" selection-start-line="218" selection-start-column="79" selection-end-line="218" selection-end-column="79" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>
@@ -883,8 +883,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/batch_create_bos_params.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="540">
-          <caret line="36" column="0" selection-start-line="36" selection-start-column="0" selection-end-line="36" selection-end-column="0" />
+        <state relative-caret-position="480">
+          <caret line="32" column="4" selection-start-line="32" selection-start-column="4" selection-end-line="32" selection-end-column="4" />
           <folding>
             <element signature="e#0#77#0" expanded="true" />
           </folding>
