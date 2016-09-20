@@ -2035,13 +2035,13 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     # % on the lens
     np.random.seed(1105)
     r_temp = np.random.rand(1, lightray_number_per_particle).astype('float32')
-    r_temp.tofile('random1.bin')
+    r_temp.tofile('../data/random1.bin')
 
     # % This creates random angular coordinates for the lightrays to
     # % intersect on the lens
     np.random.seed(4092)
     psi_temp = np.random.rand(1, lightray_number_per_particle).astype('float32')
-    psi_temp.tofile('random2.bin')
+    psi_temp.tofile('../data/random2.bin')
 
     # this is the name of the file which contains the density dataset for the volume
     simulate_density_gradients = False
