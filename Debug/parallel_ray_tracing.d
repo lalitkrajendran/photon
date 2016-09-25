@@ -184,7 +184,7 @@
     /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/iostream \
     /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/numeric \
     /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/bits/stl_numeric.h \
-    /home/barracuda/a/lrajendr/usr/include/teem/nrrd.h \
+    /usr/local/include/teem/nrrd.h \
     /usr/include/errno.h \
     /usr/include/bits/errno.h \
     /usr/include/linux/errno.h \
@@ -192,12 +192,12 @@
     /usr/include/asm-generic/errno.h \
     /usr/include/asm-generic/errno-base.h \
     /usr/lib/gcc/x86_64-redhat-linux/4.4.7/include/float.h \
-    /home/barracuda/a/lrajendr/usr/include/teem/air.h \
-    /home/barracuda/a/lrajendr/usr/include/teem/hest.h \
-    /home/barracuda/a/lrajendr/usr/include/teem/biff.h \
-    /home/barracuda/a/lrajendr/usr/include/teem/nrrdDefines.h \
-    /home/barracuda/a/lrajendr/usr/include/teem/nrrdMacros.h \
-    /home/barracuda/a/lrajendr/usr/include/teem/nrrdEnums.h \
+    /usr/local/include/teem/air.h \
+    /usr/local/include/teem/hest.h \
+    /usr/local/include/teem/biff.h \
+    /usr/local/include/teem/nrrdDefines.h \
+    /usr/local/include/teem/nrrdMacros.h \
+    /usr/local/include/teem/nrrdEnums.h \
     /opt/cuda/7.0/bin/..//include/cuda.h \
     /opt/cuda/7.0/bin/..//include/curand.h \
     /opt/cuda/7.0/bin/..//include/curand_kernel.h \

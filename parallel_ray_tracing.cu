@@ -1011,7 +1011,7 @@ __device__ light_ray_data_t propagate_rays_through_multiple_elements(element_dat
 
 	//# % This initializes the structure to contain the light ray data for
 	//# % the current optical element
-	light_ray_data_t light_ray_data_temp;
+//	light_ray_data_t light_ray_data_temp;
 	float3 pos_intersect_approximate_current;
 
 	//# % This iterates through the different planes, calculating the location of
@@ -2397,10 +2397,10 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	cudaMalloc((void**)&d_rand2,sizeof(float)*lightray_number_per_particle);
 
 	// open files
-	string filename = "/home/barracuda/a/lrajendr/Projects/camera_simulation/random1.bin";
+	string filename = "/home/barracuda/a/lrajendr/Projects/camera_simulation/data/random1.bin";
 	std::ifstream file_rand1(filename.c_str(),ios::in|ios::binary);
 
-	filename = "/home/barracuda/a/lrajendr/Projects/camera_simulation/random2.bin";
+	filename = "/home/barracuda/a/lrajendr/Projects/camera_simulation/data/random2.bin";
 	std::ifstream file_rand2(filename.c_str(),ios::in|ios::binary);
 
 	// read random numbers from file
@@ -2608,46 +2608,46 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	// display total time spent to the user
 	printf("time_spent : %f minutes\n", time_spent/60);
 
-	//--------------------------------------------------------------------------------------
-	// save final light ray positions to file (for debugging purposes)
-	//--------------------------------------------------------------------------------------
-	float2* final_pos = (float2*) malloc(sizeof(float2)*num_rays);
-	cudaMemcpy(final_pos, d_final_pos, sizeof(float2)*num_rays, cudaMemcpyDeviceToHost);
-
-	// this is the file name
-	filename = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/results/final_pos.bin";
-
-	// open the file
-	std::ofstream file_final_pos(filename.c_str(),ios::out | ios::binary);
-	// save all the pixel intensities to file
-	for(k = 0; k < num_rays; k++)
-			file_final_pos.write((char*)&final_pos[k],sizeof(float2));
-
-	// close the file
-	file_final_pos.close();
-
-	free(final_pos);
-	cudaFree(d_final_pos);
-
-	//--------------------------------------------------------------------------------------
-	// save final light ray directions to file (for debugging purposes)
-	//--------------------------------------------------------------------------------------
-	float3* final_dir = (float3*) malloc(sizeof(float3)*num_rays);
-	cudaMemcpy(final_dir, d_final_dir, sizeof(float3)*num_rays, cudaMemcpyDeviceToHost);
-
-	// this is the file name
-	filename = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/results/final_dir.bin";
-
-	// open the file
-	std::ofstream file_final_dir(filename.c_str(),ios::out | ios::binary);
-	// save all the pixel intensities to file
-	for(k = 0; k < num_rays; k++)
-			file_final_dir.write((char*)&final_dir[k],sizeof(float3));
-
-	// close the file
-	file_final_dir.close();
-	free(final_dir);
-	cudaFree(d_final_dir);
+//	//--------------------------------------------------------------------------------------
+//	// save final light ray positions to file (for debugging purposes)
+//	//--------------------------------------------------------------------------------------
+//	float2* final_pos = (float2*) malloc(sizeof(float2)*num_rays);
+//	cudaMemcpy(final_pos, d_final_pos, sizeof(float2)*num_rays, cudaMemcpyDeviceToHost);
+//
+//	// this is the file name
+//	filename = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/results/final_pos.bin";
+//
+//	// open the file
+//	std::ofstream file_final_pos(filename.c_str(),ios::out | ios::binary);
+//	// save all the pixel intensities to file
+//	for(k = 0; k < num_rays; k++)
+//			file_final_pos.write((char*)&final_pos[k],sizeof(float2));
+//
+//	// close the file
+//	file_final_pos.close();
+//
+//	free(final_pos);
+//	cudaFree(d_final_pos);
+//
+//	//--------------------------------------------------------------------------------------
+//	// save final light ray directions to file (for debugging purposes)
+//	//--------------------------------------------------------------------------------------
+//	float3* final_dir = (float3*) malloc(sizeof(float3)*num_rays);
+//	cudaMemcpy(final_dir, d_final_dir, sizeof(float3)*num_rays, cudaMemcpyDeviceToHost);
+//
+//	// this is the file name
+//	filename = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/results/final_dir.bin";
+//
+//	// open the file
+//	std::ofstream file_final_dir(filename.c_str(),ios::out | ios::binary);
+//	// save all the pixel intensities to file
+//	for(k = 0; k < num_rays; k++)
+//			file_final_dir.write((char*)&final_dir[k],sizeof(float3));
+//
+//	// close the file
+//	file_final_dir.close();
+//	free(final_dir);
+//	cudaFree(d_final_dir);
 //	//--------------------------------------------------------------------------------------
 //	// save image array to file (for debugging purposes)
 //	//--------------------------------------------------------------------------------------
