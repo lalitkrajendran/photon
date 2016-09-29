@@ -50,7 +50,7 @@ def _todict(matobj):
 
 # This function creates a series of PIV images that closely resemble the data that was produced by the PIV Challenge Case E data.
 #top_write_directory = './test_directory_100000_cam5_inc_10/' #_bream_vector_z/'
-top_write_directory = '../../results/test_directory_bos/'
+top_write_directory = '../results/test_directory_bos/'
 
 # Create the top write directory
 if not (os.path.exists(top_write_directory)):
@@ -58,7 +58,7 @@ if not (os.path.exists(top_write_directory)):
     os.mkdir(top_write_directory)
 
 # This is the directory containing the camera simulation parameters to run for each camera
-camera_simulation_parameters_read_directory = '../../data/bos_parameters/'
+camera_simulation_parameters_read_directory = '../data/bos_parameters/'
 
 # This is the list of camera parameters to run the simulation over
 camera_parameter_list = sorted(glob.glob(camera_simulation_parameters_read_directory + '*.mat'))

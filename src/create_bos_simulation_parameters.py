@@ -173,11 +173,11 @@ def create_bos_simulation_parameters():
     # % This adds the grid point diameter to the structure
     piv_simulation_parameters['bos_pattern']['grid_point_diameter'] = 6.0e2
     # % This adds the grid point number to the calibration structure
-    piv_simulation_parameters['bos_pattern']['x_grid_point_number'] = 10
-    piv_simulation_parameters['bos_pattern']['y_grid_point_number'] = 10
+    piv_simulation_parameters['bos_pattern']['x_grid_point_number'] = 50
+    piv_simulation_parameters['bos_pattern']['y_grid_point_number'] = 50
     # % This adds the number of 'particles' (ie lightray source points) per grid
     # % point to the calibration structure
-    piv_simulation_parameters['bos_pattern']['particle_number_per_grid_point'] = 1000
+    piv_simulation_parameters['bos_pattern']['particle_number_per_grid_point'] = 100
     # % This is the number of lightrays to simulate per 'particle' (ie lightray
     # % source point) in the calibration grid
     piv_simulation_parameters['bos_pattern']['lightray_number_per_particle'] = 5e2
@@ -196,7 +196,7 @@ def create_bos_simulation_parameters():
 
     piv_simulation_parameters['density_gradients']['simulate_density_gradients'] = False
     # This specifies the path to the file containing the density gradient data
-    piv_simulation_parameters['density_gradients']['density_gradient_filename'] = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/const_grad_BOS_grad_x_20.nrrd"
+    piv_simulation_parameters['density_gradients']['density_gradient_filename'] = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/const_grad_BOS_grad_x_10.nrrd"
 
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # % Image Writing Parameters                                                %
@@ -220,19 +220,23 @@ def create_bos_simulation_parameters():
 
     return piv_simulation_parameters
 
+def create_single_parameter_file():
+    '''
+    This function creates a sample parameter file
+    '''
 
-# This is the path where the parameter file will be saved
-filepath = '/home/barracuda/a/lrajendr/Projects/data/bos_parameters/'
+    # This is the path where the parameter file will be saved
+    filepath = '/home/barracuda/a/lrajendr/Projects/camera_simulation/data/bos_parameters/'
 
-# This is the name of the parameter file
-filename = 'test_bos_simulation_parameter.mat'
+    # This is the name of the parameter file
+    filename = 'test_bos_simulation_parameter.mat'
 
-# This displays the filepath and filename to the user
-print "saving piv simulation parameters to ", (filepath + filename)
+    # This displays the filepath and filename to the user
+    print "saving piv simulation parameters to ", (filepath + filename)
 
-# This calls the function to generate the parameters
-piv_simulation_parameters = create_bos_simulation_parameters()
+    # This calls the function to generate the parameters
+    piv_simulation_parameters = create_bos_simulation_parameters()
 
-# This saves the parameters to file
-sio.savemat(filepath+filename, piv_simulation_parameters, appendmat=True, format='5', long_field_names=True)
+    # This saves the parameters to file
+    sio.savemat(filepath+filename, piv_simulation_parameters, appendmat=True, format='5', long_field_names=True)
 

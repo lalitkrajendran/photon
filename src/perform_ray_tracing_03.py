@@ -1851,25 +1851,24 @@ def prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, sc
     # import cuda code
     cuda_func = ctypes.CDLL('/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/Debug/libparallel_ray_tracing.so')
 
-    # specify the properties of the function that will save the input parameters to a file for debugging later
-
-    # these are the argument data types
-    cuda_func.save_to_file.argtypes = [ctypes.c_float, ctypes.c_float, ctypes.POINTER(scattering_data_struct),
-                                       ctypes.c_char_p, ctypes.POINTER(lightfield_source_struct), ctypes.c_int, \
-                                        ctypes.c_float, ctypes.c_float, ctypes.c_int,
-                                       _double3p,ctypes.POINTER(element_data_struct),
-                                       _double4p,_intp,ctypes.POINTER(camera_design_struct),_floatp,
-                                            ctypes.c_bool, ctypes.c_char_p]
-
-    # # define return type
-    cuda_func.save_to_file.restype = None
-
-    # # call function in cuda code to save inputs to file
-    cuda_func.save_to_file(lens_pitch, image_distance, scattering_data_ctypes, scattering_type,
-                           lightfield_source_ctypes, lightray_number_per_particle,
-                           beam_wavelength, aperture_f_number,num_elements,element_center,element_data_ctypes_struct,element_plane_parameters,
-                           np.asarray(element_system_index).astype('int32'),camera_design_ctypes_struct,
-                              I2,simulate_density_gradients,density_grad_filename)
+    # # specify the properties of the function that will save the input parameters to a file for debugging later
+    # # these are the argument data types
+    # cuda_func.save_to_file.argtypes = [ctypes.c_float, ctypes.c_float, ctypes.POINTER(scattering_data_struct),
+    #                                    ctypes.c_char_p, ctypes.POINTER(lightfield_source_struct), ctypes.c_int, \
+    #                                     ctypes.c_float, ctypes.c_float, ctypes.c_int,
+    #                                    _double3p,ctypes.POINTER(element_data_struct),
+    #                                    _double4p,_intp,ctypes.POINTER(camera_design_struct),_floatp,
+    #                                         ctypes.c_bool, ctypes.c_char_p]
+    #
+    # # # define return type
+    # cuda_func.save_to_file.restype = None
+    #
+    # # # call function in cuda code to save inputs to file
+    # cuda_func.save_to_file(lens_pitch, image_distance, scattering_data_ctypes, scattering_type,
+    #                        lightfield_source_ctypes, lightray_number_per_particle,
+    #                        beam_wavelength, aperture_f_number,num_elements,element_center,element_data_ctypes_struct,element_plane_parameters,
+    #                        np.asarray(element_system_index).astype('int32'),camera_design_ctypes_struct,
+    #                           I2,simulate_density_gradients,density_grad_filename)
 
     # specify the properties of the function that will start the ray tracing process
 
@@ -2035,13 +2034,13 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     # % on the lens
     np.random.seed(1105)
     r_temp = np.random.rand(1, lightray_number_per_particle).astype('float32')
-    r_temp.tofile('../../data/random1.bin')
+    r_temp.tofile('../data/random1.bin')
 
     # % This creates random angular coordinates for the lightrays to
     # % intersect on the lens
     np.random.seed(4092)
     psi_temp = np.random.rand(1, lightray_number_per_particle).astype('float32')
-    psi_temp.tofile('../../data/random2.bin')
+    psi_temp.tofile('../data/random2.bin')
 
     # this is the name of the file which contains the density dataset for the volume
     simulate_density_gradients = piv_simulation_parameters['density_gradients']['simulate_density_gradients']
