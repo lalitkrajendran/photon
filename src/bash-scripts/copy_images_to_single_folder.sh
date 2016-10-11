@@ -2,15 +2,18 @@
 # to a single folder and renames them in the process
 
 
+# this is the case name
+case_name=150x150-f16-disp2
+
 # this is the destination where the images will be copied to
-destination=/home/barracuda/a/lrajendr/Projects/camera_simulation/results/images/bos/error-analysis/dot-size/processing/50x50/reordered-images
+destination=/home/barracuda/a/lrajendr/Projects/camera_simulation/results/images/bos/error-analysis/dot-size/processing/$case_name/reordered-images
 
 # if the destination directory does not exist, create one; it it does, then delete it
 rm -r $destination
 mkdir $destination
 
 # this is the source filepath
-filepath=/home/barracuda/a/lrajendr/Projects/camera_simulation/results/images/bos/error-analysis/dot-size/50x50
+filepath=/home/barracuda/a/lrajendr/Projects/camera_simulation/results/images/bos/error-analysis/dot-size/$case_name
 
 # find the number of folders in this path
 num_folders=$(find $filepath/* -maxdepth 0 -type d | wc -l)

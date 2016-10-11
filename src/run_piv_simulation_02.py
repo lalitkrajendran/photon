@@ -259,6 +259,10 @@ def create_camera_optical_system(piv_simulation_parameters):
     # curvature and pitch
     lens_thickness = (lens_radius_of_curvature - np.sqrt(np.power(lens_radius_of_curvature,2) - np.power(lens_pitch,2)))/2.0
 
+    # Added by lalit to account for out of focus effects - did not work
+    # lens_thickness = 2.0*(lens_radius_of_curvature - np.sqrt(
+    #     np.power(lens_radius_of_curvature, 2) - np.power(lens_pitch/2.0, 2)))
+
     # This calculates the refractive index that would be required to produce a
     # lens with the specified parameters
     refractive_index_1 = (2.0*lens_thickness*focal_length - 2.0*focal_length*lens_radius_of_curvature - np.power(lens_radius_of_curvature,2) - lens_radius_of_curvature*np.sqrt(-4.0*lens_thickness*focal_length + np.power(2.0*focal_length + lens_radius_of_curvature,2)))/(2.0*focal_length*(lens_thickness - 2.0*lens_radius_of_curvature))
