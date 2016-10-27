@@ -63,7 +63,7 @@
 #define CUDART_NAN_F            __int_as_float(0x7fffffff)
 #define CUDART_NAN              __longlong_as_double(0xfff8000000000000ULL)
 
-cudaArray* data_array = 0, *texture_array = 0;
+cudaArray* data_array = 0;
 
 using namespace std;
 // this is a texture that will contain the refractive index gradient data
@@ -245,7 +245,7 @@ __device__ light_ray_data_t trace_rays_through_density_gradients(light_ray_data_
  		float4 val = tex3D(tex_data, round(lookup.x), round(lookup.y), round(lookup.z)); //*params.dataScalar;
 
  		// calculate the change in ray direction
- 		normal = make_float3(val.x,val.y,val.z);
+ 		normal = -make_float3(val.x,val.y,val.z);
 
  		// update the ray direction
  		dir = dir + params.step_size*normal;

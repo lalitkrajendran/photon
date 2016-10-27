@@ -2705,10 +2705,14 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	cudaFree(d_camera_design);
 	cudaFree(d_image_array);
 
+	if(simulate_density_gradients)
+	{
+		checkCudaErrors(cudaFreeArray(data_array));
+		checkCudaErrors(cudaUnbindTexture(tex_data));
+		checkCudaErrors(cudaFree(d_params_p));
+	}
 
-	cudaUnbindTexture(tex_data);
-	cudaFreeArray(data_array);
-	cudaFree(d_params_p);
+	printf("exiting cuda code\n");
 
 }
 
