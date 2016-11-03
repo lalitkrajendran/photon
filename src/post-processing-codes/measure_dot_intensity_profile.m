@@ -351,23 +351,6 @@ for i = 1:1+skip:N
     fprintf('average signed bias error of gaussian fit: %f\n', bias_error_abs_avg(image_ctr));
     fprintf('average unsigned error of gaussian fit: %f\n', unsigned_error_rel_avg(image_ctr));
 
-%     % calculate the average intensity profile of the dot
-%     I_dot_average = I_dot_total/dot_ctr;
-% 
-%     % find the size of the extracted array
-%     [r_N,c_N] = size(I_dot_average);
-% 
-%     % fit a gaussian to the row-wise intensity profile
-%     [fit_r, goodness_r] = fit([1:c_N]',I_dot_average(round(r_N/2),:)','gauss1');
-%     % fit a gaussian to the column-wise intensity profile
-%     [fit_c, goodness_c] = fit([1:r_N]',I_dot_average(:,round(c_N/2)),'gauss1');
-% 
-%     fprintf('Goodness of fit details-----------------\n');
-%     fprintf('i = %d\n', i);
-%     fprintf('rsquare - row: %f, col: %f\n', goodness_r.rsquare, goodness_c.rsquare);
-%     fprintf('rmse - row: %f, col: %f\n', goodness_r.rmse, goodness_c.rmse);
-% 
-% 
 %     % plot intensity profile of the selected dot
 %     figure_ctr = figure_ctr + 1;
 %     figure(figure_ctr)
