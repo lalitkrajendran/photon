@@ -96,7 +96,7 @@ for i in range(1, len(bos_parameter_list) + 1):
     # This creates the top level calibration image directory
     if not (os.path.exists(bos_pattern_image_top_directory)):
         # This creates the calibration image directory
-        os.mkdir(bos_pattern_image_top_directory)
+        os.makedirs(bos_pattern_image_top_directory)
 
     # convert int variables to float
     for i in piv_simulation_parameters:
