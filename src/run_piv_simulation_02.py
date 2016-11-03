@@ -1173,16 +1173,38 @@ def generate_bos_lightfield_data(piv_simulation_parameters,optical_system):
     # % This is the object distance of the lens
     z_object = v1_vertex_plane - h1_principal_plane + object_distance
 
+    # this perturbs the image distance by a small amount to see where the focal plane lies
+    if('perturbation' in piv_simulation_parameters['lens_design'].keys()):
+        image_distance += (1 + piv_simulation_parameters['lens_design']['perturbation']) * image_distance
+
+
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # % Generates the bos pattern data                                     %
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     current_z_world_coordinate = 0.0
 
-    X_Min = -7.5e4
-    X_Max = +7.5e4
-    Y_Min = -7.5e4
-    Y_Max = +7.5e4
+    if(piv_simulation_parameters['bos_pattern']['X_Min']):
+        X_Min = piv_simulation_parameters['bos_pattern']['X_Min']
+    else:
+        X_Min = -7.5e4
+
+    if(piv_simulation_parameters['bos_pattern']['X_Max']):
+        X_Max = piv_simulation_parameters['bos_pattern']['X_Max']
+    else:
+        X_Max = +7.5e4
+
+
+    if (piv_simulation_parameters['bos_pattern']['Y_Min']):
+        Y_Min = piv_simulation_parameters['bos_pattern']['Y_Min']
+    else:
+        Y_Min = -7.5e4
+
+
+    if (piv_simulation_parameters['bos_pattern']['Y_Max']):
+        Y_Max = piv_simulation_parameters['bos_pattern']['Y_Max']
+    else:
+        Y_Max = +7.5e4
 
     x_grid_point_coordinate_vector = X_Min + (X_Max - X_Min) * np.random.rand(x_grid_point_number, y_grid_point_number)
     y_grid_point_coordinate_vector = Y_Min + (Y_Max - Y_Min) * np.random.rand(x_grid_point_number, y_grid_point_number)
@@ -1192,7 +1214,12 @@ def generate_bos_lightfield_data(piv_simulation_parameters,optical_system):
     [x_lightray_coordinates,y_lightray_coordinates] = calculate_sunflower_coordinates(grid_point_diameter,particle_number_per_grid_point);
 
     # % These are the full coordinate vectors of all the lightrays
+    if(piv_simulation_parameters['bos_pattern']['random_number_seed'][0]):
+        np.random.seed(piv_simulation_parameters['bos_pattern']['random_number_seed'][0])
     x = np.zeros(int(particle_number_per_grid_point*x_grid_point_number*y_grid_point_number))
+
+    if(piv_simulation_parameters['bos_pattern']['random_number_seed'][1]):
+        np.random.seed(piv_simulation_parameters['bos_pattern']['random_number_seed'][1])
     y = np.zeros(int(particle_number_per_grid_point*x_grid_point_number*y_grid_point_number))
 
     # % This is a counting index
@@ -1269,7 +1296,7 @@ def generate_bos_lightfield_data(piv_simulation_parameters,optical_system):
     # % This initializes the Z coordinate vector
     z = current_z_world_coordinate * np.ones(x.shape)
     # % This initializes the radiance vector
-    radiance = np.ones(x.shape)
+    radiance = np.ones(x.shape)*10
 
     # % This rotates the image coordinates by the specified angles
     [x,y,z] = rotate_coordinates(x,y,z,x_camera_angle,y_camera_angle,0.0,0.0,0.0,0.0)
