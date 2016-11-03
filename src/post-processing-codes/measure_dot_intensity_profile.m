@@ -244,61 +244,7 @@ for i = 1:1+skip:N
         temp = dot_loc;
         dot_loc(1) = temp(2);
         dot_loc(2) = temp(1);
-
-    %     % extract the radius of the dot
-    %     dot_radius = radii(dot_index);
-    % 
-    %     % set the factor by which the radius will be incremented to extract a
-    %     % region that is slightly bigger than the size of the dot to ensure that
-    %     % the intensity goes to zero at the edges
-    %     dot_radius_increment = 2;
-    % 
-    %     % increment the dot radius
-    %     dot_radius = dot_radius + dot_radius_increment;
-    % 
-    %     % if the dot radius is greater than the maximum allowable size, reduce it
-    %     if dot_radius > max_size/2
-    %         dot_radius = floor(max_size/2);
-    %     end
-    % 
-    %     % convert the dot radius to an integer value
-    %     dot_radius = round(dot_radius);
-    % 
-    %     % calculate the minimum and maximum indices of the region surrounding the 
-    %     % dot that will be extracted from the image
-    %     r_min = dot_loc(1) - dot_radius;
-    %     r_max = dot_loc(1) + dot_radius;
-    % 
-    %     c_min = dot_loc(2) - dot_radius;
-    %     c_max = dot_loc(2) + dot_radius;
-
-
-%         % calculate the minimum and maximum indices of the region surrounding the 
-%         % dot that will be extracted from the image
-%         r_min = dot_loc(1) - max_size/2;
-%         r_max = dot_loc(1) + max_size/2 - 1;
-% 
-%         c_min = dot_loc(2) - max_size/2;
-%         c_max = dot_loc(2) + max_size/2 - 1;
-% 
-%         % if any of the indices are out of bounds, ignore this dot
-%         if r_min <= 0 || c_min <= 0 || r_max > size(img,1) || c_max > size(img,2)
-%             continue;
-%         end
-% 
-%         % extract the intensity profile of the selected dot
-%         I_dot = double(img(r_min:r_max, c_min:c_max));
-
-%         %%% extract intensity values in the region surrounding the particle
-%         xy = SIZE1.locxy(j,:);
-%         map1 = SIZE1.mapsizeinfo(j,:);
-% 
-%         xy2 = xy;
-%         xy = fliplr(xy);
-%         map2 = map1;
-%         map1 = fliplr(map1);
-%         I_dot = double(img(xy(1):xy(1)+map1(1), xy(2):xy(2)+map1(2)));
-    
+  
         % calculate the minimum and maximum indices of the region surrounding the 
         % dot that will be extracted from the image
         r_min = SIZE1.locxy(j,2);
@@ -307,12 +253,6 @@ for i = 1:1+skip:N
         c_min = SIZE1.locxy(j,1);
         c_max = SIZE1.locxy(j,1) + SIZE1.mapsizeinfo(j,1);
         
-%         % widen the region so the whole dot is covered
-%         r_min = r_min - 2;
-%         c_min = c_min - 2;
-%         r_max = r_max + 2;
-%         c_max = c_max + 2;
-
         % if any of the indices are out of bounds, ignore this dot
         if r_min <= 0 || c_min <= 0 || r_max > size(img,1) || c_max > size(img,2)
             continue;
@@ -393,13 +333,6 @@ for i = 1:1+skip:N
 
     fprintf('number of dot intensity profiles: %d\n', dot_ctr);
     
-    % calculate the average rms error (percentage) of teh gaussian fit for
-    % this image
-%     average_error_gaussian_fit = error_gaussian_fit/dot_ctr;
-%     fprintf('i: %d\n', i);
-%     fprintf('average rms error of gaussian fit: %f\n', average_error_gaussian_fit);
-%     plot(i, average_error_gaussian_fit, 'k*-')
-
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % calculate average error in the gaussian fit
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
