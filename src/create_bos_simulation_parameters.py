@@ -187,7 +187,12 @@ def create_bos_simulation_parameters():
     # % This is the gain of the sensor in decibels to be used in the calibration
     # % grid simulation
     piv_simulation_parameters['bos_pattern']['pixel_gain'] = 25
-    # This specifies whether density gradients are to be simulated or not
+    # This sets the minimum and maximum values of the X co-ordinate of the bos pattern target
+    piv_simulation_parameters['bos_pattern']['X_Min'] = -7.5e4
+    piv_simulation_parameters['bos_pattern']['X_Max'] = +7.5e4
+    # This sets the minimum and maximum values of the Y co-ordinate of the bos pattern target
+    piv_simulation_parameters['bos_pattern']['Y_Min'] = -7.5e4
+    piv_simulation_parameters['bos_pattern']['Y_Max'] = +7.5e4
 
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # % Density Gradient Parameters
