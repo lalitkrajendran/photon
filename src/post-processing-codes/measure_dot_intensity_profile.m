@@ -107,33 +107,6 @@ for i = 1:1+skip:N
     waitbar(image_ctr/num_analysis);
     %% locate dots and measure diameter
 
-%     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%     % imfindcircles
-%     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% 
-%     % find location and radius of dots
-%     [centers, radii] = imfindcircles(img, [2 6], 'Sensitivity', 0.95);
-% 
-%     % % remove NAN elements
-%     % centers = centers(~isnan(centers));
-%     % radii = radii(~isnan(radii(:)));
-% 
-%     % calculate average diameter of the dot
-%     average_diameter = 2 * nanmean(radii);
-% 
-%     % calculate the total number of dots that were identified
-%     number_of_dots = sum(~isnan(radii(:)));
-% 
-%     fprintf('Number of dots: %d\n', number_of_dots);
-%     fprintf('Average diameter: %f\n', average_diameter);
-% 
-% %     % check if dots are identified correctly
-% %     figure_ctr = figure_ctr + 1;
-% %     figure(figure_ctr)
-% %     hold on
-% %     imshow(img)
-% %     viscircles(centers, radii)
-
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % identify the particles
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
