@@ -338,14 +338,10 @@ for i = 1:1+skip:N
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     bias_error_abs_avg(image_ctr) = bias_error_abs/dot_ctr;
     unsigned_error_abs_avg(image_ctr) = unsigned_error_abs/dot_ctr;
-%     random_error_abs_avg(image_ctr) = random_error_abs/dot_ctr;
-%     rms_error_abs_avg(image_ctr) = rms_error_abs/dot_ctr;
 
     bias_error_rel_avg(image_ctr) = bias_error_rel/dot_ctr;
     unsigned_error_rel_avg(image_ctr) = unsigned_error_rel/dot_ctr;
 
-%     random_error_rel_avg(image_ctr) = random_error_rel/dot_ctr;
-%     rms_error_rel_avg(image_ctr) = rms_error_rel/dot_ctr;
 
     fprintf('image: %d\n', image_ctr);
     fprintf('average signed bias error of gaussian fit: %f\n', bias_error_abs_avg(image_ctr));
@@ -397,16 +393,7 @@ ylabel('error');
 title('bias error (absolute)');
 grid on
 
-% % random error
-% subplot(1,3,2)
-% hold on
-% plot(dot_diameters_physical, random_error_abs_avg, '*-');
-% xlabel('dot diameter (microns)');
-% ylabel('error');
-% title('random error (absolute)');
-% grid on
-
-% rms error
+% unsigned bias error
 subplot(1,2,2)
 hold on
 plot(dot_diameters_physical, unsigned_error_abs_avg, '*-');
@@ -414,7 +401,6 @@ xlabel('dot diameter (microns)');
 ylabel('error');
 title('E[|x-x\hat|] error (absolute)');
 grid on
-
 
 % save figure to file
 savefig(gcf, [figure_save_filepath 'abs-error-gaussian-fit.fig']);
@@ -434,16 +420,7 @@ ylabel('% error');
 title('bias error (relative)');
 grid on
 
-% % random error
-% subplot(1,3,2)
-% hold on
-% plot(dot_diameters_physical, random_error_rel_avg, '*-');
-% xlabel('dot diameter (microns)');
-% ylabel('% error');
-% title('random error (relative)');
-% grid on
-
-% rms error
+% unsigned bias error
 subplot(1,2,2)
 hold on
 plot(dot_diameters_physical, unsigned_error_rel_avg, '*-');
