@@ -2693,9 +2693,11 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	cudaFree(d_source_radiance);
 	cudaFree(d_source_diameter_index);
 
-	cudaFree(d_scattering_angle);
-	cudaFree(d_scattering_irradiance);
-	cudaFree(data_array);
+	if(strcmp(scattering_type_str,"mie")==0)
+	{
+		cudaFree(d_scattering_angle);
+		cudaFree(d_scattering_irradiance);
+	}
 
 	cudaFree(d_element_center);
 	cudaFree(d_element_plane_parameters);
