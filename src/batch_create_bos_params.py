@@ -21,7 +21,7 @@ filename_base = 'bos_simulation_parameters_'
 
 # create array of dot sizes in pixels
 # dot_size_pixels = np.array([0.1, 0.5, 1.0]) * expected_displacement_pixels
-dot_size_pixels = np.linspace(.1, .5, num=1, endpoint=True) * 10
+dot_size_pixels = np.linspace(.1, .5, num=9, endpoint=True) * 10
 
 print dot_size_pixels
 # set scaling factor to convert from pixels to microns (from trial and error)
@@ -41,13 +41,13 @@ grad_x = 2.0
 
 # this is the number of image pairs that will be create for a single dot size. this is to ensure an adequate number of
 # vectors for error analysis
-number_of_image_pairs = 40
+number_of_image_pairs = 10
 
 # create an array of random numbers that will serve as the seed to the random number generator that in turn generates
 # positions of the dots in the pattern
 random_number_seed = np.random.randint(low=1, high=100000, size=(number_of_image_pairs,2))
 
-for i in range(0,len(dot_size_microns)):
+for i in range(0,dot_size_microns.size): #len(dot_size_microns)):
     # call function to create params for each dot size
     piv_simulation_parameters = CBS.create_bos_simulation_parameters()
 
@@ -105,9 +105,9 @@ for i in range(0,len(dot_size_microns)):
         piv_simulation_parameters['output_data']['bos_pattern_image_directory'] = top_write_directory + '%d/%d/'\
                                                                                 % (dot_size_microns[i], image_pair_index+1)
 
-        # if the write directory does not exist, create it
-        if (not (os.path.exists(piv_simulation_parameters['output_data']['bos_pattern_image_directory']))):
-            os.makedirs(piv_simulation_parameters['output_data']['bos_pattern_image_directory'])
+        # # if the write directory does not exist, create it
+        # if (not (os.path.exists(piv_simulation_parameters['output_data']['bos_pattern_image_directory']))):
+        #     os.makedirs(piv_simulation_parameters['output_data']['bos_pattern_image_directory'])
 
         # set the random number controlling the position of dots in the dot pattern
         piv_simulation_parameters['bos_pattern']['random_number_seed'] = random_number_seed[image_pair_index,:]

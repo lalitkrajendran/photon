@@ -6,7 +6,7 @@ close all
 clc
 
 
-case_name = '150x150-f16-disp2';
+case_name = '150x150-f16-disp8';
 % this is the filepath where the images will be read
 read_filepath = ['/home/barracuda/a/lrajendr/Projects/camera_simulation/results/images/bos/error-analysis/dot-size/processing/' case_name '/reordered-images/'];
 

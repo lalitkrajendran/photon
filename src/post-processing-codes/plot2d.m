@@ -1,5 +1,5 @@
-% This program loads the results of a stereo PIV evaluation from prana and
-% plots contours of the three components of the velocities, as well as a
+% This program loads the results of a PIV evaluation from prana and
+% plots contours of the two components of the velocities, as well as a
 % histogram. It also saves these plots to a file
 
 % Author : Lalit Rajendran
@@ -11,13 +11,13 @@ clear
 close all
 clc
 
-case_name = '150x150-f16-disp5';
+case_name = '150x150-f16-disp12';
 %% specify filepaths for reading velocity data and saving images.
 
 % this is the path to the folder where the results are located
 read_filepath = ['~/Projects/camera_simulation/results/images/bos/error-analysis/dot-size/processing/' case_name '/results/vectors/'];
 % this is the name of the file which contains the results
-read_filename = 'BOS_cropped_pass1_03.mat';
+read_filename = 'BOS_pass1_03.mat';
 
 % this is the path to the folder where the plots will be saved
 write_filepath = ['~/Projects/camera_simulation/results/images/bos/error-analysis/dot-size/processing/' case_name '/plots/'];
@@ -25,7 +25,7 @@ write_filepath = ['~/Projects/camera_simulation/results/images/bos/error-analysi
 write_file_format = 'png';
 
 % these are the reference velocities to be compared against
-U_ref = 4.86;
+U_ref = 11.64;
 V_ref = 0;
 
 

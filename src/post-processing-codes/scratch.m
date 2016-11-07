@@ -1,14 +1,31 @@
-% this is the filepath where the images are stored
-filepath = ['/home/barracuda/a/lrajendr/Projects/camera_simulation/results/images/bos/error-analysis/dot-size/processing/' case_name '/cropped-images/'];
+figure, imshow(img(r_min:r_max, c_min:c_max), 'InitialMagnification', 'fit')
 
-files = dir([filepath '*.tif']);
+r_N = del_r;
+c_N = del_c;
 
-img1 = imread([filepath files(1).name]);
-img2 = imread([filepath files(2).name]);
+r_0 = round(rc - r_min);
+c_0 = round(cc - c_min);
 
-T = zeros(size(img1,1), size(img1,2), 3);
-T(:,:,1) = img1;
-T(:,:,2) = img2;
+% plot intensity profile of the selected dot
+figure_ctr = figure_ctr + 1;
+figure(figure_ctr)
 
-figure
-imshow(T)
+% plot the profile along a row
+subplot(1,2,1)
+hold on
+plot(I_dot(r_0,:),'-*')
+plot(gaussian_fit(r_0,:), 'r-')
+title('center row')
+
+% plot the profile along a column
+subplot(1,2,2)
+hold on
+plot(I_dot(:,c_0),'-*')
+plot(gaussian_fit(:,c_0),'r-')
+title('center column')
+
+% % plot the full profile
+% subplot(1,3,3)
+% surf(I_dot_average, 'linestyle','none');
+% view(2)
+% title('full')

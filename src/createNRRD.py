@@ -1,6 +1,14 @@
+'''
+This program creates a 3D density field in NRRRD format for use in ray tracing.
+
+The refractive index field is defined as n(x) = ax^2 + bx + c. 
+
+'''
+
 import nrrd
 import numpy as np
 import matplotlib.pyplot as plt
+from sys import argv
 
 def save_nrrd(data,nrrd_filename):
 # This function saves the density stored in data['rho'] to an nrrd file
@@ -37,6 +45,8 @@ def save_nrrd(data,nrrd_filename):
     # save data to nrrd file
     nrrd.write(nrrd_filename, np.array(data['rho']).astype('float32'), options)
 
+#script, first, second, third = argv
+
 data = {}
 nx = 200
 ny = 200
@@ -69,7 +79,10 @@ data['y']/=1.0e6
 data['z']/=1.0e6
 '''
 # specify gradients for x and y directions
-grad_x = 10.0
+#grad_x = np.float64(first)
+
+#grad_xx = 50.0 
+grad_x = 5
 grad_y = 0.0
 
 x = np.array(data['x'])
@@ -80,15 +93,16 @@ X,Y = np.meshgrid(x,y,indexing='ij')
 
 data['rho'] = 1.225*np.ones([nx,ny,nz])
 
-
 for k in range(0,nz):
-    data['rho'][:,:,k] += grad_x*(X-x.min())/(X.max() - x.min()) # + grad_y*(Y - y.min())/Y.max()
+    data['rho'][:,:,k] += grad_x * (X - x.min())/(X.max() - x.min()) #+ grad_xx * (X - x.min())**2/(X.max() - x.min())**2 # + grad_y*(Y - y.min())/Y.max()
 
 #print "multiplying factor:", (X-x.min())/(X.max() - x.min())
 #print "del_rho:", (data['rho'][1,0,0] - data['rho'][0,0,0])
 
 #nrrd_filename = '/home/barracuda/a/lrajendr/Projects/ray_tracing_density_gradients/schlieren-0.2.0-Build/const_grad.nrrd'
-nrrd_filename = '/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/const_grad_BOS_grad_x_10.nrrd'
+#nrrd_filename = '/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/const_grad_BOS_grad_x_08.nrrd'
+nrrd_filename = '/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/const_grad_BOS_grad_x_%02d.nrrd' % grad_x
+
 #save_nrrd(data,nrrd_filename)
 
 # estimate ray deflection through the volume
@@ -101,7 +115,11 @@ ray_deflection = del_n/del_x * abs(Z_Max - Z_Min)
 print "del_x (microns) : %.2E, del_rho: %.2E, del_n: %.2E" % (del_x, del_rho, del_n)
 print "theoretical deflection (radians) : %0.2E" % ray_deflection
 
-
+plt.figure(3)
+plt.plot(data['x'],data['rho'][:,:,1])
+plt.title("density")
+plt.grid()
+plt.show()
 
 '''
 =======

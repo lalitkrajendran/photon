@@ -4,7 +4,7 @@
 
 %% clear workspace and close all windows
 
-clear all
+clear 
 close all
 clc
 
@@ -22,28 +22,52 @@ case_name = '150x150-f16-disp2';
 dot_sizing_method = 'prana';
 
 % this is the base name of the files that contain the results to be analyzed
-results_basename =  'BOS_pass1';
+results_basename =  'BOS_pass3';
+
+% this ensures all the figures are docked and displayed from a single
+% window
+set(0,'DefaultFigureWindowStyle','docked')
+
+%% set theoretical displacements and other experimental parameters
+
+% these are the theoretical displacements
+% U_ref = 7.76;
+U_ref = 2;
+% U_ref = 5;
+V_ref = 0;
+
+% this is the magnification
+M = 123500./700000;
+
+% this is the pixel pitch (mm)
+pixel_pitch = 17e-3;
+
+
 %% set read  and write paths
 
 % this is the path to the folder where the results are located
-vectors_filepath = ['~/Projects/camera_simulation/results/images/bos/error-analysis/dot-size/processing/' case_name '/results/vectors/'];
+vectors_filepath = ['/home/barracuda/a/lrajendr/Projects/camera_simulation/results/images/bos/error-analysis/dot-size/processing/' case_name '/results/vectors/'];
 
 % this is the path to the folder containing the raw images
-img_filepath = ['~/Projects/camera_simulation/results/images/bos/error-analysis/dot-size/processing/' case_name '/reordered-images/'];
+img_filepath = ['/home/barracuda/a/lrajendr/Projects/camera_simulation/results/images/bos/error-analysis/dot-size/processing/' case_name '/reordered-images/'];
 
 % this is the folder where the particle identification results will be
 % stored
-particle_id_filepath = ['~/Projects/camera_simulation/results/images/bos/error-analysis/dot-size/processing/' case_name '/results/particle-id/'];
+particle_id_filepath = ['/home/barracuda/a/lrajendr/Projects/camera_simulation/results/images/bos/error-analysis/dot-size/processing/' case_name '/results/particle-id/'];
 
 % this is the folder where the particle sizing results will be
 % stored
-particle_size_filepath = ['~/Projects/camera_simulation/results/images/bos/error-analysis/dot-size/processing/' case_name '/results/particle-size/'];
+particle_size_filepath = ['/home/barracuda/a/lrajendr/Projects/camera_simulation/results/images/bos/error-analysis/dot-size/processing/' case_name '/results/particle-size/'];
 
 % this is the folder where the figures will be saved
-figure_save_filepath = ['~/Projects/camera_simulation/results/images/bos/error-analysis/dot-size/processing/' case_name '/plots/'];
+figure_save_filepath = ['/home/barracuda/a/lrajendr/Projects/camera_simulation/results/images/bos/error-analysis/dot-size/processing/' case_name '/plots/'];
 
 % this is the folder where the workspace variables will be saved
-workspace_filepath = ['~/Projects/camera_simulation/results/images/bos/error-analysis/dot-size/processing/' case_name '/results/'];
+workspace_filepath = ['/home/barracuda/a/lrajendr/Projects/camera_simulation/results/images/bos/error-analysis/dot-size/processing/' case_name '/results/'];
+
+% this is the folder containing the raw images with the folder name
+% denoting the dot size
+dot_diameter_img_filepath = ['/home/barracuda/a/lrajendr/Projects/camera_simulation/results/images/bos/error-analysis/dot-size/' case_name '/'];
 
 % this creates the write directories if they are not already present
 if ~exist(particle_id_filepath,'dir')
@@ -58,22 +82,6 @@ if ~exist(figure_save_filepath,'dir')
     mkdir(figure_save_filepath);
 end
 
-%% set theoretical displacements and other experimental parameters
-
-% these are the theoretical displacements
-U_ref = 4.87;
-V_ref = 0;
-
-% these are the physical diameters (microns) of the dots for which the images were
-% generated
-% dot_diameters_physical = [10 20 30 40 50 75 100 200 300 400 500 600 700 800 900 1000];
-dot_diameters_physical = [10 20 30 40 50 100 150 200 250 300 350 400 450];
-
-% this is the magnification
-M = 123500./700000;
-
-% this is the pixel pitch (mm)
-pixel_pitch = 17e-3;
 
 %% load displacement data and compute errors
 
@@ -108,274 +116,356 @@ for i = 1:length(filenames)
     [err_V_bias(i), err_V_random(i), err_V_rms(i)] = compute_errors(data.V(:), V_ref);
 end
 
+%%
+
+% for each f-number, populate the list of dot sizes for which images
+% were generated
+folder_list = dir([dot_diameter_img_filepath]);
+
+% ignore entries like .DS_store that are not really folders
+folder_list = folder_list([folder_list.isdir]);
+
+% also remove entries like . or ..
+folder_list = folder_list(~strncmpi('.',{folder_list.name},1));
+    
+fprintf('%d folders found\n', length(folder_list));
+
+% initialize an array to store all the physical dot sizes for which
+% images were generated
+dot_diameters_physical_microns = zeros(length(folder_list),1);
+
+% initialize array to store all the image dot sizes
+% dot_diameters_image_pixels = zeros(length(folder_list), 1);
+
+% loop through all the files to retrieve the images and note the dot
+% size
+for j = 1:length(folder_list)
+    fprintf('processing %d out of %d dot sizes\n', j, length(folder_list));
+
+    % get dot size from folder name in microns
+    dot_diameters_physical_microns(j) = str2double(folder_list(j).name);
+end
+
+% sort the array to ensure that it contains elements in the increasing
+% order of diameter. this is because the results of the piv analysis are
+% stored this way.
+dot_diameters_physical_microns = sort(dot_diameters_physical_microns);
+% convert dot size to pixels
+dot_diameters_image_pixels = dot_diameters_physical_microns * 1e-3 * M / pixel_pitch;    
+
 %% calculate the dot diameter in the image
 
-% these are the names of the file to be read
-files = dir([img_filepath '*.tif']);
-
-% this is the number of files
-N = length(files);
-fprintf('number of files in the directory: %d\n', N);
-
-% these are the paths containing the m-files used for particle
-% identification and sizing
-addpath('/home/barracuda/a/lrajendr/Software/prana/');
-addpath('/home/barracuda/a/lrajendr/Projects/camera_simulation/src/post-processing-codes/from-sayantan/');
-
-% this is the skip value 
-% 0 if all files are analyzed, 1 if alternate files are analyzed
-skip = 1;
-
-% this is the number of images that will be analyzed
-num_analysis = length(1:1+skip:N);
-fprintf('number of files to be analyzed: %d\n', num_analysis);
-
-% these are the methods that will be analyzed
-% size_methods={'GEO','IWC','TPG','FPG','CFPG','LSG','CLSG'};
-size_methods={'IWC','TPG','CLSG'};
-
-
-% this intializes the arrays that store the errors
-% first column - empty, 2nd column - imfindcircles, 3rd - prana
-dot_diameters_image = zeros(num_analysis,1);
-dot_diameters_circles = zeros(num_analysis, 1);
-
-% initialize the counter for the arrays
-image_ctr = 0;
-
-for i = 1:1+skip:N
-    % display progress
-%     display_calculation_progress(image_ctr, 1:num_analysis);
-    % this loads the image
-    img = imread([img_filepath files(i).name]);
-
-    % consider only the center parg of the image where teh particles are in
-    % focus
-    image_margin = [200 800];
-    img = img(image_margin(1):image_margin(2), image_margin(1):image_margin(2));
-
-    % this updates the number of images read
-    image_ctr = image_ctr + 1;
-    waitbar(image_ctr/num_analysis);
-    
-    fprintf('image %d of %d\n', image_ctr, num_analysis);
-    
-    %% calculate diameter from prana
-
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % identify the particles
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-    % define settings for particle identification
-    IDmethod = {'blob','dynamic','combined'};
-    Data.ID.method         = IDmethod{2};
-    Data.ID.run            = 1;
-    Data.ID.v              = 10;
-    Data.ID.contrast_ratio = 0;
-
-    particleIDprops       = Data.ID;
-
-    % call function to id the particles
-    [ID1.p_matrix,ID1.peaks,ID1.num_p]=particle_ID(img,particleIDprops);
-    
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % size the particles
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-    % define settings for particle sizing
-    Data.Size.run      = 1;
-    Data.Size.thresh   = 10;
-    Data.Size.method   = 'CLSG';
-    Data.Size.p_area   = 0;
-    Data.Size.sigma    = 4;
-    Data.Size.errors   = 1;%str2double(Data.Size.errors);
-
-    sizeprops       = Data.Size;
-    % call function to size the particles
-    [SIZE1.XYDiameter,SIZE1.mapsizeinfo,SIZE1.locxy]=particle_sizing(img,ID1.p_matrix,...
-                        ID1.num_p,sizeprops);
-
-    % extract co-ordinate, size and intensity properties from the results             
-    X1=SIZE1.XYDiameter(:,1);
-    Y1=SIZE1.XYDiameter(:,2);                
-    Dp1=SIZE1.XYDiameter(:,3);
-    Ip1=SIZE1.XYDiameter(:,4);                 
-
-    % remove NaN values
-    Dp1 = Dp1(~isnan(Dp1));
-
-    % calculate the average dot diameter (pixels)
-    dot_diameters_image(image_ctr) = nanmean(Dp1);
-    
-    %% calculate diameter from imfindcircles
-
-    % detect dots and measure their radii (pixels)
-    [centers, radii] = imfindcircles(img, [1 10], 'Sensitivity', 0.95);
-
-    % calculate the representative dot radius (pixels)
-    radius = nanmean(radii);
-
-    % calculate the representative dot diameter (pixels)
-    diameter = 2 * radius;
-
-    % calculate the diameter of the dots (pixels)
-    dot_diameters_circles(image_ctr) = diameter;
-end
-% % calculate diameter from prana
+% % these are the names of the file to be read
+% files = dir([img_filepath '*.tif']);
 % 
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% % identify the particles
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % this is the number of files
+% N = length(files);
+% fprintf('number of files in the directory: %d\n', N);
 % 
-% % define settings for particle identification
-% IDmethod = {'blob','dynamic','combined'};
-% Data.ID.method         = IDmethod{2};
-% Data.ID.run            = 1;
-% Data.ID.v              = 10;
-% Data.ID.contrast_ratio = 0;
+% % these are the paths containing the m-files used for particle
+% % identification and sizing
+% addpath('/home/barracuda/a/lrajendr/Software/prana/');
+% addpath('/home/barracuda/a/lrajendr/Projects/camera_simulation/src/post-processing-codes/from-sayantan/');
 % 
-% particleIDprops       = Data.ID;
+% % this is the skip value 
+% % 0 if all files are analyzed, 1 if alternate files are analyzed
+% skip = 1;
 % 
-% % call function to id the particles
-% [ID1.p_matrix,ID1.peaks,ID1.num_p]=particle_ID(img,particleIDprops);
+% % this is the number of images that will be analyzed
+% num_analysis = length(1:1+skip:N);
+% fprintf('number of files to be analyzed: %d\n', num_analysis);
 % 
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% % size the particles
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % these are the methods that will be analyzed
+% % size_methods={'GEO','IWC','TPG','FPG','CFPG','LSG','CLSG'};
+% size_methods={'IWC','TPG','CLSG'};
 % 
-% % define settings for particle sizing
-% Data.Size.run      = 1;
-% Data.Size.thresh   = 10;
-% Data.Size.method   = 'CLSG';
-% Data.Size.p_area   = 0;
-% Data.Size.sigma    = 4;
-% Data.Size.errors   = 1;%str2double(Data.Size.errors);
 % 
-% sizeprops       = Data.Size;
+% % this intializes the arrays that store the errors
+% % first column - empty, 2nd column - imfindcircles, 3rd - prana
+% dot_diameters_image = zeros(num_analysis,1);
+% dot_diameters_circles = zeros(num_analysis, 1);
 % 
-% % call function to size the particles
-% [SIZE1.XYDiameter,SIZE1.mapsizeinfo,SIZE1.locxy]=particle_sizing(img,ID1.p_matrix,...
-%                     ID1.num_p,sizeprops);
+% % initialize the counter for the arrays
+% image_ctr = 0;
 % 
-% % extract co-ordinate, size and intensity properties from the results             
-% X1=SIZE1.XYDiameter(:,1);
-% Y1=SIZE1.XYDiameter(:,2);                
-% Dp1=SIZE1.XYDiameter(:,3);
-% Ip1=SIZE1.XYDiameter(:,4);                 
+% for i = 1:1+skip:N
+%     % display progress
+% %     display_calculation_progress(image_ctr, 1:num_analysis);
+%     % this loads the image
+%     img = imread([img_filepath files(i).name]);
 % 
-% % remove NaN values
-% Dp1 = Dp1(~isnan(Dp1));
+%     % consider only the center parg of the image where teh particles are in
+%     % focus
+%     image_margin = [200 800];
+%     img = img(image_margin(1):image_margin(2), image_margin(1):image_margin(2));
 % 
-% % calculate the average dot diameter (pixels)
-% dot_diameters_image(j) = nanmean(Dp1);
-% if strcmp(dot_sizing_method, 'theory')
-%     % calculate dot diameter in the image (pixels) from theory
-%     dot_diameters_image = dot_diameters_physical*1e-3 * M / pixel_pitch;
-% else
-%     dot_diameters_image = measure_dot_diameter_from_image(dot_sizing_method, img_filepath, 'alternate', particle_id_filepath, particle_size_filepath);
+%     % this updates the number of images read
+%     image_ctr = image_ctr + 1;
+%     waitbar(image_ctr/num_analysis);
+%     
+%     fprintf('image %d of %d\n', image_ctr, num_analysis);
+%     
+%     %% calculate diameter from prana
+% 
+%     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     % identify the particles
+%     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+%     % define settings for particle identification
+%     IDmethod = {'blob','dynamic','combined'};
+%     Data.ID.method         = IDmethod{1};
+%     Data.ID.run            = 1;
+%     Data.ID.v              = 10;
+%     Data.ID.contrast_ratio = 0;
+% 
+%     particleIDprops       = Data.ID;
+% 
+%     % call function to id the particles
+%     [ID1.p_matrix,ID1.peaks,ID1.num_p]=particle_ID(img,particleIDprops);
+%     
+%     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     % size the particles
+%     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+%     % define settings for particle sizing
+%     Data.Size.run      = 1;
+%     Data.Size.thresh   = 10;
+%     Data.Size.method   = 'TPG';
+%     Data.Size.p_area   = 0;
+%     Data.Size.sigma    = 4;
+%     Data.Size.errors   = 1;%str2double(Data.Size.errors);
+% 
+%     sizeprops       = Data.Size;
+%     % call function to size the particles
+%     [SIZE1.XYDiameter,SIZE1.mapsizeinfo,SIZE1.locxy]=particle_sizing(img,ID1.p_matrix,...
+%                         ID1.num_p,sizeprops);
+% 
+%     % extract co-ordinate, size and intensity properties from the results             
+%     X1=SIZE1.XYDiameter(:,1);
+%     Y1=SIZE1.XYDiameter(:,2);                
+%     Dp1=SIZE1.XYDiameter(:,3);
+%     Ip1=SIZE1.XYDiameter(:,4);                 
+% 
+%     % remove NaN values
+%     Dp1 = Dp1(~isnan(Dp1));
+% 
+%     % calculate the average dot diameter (pixels)
+%     dot_diameters_image(image_ctr) = nanmean(Dp1);
+%     
+% %     %% calculate diameter from imfindcircles
+% % 
+% %     % detect dots and measure their radii (pixels)
+% %     [centers, radii] = imfindcircles(img, [1 10], 'Sensitivity', 0.95);
+% % 
+% %     % calculate the representative dot radius (pixels)
+% %     radius = nanmean(radii);
+% % 
+% %     % calculate the representative dot diameter (pixels)
+% %     diameter = 2 * radius;
+% % 
+% %     % calculate the diameter of the dots (pixels)
+% %     dot_diameters_circles(image_ctr) = diameter;
 % end
-
-
-% save worskpace to file
-save([workspace_filepath 'workspace.mat']);
+% % % % calculate diameter from prana
+% % % 
+% % % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % % % identify the particles
+% % % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % % 
+% % % % define settings for particle identification
+% % % IDmethod = {'blob','dynamic','combined'};
+% % % Data.ID.method         = IDmethod{2};
+% % % Data.ID.run            = 1;
+% % % Data.ID.v              = 10;
+% % % Data.ID.contrast_ratio = 0;
+% % % 
+% % % particleIDprops       = Data.ID;
+% % % 
+% % % % call function to id the particles
+% % % [ID1.p_matrix,ID1.peaks,ID1.num_p]=particle_ID(img,particleIDprops);
+% % % 
+% % % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % % % size the particles
+% % % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % % 
+% % % % define settings for particle sizing
+% % % Data.Size.run      = 1;
+% % % Data.Size.thresh   = 10;
+% % % Data.Size.method   = 'CLSG';
+% % % Data.Size.p_area   = 0;
+% % % Data.Size.sigma    = 4;
+% % % Data.Size.errors   = 1;%str2double(Data.Size.errors);
+% % % 
+% % % sizeprops       = Data.Size;
+% % % 
+% % % % call function to size the particles
+% % % [SIZE1.XYDiameter,SIZE1.mapsizeinfo,SIZE1.locxy]=particle_sizing(img,ID1.p_matrix,...
+% % %                     ID1.num_p,sizeprops);
+% % % 
+% % % % extract co-ordinate, size and intensity properties from the results             
+% % % X1=SIZE1.XYDiameter(:,1);
+% % % Y1=SIZE1.XYDiameter(:,2);                
+% % % Dp1=SIZE1.XYDiameter(:,3);
+% % % Ip1=SIZE1.XYDiameter(:,4);                 
+% % % 
+% % % % remove NaN values
+% % % Dp1 = Dp1(~isnan(Dp1));
+% % % 
+% % % % calculate the average dot diameter (pixels)
+% % % dot_diameters_image(j) = nanmean(Dp1);
+% % % if strcmp(dot_sizing_method, 'theory')
+% % %     % calculate dot diameter in the image (pixels) from theory
+% % %     dot_diameters_image = dot_diameters_physical*1e-3 * M / pixel_pitch;
+% % % else
+% % %     dot_diameters_image = measure_dot_diameter_from_image(dot_sizing_method, img_filepath, 'alternate', particle_id_filepath, particle_size_filepath);
+% % % end
+% 
+% % load diameters from file
+% % previous_workspace = load([workspace_filepath 'workspace.mat']);
+% % dot_diameters_image = previous_workspace.dot_diameters_image;
+% % dot_diameters_physical = previous_workspace.dot_diameters_physical;
+% 
+% % % save worskpace to file
+% % save([workspace_filepath 'workspace.mat']);
 
 %% plot results
 
-% plot the errors against the physical dot diameter
+% % plot the errors against the physical dot diameter
+% figure_ctr = figure_ctr+1;
+% figure(figure_ctr);
+% set(gcf, 'Position', [200 200 900 500])
+% hold on
+% 
+% % bias error
+% subplot(1,3,1)
+% hold on
+% plot(dot_diameters_image, err_U_bias, 'r*-');
+% plot(dot_diameters_image, err_V_bias, 'b*-');
+% xlim([0 max(dot_diameters_image)*1.2])
+% xlabel('dot diameter (pixels)');
+% ylabel('error (pixels)');
+% title('bias error');
+% legend('\Delta x', '\Delta y');
+% grid on
+% 
+% % random errorP
+% subplot(1,3,2)
+% hold on
+% plot(dot_diameters_image, err_U_random, 'r*-');
+% plot(dot_diameters_image, err_V_random, 'b*-');
+% xlim([0 max(dot_diameters_image)*1.2])
+% xlabel('dot diameter (pixels)');
+% ylabel('error (pixels)');
+% title('random error');
+% legend('\Delta x', '\Delta y');
+% grid on
+% 
+% % rms error
+% subplot(1,3,3)
+% hold on
+% plot(dot_diameters_image, err_U_rms, 'r*-');
+% plot(dot_diameters_image, err_V_rms, 'b*-');
+% xlim([0 max(dot_diameters_image)*1.2])
+% xlabel('dot diameter (pixels)');
+% ylabel('error (pixels)');
+% title('total error');
+% legend('\Delta x', '\Delta y', 'location', 'Northwest');
+% grid on
+% 
+% % save results to file
+% savefig(gcf, [figure_save_filepath 'errors-displacement-image-diameter.fig']);
+% print(gcf, [figure_save_filepath 'errors-displacement-image-diameter.eps'], '-depsc');
+% print(gcf, [figure_save_filepath 'errors-displacement-image-diameter.png'], '-dpng');
+
 figure_ctr = figure_ctr+1;
 figure(figure_ctr);
 set(gcf, 'Position', [200 200 900 500])
-hold on
 
 % bias error
 subplot(1,3,1)
 hold on
-plot(dot_diameters_image, err_U_bias, 'r*-');
-plot(dot_diameters_image, err_V_bias, 'b*-');
-xlim([0 max(dot_diameters_image)*1.2])
+plot(dot_diameters_image_pixels, err_U_bias, 'r*-');
+plot(dot_diameters_image_pixels, err_V_bias, 'b*-');
+grid on
+xlim([0 max(dot_diameters_image_pixels)*1.2])
 xlabel('dot diameter (pixels)');
 ylabel('error (pixels)');
-title('bias error');
-legend('\Delta x', '\Delta y');
-grid on
+legend('\Delta x', '\Delta y', 'location', 'Northwest');
+title('bias error')
 
 % random error
 subplot(1,3,2)
 hold on
-plot(dot_diameters_image, err_U_random, 'r*-');
-plot(dot_diameters_image, err_V_random, 'b*-');
-xlim([0 max(dot_diameters_image)*1.2])
+plot(dot_diameters_image_pixels, err_U_random, 'ro-');
+plot(dot_diameters_image_pixels, err_V_random, 'bo-');
+grid on
+xlim([0 max(dot_diameters_image_pixels)*1.2])
 xlabel('dot diameter (pixels)');
 ylabel('error (pixels)');
-title('random error');
-legend('\Delta x', '\Delta y');
-grid on
+legend('\Delta x', '\Delta y', 'location', 'Northwest');
+title('random error')
 
-% rms error
+% total error
 subplot(1,3,3)
 hold on
-plot(dot_diameters_image, err_U_rms, 'r*-');
-plot(dot_diameters_image, err_V_rms, 'b*-');
-xlim([0 max(dot_diameters_image)*1.2])
+plot(dot_diameters_image_pixels, err_U_rms, 'rs-');
+plot(dot_diameters_image_pixels, err_V_rms, 'bs-');
+grid on
+xlim([0 max(dot_diameters_image_pixels)*1.2])
 xlabel('dot diameter (pixels)');
 ylabel('error (pixels)');
-title('total error');
 legend('\Delta x', '\Delta y', 'location', 'Northwest');
-grid on
+title('total error')
 
 % save results to file
-savefig(gcf, [figure_save_filepath 'errors-displacement-image-diameter.fig']);
-print(gcf, [figure_save_filepath 'errors-displacement-image-diameter.eps'], '-depsc');
-print(gcf, [figure_save_filepath 'errors-displacement-image-diameter.png'], '-dpng');
+savefig(gcf, [figure_save_filepath 'errors-displacement-physical-diameter.fig']);
+print(gcf, [figure_save_filepath 'errors-displacement-physical-diameter.eps'], '-depsc');
+print(gcf, [figure_save_filepath 'errors-displacement-physical-diameter.png'], '-dpng');
 
-% figure
+% PLOT RANDOM ERROR SEPARATELY
+
+figure_ctr = figure_ctr+1;
+figure(figure_ctr);
+hold on
+plot(dot_diameters_image_pixels, err_U_random, 'ro-');
+plot(dot_diameters_image_pixels, err_V_random, 'bo-');
+grid on
+xlabel('dot diameter (pixels)');
+ylabel('error (pixels)');
+legend('\Delta x', '\Delta y', 'location', 'Northwest');
+title('random error')
+legend('\Delta x', '\Delta y', 'location', 'Northwest');
+
+% save results to file
+plot_filename = 'random_error';
+savefig([figure_save_filepath plot_filename '.fig'])
+print([figure_save_filepath plot_filename '.png'], '-dpng');
+print([figure_save_filepath plot_filename '.eps'], '-deps');
+
+
+% figure_ctr = figure_ctr+1;
+% figure(figure_ctr);
+% set(gcf, 'Position', [200 200 700 500])
+% hold on
+% 
 % % bias error
-% plot(dot_diameters_physical, err_U_bias, 'r*-');
-% plot(dot_diameters_physical, err_V_bias, 'b*-');
+% plot(dot_diameters_image, err_U_bias, 'r*-');
+% plot(dot_diameters_image, err_V_bias, 'b*-');
 % 
 % % random error
-% plot(dot_diameters_physical, err_U_random, 'ro-');
-% plot(dot_diameters_physical, err_V_random, 'bo-');
+% plot(dot_diameters_image, err_U_random, 'ro-');
+% plot(dot_diameters_image, err_V_random, 'bo-');
 % 
 % % total error
-% plot(dot_diameters_physical, err_U_rms, 'rs-');
-% plot(dot_diameters_physical, err_V_rms, 'bs-');
+% plot(dot_diameters_image, err_U_rms, 'rs-');
+% plot(dot_diameters_image, err_V_rms, 'bs-');
 % 
 % grid on
 % 
 % legend('bias-U', 'bias-V', 'random-U', 'random-V', 'total-U', 'total-V'); 
-% xlabel('physical diameter (microns)');
+% xlabel('image diameter (pixels)');
 % ylabel('error (pixels)');
 % title('effect of dot diameter on error')
-
-% % save results to file
-% savefig(gcf, [figure_save_filepath 'errors-displacement-physical-diameter.fig']);
-% print(gcf, [figure_save_filepath 'errors-displacement-physical-diameter.eps'], '-depsc');
-% print(gcf, [figure_save_filepath 'errors-displacement-physical-diameter.png'], '-dpng');
-
-figure_ctr = figure_ctr+1;
-figure(figure_ctr);
-set(gcf, 'Position', [200 200 700 500])
-hold on
-
-% bias error
-plot(dot_diameters_image, err_U_bias, 'r*-');
-plot(dot_diameters_image, err_V_bias, 'b*-');
-
-% random error
-plot(dot_diameters_image, err_U_random, 'ro-');
-plot(dot_diameters_image, err_V_random, 'bo-');
-
-% total error
-plot(dot_diameters_image, err_U_rms, 'rs-');
-plot(dot_diameters_image, err_V_rms, 'bs-');
-
-grid on
-
-legend('bias-U', 'bias-V', 'random-U', 'random-V', 'total-U', 'total-V'); 
-xlabel('image diameter (pixels)');
-ylabel('error (pixels)');
-title('effect of dot diameter on error')
 
 % % plot the errors against the image dot diameter
 % figure_ctr = figure_ctr+1;
@@ -420,4 +510,11 @@ title('effect of dot diameter on error')
 % savefig(gcf, [figure_save_filepath 'errors-displacement-image-diameter.fig']);
 % print(gcf, [figure_save_filepath 'errors-displacement-image-diameter.eps'], '-depsc');
 % print(gcf, [figure_save_filepath 'errors-displacement-image-diameter.png'], '-dpng');
-    
+
+%% save worskpace to file
+
+% this is the name of the current script
+script_name_full = mfilename('fullpath');
+[pathstr, script_name, ext] = fileparts(script_name_full);
+save([workspace_filepath script_name '.mat']);
+

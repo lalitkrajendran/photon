@@ -6,10 +6,9 @@ from run_piv_simulation_02 import run_piv_simulation_02
 import os
 import pickle
 import time
-
+from sys import argv
 
 os.environ['LD_LIBRARY_PATH'] = '~/usr/lib/python2.7'
-
 
 # The following functions convert an object to a struct so that it can be saved to a mat file
 def loadmat(filename):
@@ -47,6 +46,13 @@ def _todict(matobj):
             dict[strg] = elem
     return dict
 
+# get the startin index, and the number of parameter files to read from the user
+script, starting_index, number_of_parameter_files = argv
+
+# convert string variables to integers
+starting_index = int(starting_index)
+number_of_parameter_files = int(number_of_parameter_files)
+
 # specify directory where parameters are stored
 bos_simulation_parameters_read_directory = '../data/bos_parameters/dot-size/'
 
@@ -57,8 +63,8 @@ print "Number of cases: %d" % len(bos_parameter_list)
 start = time.time()
 
 # This iterates through the different cases performing the image simulation
-for i in range(1, len(bos_parameter_list) + 1):
-
+# for i in range(1, len(bos_parameter_list) + 1):
+for i in range(starting_index,starting_index+number_of_parameter_files):
     parameter_index = i
 
     # This displays that the current camera simulation is being ran
@@ -93,9 +99,9 @@ for i in range(1, len(bos_parameter_list) + 1):
 
     bos_pattern_image_top_directory = piv_simulation_parameters['output_data']['bos_pattern_image_directory']
 
-    # This creates the top level calibration image directory
+    # This creates the top level bos pattern image directory
     if not (os.path.exists(bos_pattern_image_top_directory)):
-        # This creates the calibration image directory
+        # This creates the bos pattern image directory
         os.makedirs(bos_pattern_image_top_directory)
 
     # convert int variables to float

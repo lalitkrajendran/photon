@@ -13,21 +13,25 @@ clc
 
 figure_ctr = 0;
 
+case_name = '150x150-f16-disp5';
+
 %% set read and write paths
 
 % this is the path to the folder containing the raw images
-img_filepath = '~/Projects/camera_simulation/results/images/bos/error-analysis/dot-size/processing/50x50/reordered-images/';
+img_filepath = ['~/Projects/camera_simulation/results/images/bos/error-analysis/dot-size/processing/' case_name '/cropped-images/'];
 
 % this is the folder where the particle identification results will be
 % stored
-particle_id_filepath = '/home/barracuda/a/lrajendr/Projects/camera_simulation/results/images/bos/error-analysis/dot-size/processing/50x50/results/particle-id/';
+particle_id_filepath = ['/home/barracuda/a/lrajendr/Projects/camera_simulation/results/images/bos/error-analysis/dot-size/processing/' case_name '/results/particle-id/'];
 
-% this is the folder where the particle sizing results will be
-% stored
-particle_size_filepath = '/home/barracuda/a/lrajendr/Projects/camera_simulation/results/images/bos/error-analysis/dot-size/processing/50x50/results/particle-size/';
+% this is the folder where the particle sizing results will be stored
+particle_size_filepath = ['/home/barracuda/a/lrajendr/Projects/camera_simulation/results/images/bos/error-analysis/dot-size/processing/' case_name '/results/particle-size/'];
 
 % this is the folder where the figures will be saved
-figure_save_filepath = '~/Projects/camera_simulation/results/images/bos/error-analysis/dot-size/processing/50x50/plots/';
+figure_save_filepath = ['~/Projects/camera_simulation/results/images/bos/error-analysis/dot-size/processing/' case_name '/plots/'];
+
+% this is the folder where the workspace variables will be saved
+workspace_filepath = ['~/Projects/camera_simulation/results/images/bos/error-analysis/dot-size/processing/' case_name '/results/'];
 
 %% load images
 
@@ -42,7 +46,9 @@ fprintf('number of files in the directory: %d\n', N);
 
 % these are the physical diameters (mm) of the dots for which the images were
 % generated
-dot_diameters_physical = [50 75 100 200 300 400 500 600 700 800 900 1000];
+% dot_diameters_physical = [50 75 100 200 300 400 500 600 700 800 900 1000];
+% dot_diameters_physical = [10 20 30 40 50 60 70 80 90 100 150 200 250 300 350 400 450 500 550 600 650 700 750 800 850 900];
+dot_diameters_physical = [10 20 30 40 50 100 150 200 250 300 350 400 450 500 550 600 650 700 750 800 850 900 950];
 
 % this is the magnification
 M = 123500./700000;
@@ -143,7 +149,8 @@ for i = 1:1+skip:N
     SIZEmethod={'GEO','IWC','TPG','FPG','CFPG','LSG','CLSG'};
     Data.Size.run      = 1;
     Data.Size.thresh   = 10;
-    Data.Size.method   = 'CLSG';
+%     Data.Size.method   = 'CLSG';
+    Data.Size.method = 'IWC';
     Data.Size.p_area   = 0;
     Data.Size.sigma    = 4;
     Data.Size.errors   = 1;%str2double(Data.Size.errors);
@@ -250,3 +257,11 @@ legend('imfindcircles', 'prana');
 savefig(gcf, [figure_save_filepath 'errors-diameter.fig']);
 print(gcf, [figure_save_filepath 'errors-diameter.eps'], '-depsc');
 print(gcf, [figure_save_filepath 'errors-diameter.png'], '-dpng');
+
+%% save worskpace to file
+
+% this is the name of the current script
+script_name_full = mfilename('fullpath');
+[pathstr, script_name, ext] = fileparts(script_name_full);
+save([workspace_filepath script_name '.mat']);
+

@@ -8,8 +8,12 @@ function [bias_error, random_error, rms_error] = compute_errors(x, x_ref)
 % INPUTS: x - actual data, 
 %         x_ref - ground truth
 
+    % convert 2d arrays to 1d arrays
+%     x = x(:);
+%     x_ref = x_ref(:);
+
     % bias error
-    bias_error = nanmean(x) - x_ref;    
+    bias_error = nanmean(x - x_ref);    
 
     % random error
     random_error = std(x);

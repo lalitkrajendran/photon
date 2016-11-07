@@ -3,10 +3,14 @@
 
 
 # this is the case name
-case_name=150x150-f16-disp2
+case_name=150x150-f16-disp5
+#case_name=$1
 
+# this is the base name for the images
+image_base_name=dotsize_
 # this is the destination where the images will be copied to
 destination=/home/barracuda/a/lrajendr/Projects/camera_simulation/results/images/bos/error-analysis/dot-size/processing/$case_name/reordered-images
+#destination=/home/barracuda/a/lrajendr/Projects/camera_simulation/results/images/bos/error-analysis/focusing/reordered-images
 
 # if the destination directory does not exist, create one; it it does, then delete it
 rm -r $destination
@@ -14,6 +18,7 @@ mkdir $destination
 
 # this is the source filepath
 filepath=/home/barracuda/a/lrajendr/Projects/camera_simulation/results/images/bos/error-analysis/dot-size/$case_name
+#filepath=/home/barracuda/a/lrajendr/Projects/camera_simulation/results/images/bos/error-analysis/focusing/$case_name
 
 # find the number of folders in this path
 num_folders=$(find $filepath/* -maxdepth 0 -type d | wc -l)
@@ -39,7 +44,7 @@ do
 
     # set the new filename under which the image will be saved
     # this is the first part of the name
-    new_filename_1="dotsize_"
+    new_filename_1=$image_base_name
     
     echo "new_filename_1", $new_filename_1
     
