@@ -2,10 +2,22 @@
 from skimage import io,color
 import numpy as np
 import matplotlib.pyplot as plt
+import sys
+
+sys.path.append('/home/barracuda/a/lrajendr/Projects/camera_simulation/src/')
+
+import tifffile as TIFF
 
 # load images
-img1 = io.imread('bos_ref.png')
-img2 = io.imread('bos_test.png')
+# img1 = TIFF.imread('/home/barracuda/a/lrajendr/Projects/camera_simulation/results/images/bos/error-analysis/dns/0/2/bos_pattern_image_1.tif')
+# img2 = TIFF.imread('/home/barracuda/a/lrajendr/Projects/camera_simulation/results/images/bos/error-analysis/dns/0/2/bos_pattern_image_2.tif')
+
+# filepath containing images
+img_filepath = '/home/barracuda/a/lrajendr/Projects/camera_simulation/results/images/bos/error-analysis/dof/f16/'
+
+# load images
+img1 = TIFF.imread(img_filepath + 'bos_pattern_image_1.tif')
+img2 = TIFF.imread(img_filepath + 'bos_pattern_image_2.tif')
 
 # convert rgb images to grayscale
 img1 = color.rgb2gray(img1)
@@ -22,7 +34,8 @@ t[:,:,1] = img2
 
 # display image
 #plt.imshow(t)
-plt.imsave('bos_comparison.png',t)
-#plt.show()
+plt.imshow(t)
+# plt.imsave('bos_comparison.png',t)
+plt.show()
 
 

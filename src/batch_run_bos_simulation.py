@@ -54,7 +54,7 @@ starting_index = int(starting_index)
 number_of_parameter_files = int(number_of_parameter_files)
 
 # specify directory where parameters are stored
-bos_simulation_parameters_read_directory = '../data/bos_parameters/dot-size/'
+bos_simulation_parameters_read_directory = '../data/bos_parameters/dof/'
 
 # This is the list of camera parameters to run the simulation over
 bos_parameter_list = sorted(glob.glob(bos_simulation_parameters_read_directory + '*.mat'))

@@ -1177,9 +1177,8 @@ def generate_bos_lightfield_data(piv_simulation_parameters,optical_system):
     if('perturbation' in piv_simulation_parameters['lens_design'].keys()):
         image_distance += (1 + piv_simulation_parameters['lens_design']['perturbation']) * image_distance
 
-
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    # % Generates the bos pattern data                                     %
+    # % Generates the bos pattern data
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     current_z_world_coordinate = 0.0
@@ -1303,8 +1302,14 @@ def generate_bos_lightfield_data(piv_simulation_parameters,optical_system):
 
     # % % This rotates the particles by the specified angles
     # % [x_source,y_source,z_source]=rotate_coordinates(x_source,y_source,z_source,theta_x,theta_y,theta_z,0,0,0);
+
+
     # % This translates the Z coordinates of the paricles to the focal plane
     z = z + z_object
+
+    # this moves the object evn farther away to make it out of focus
+    if ('object_distance_buffer' in piv_simulation_parameters['lens_design'].keys()):
+        z += piv_simulation_parameters['lens_design']['object_distance_buffer']
 
     # % This adds in the particles to the lightfield source data
     lightfield_source = {'x': x, 'y': y, 'z': z, 'radiance': radiance, 'diameter_index': np.ones(x.shape)}

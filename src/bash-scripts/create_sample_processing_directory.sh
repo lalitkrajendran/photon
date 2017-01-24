@@ -4,7 +4,7 @@
 top_write_directory=/home/barracuda/a/lrajendr/Projects/camera_simulation/results/images/bos/error-analysis/dot-size/processing
 
 # set case name
-#case_name=150x150-f16-disp8
+#case_name=50x50-f16-grad_x3.0
 case_name=$1
 
 # create new directory with case name

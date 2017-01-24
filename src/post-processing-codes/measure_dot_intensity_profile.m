@@ -3,11 +3,14 @@
 % a dot pattern used for BOS experiments. Both the dot identification and
 % the CLSG based sizing operations are performed by calling functions that 
 % are a part of prana. After the sizing operation, the gaussian function
-% used in the CLSG fit is reconstructed and the error between the intensity
+% used in the CLSG fit is reconstructed and the intensity
 % distribution given by this function and the actual intensity of the dot
 % are compared to evaluate the error. The bias error obtained by averaging
 % the individual errors for each pixel in a dot is divided by the average
 % intensity of the dot to report a relative bias error. 
+
+% Dependencies:
+% save_figure_to_file.m - this function saves a figure to file
 
 % Author: Lalit Rajendran (lrajendr@purdue.edu)
 
@@ -23,9 +26,42 @@ figure_ctr = 0;
 % this is the name for the case
 case_name = '150x150-f16-disp5';
 
+%% set theoretical displacements and other experimental parameters
+
 % these are the phyiscal dot diameters
 % dot_diameters_physical = [10 20 30 40 50 60 70 80 90 100 150 200 250 300 350 400 450 500];
 dot_diameters_physical = [10 20 30 40 50 100 150 200 250 300 350 400 450 500 550 600 650 700 750 800 850 900 950];
+
+% this is the magnification
+M = 123500./700000;
+
+% this is the pixel pitch (mm)
+pixel_pitch = 17e-3;
+
+% this is the aperture f number
+f_number = 16;
+
+% this is teh wavelength used to calculate the diffraction limited diameter
+% (mm)
+wavelength = 500e-6;
+
+%% calculate dot diameter in im age from theory
+
+% this is teh dot daimeter obtained from geometric optics (mm)
+dot_diameters_geometric = dot_diameters_physical * 1e-3 * M;
+
+% this is teh dot diameter obtained from the diffraction limit
+dot_diameters_diffraction = 2.44 * f_number * (M+1) * wavelength;
+
+% this is the dot diameter contribution from the resolution of the sensor
+dot_diameters_sensor = pixel_pitch;
+
+% this is teh total diameter odf the dot on the image plane (mm)
+dot_diameters_image = sqrt(dot_diameters_geometric.^2 + dot_diameters_diffraction.^2 + dot_diameters_sensor.^2);
+
+% this is the dot diameter on the image plane in pixels
+dot_diameters_image_pixels = dot_diameters_image/ pixel_pitch; 
+
 %% set read and write paths
 
 % this is the path to the folder containing the raw images
@@ -97,7 +133,7 @@ image_ctr = 0;
 % this loops through every other image in the folder and performs dot
 % identification and sizing
 for i = 1:1+skip:N
-%     i = 30;
+    i = 30;
     
     % this loads the image
     img = imread([img_filepath files(i).name]);
@@ -186,7 +222,7 @@ for i = 1:1+skip:N
     rms_error_rel = 0.0;
     
     for j = 1:number_of_dots
-%         j = 15;
+        j = 15;
         % select the dot whose intensity profile will be plotted
         dot_index = j;
 
@@ -372,6 +408,7 @@ xlabel('dot diameter (microns)');
 ylabel('% error');
 title('bias error (relative)');
 grid on
+set(gca, 'fontsize', 14)
 
 % unsigned bias error
 subplot(1,2,2)
@@ -381,11 +418,22 @@ xlabel('dot diameter (microns)');
 ylabel('% error');
 title('E[|x-x\hat|] error (relative)');
 grid on
+set(gca, 'fontsize', 14)
 
 % save figure to file
-savefig(gcf, [figure_save_filepath 'rel-error-gaussian-fit.fig']);
-print(gcf, [figure_save_filepath 'rel-error-gaussian-fit.eps'], '-depsc');
-print(gcf, [figure_save_filepath 'rel-error-gaussian-fit.png'], '-dpng');
+save_figure_to_file(gcf, figure_save_filepath, 'rel-error-gaussian-fit');
+
+% plot bias errors versus physical dot diameter
+figure(3)
+plot(dot_diameters_image_pixels(1:15), bias_error_rel_avg(1:15), '*-', 'linewidth', 1.5);
+xlabel('Dot Diameter (pixels)');
+ylabel('% Error');
+title('Relative Bias Error');
+grid on
+set(gca, 'fontsize', 14)
+
+% save figure to file
+save_figure_to_file(gcf, figure_save_filepath, 'bias-error');
 
 %% save worskpace to file
 

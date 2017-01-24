@@ -10,19 +10,24 @@ clc
 
 figure_ctr = 0;
 
+starting_index = 6;
 %% overall settings
 
 % this specifies whethere the figures will be saved or not
 printfig = false;
 
 % this is the case name
-case_name = '150x150-f16-disp2';
+case_name = '50x50-f16-grad_x2.0';
 
 % this is the dot sizing method ('theory', 'imfindcircles', 'prana')
 dot_sizing_method = 'prana';
 
 % this is the base name of the files that contain the results to be analyzed
-results_basename =  'BOS_pass3';
+results_basename =  'BOS_pass2';
+
+% this is the number of .mat results files corresponding to a single dot
+% size
+num_files_per_dotsize = 40;
 
 % this ensures all the figures are docked and displayed from a single
 % window
@@ -42,6 +47,12 @@ M = 123500./700000;
 % this is the pixel pitch (mm)
 pixel_pitch = 17e-3;
 
+% this is the aperture f number
+f_number = 16;
+
+% this is teh wavelength used to calculate the diffraction limited diameter
+% (mm)
+wavelength = 500e-6;
 
 %% set read  and write paths
 
@@ -94,26 +105,51 @@ filenames = dir([vectors_filepath results_basename '*.mat']);
 num_files = length(filenames);
 fprintf('No. of files: %d\n', num_files);
 
+% this is the number of dot sizes for which results are available
+num_dot_sizes = num_files/num_files_per_dotsize;
+fprintf('No. of dot sizes: %d\n', num_dot_sizes);
+
 %% compute errors
 % this is the array containing the bias error
-err_U_bias = zeros(1, num_files);
-err_V_bias = zeros(1, num_files);
+err_U_bias = zeros(1, num_dot_sizes);
+err_V_bias = zeros(1, num_dot_sizes);
 
 % this is the array containing the random error
-err_U_random = zeros(1, num_files);
-err_V_random = zeros(1, num_files);
+err_U_random = zeros(1, num_dot_sizes);
+err_V_random = zeros(1, num_dot_sizes);
 
 % this is the array containing the rms error
-err_U_rms = zeros(1, num_files);
-err_V_rms = zeros(1, num_files);
+err_U_rms = zeros(1, num_dot_sizes);
+err_V_rms = zeros(1, num_dot_sizes);
 
-for i = 1:length(filenames)
-    % load data
-    data = load([vectors_filepath filenames(i).name]);
+% this loops through all the files in the foder
+for i = 1:num_files_per_dotsize:num_files
+    dot_ctr = fix(i/num_files_per_dotsize) + 1; %+ 1*rem(i, num_dot_sizes);
+%     fprintf('i: %d\n, dot_ctr: %d\n', i, dot_ctr);
+    U_all = 0;
+    V_all = 0;
+    % this loops through all the results corresponding to a single dot size
+    for j = 1:num_files_per_dotsize
+        % this is the index of the file to be loaded
+        file_index = i + j-1;
+%         fprintf('file_index: %d\n', file_index);
+        % load data
+        data = load([vectors_filepath filenames(file_index).name]);
+        
+        % account for sign convention used in the code
+        data.U(:) = -data.U(:);
+        
+        U_all = [U_all data.U(:)'];
+        V_all = [V_all data.V(:)'];
+    end
+    
+    % remove the first zero
+    U_all = U_all(2:end);
+    V_all = V_all(2:end);
     
     % calculate errors
-    [err_U_bias(i), err_U_random(i), err_U_rms(i)] = compute_errors(data.U(:), U_ref);
-    [err_V_bias(i), err_V_random(i), err_V_rms(i)] = compute_errors(data.V(:), V_ref);
+    [err_U_bias(dot_ctr), err_U_random(dot_ctr), err_U_rms(dot_ctr)] = compute_errors(U_all, U_ref);
+    [err_V_bias(dot_ctr), err_V_random(dot_ctr), err_V_rms(dot_ctr)] = compute_errors(V_all, V_ref);
 end
 
 %%
@@ -150,8 +186,20 @@ end
 % order of diameter. this is because the results of the piv analysis are
 % stored this way.
 dot_diameters_physical_microns = sort(dot_diameters_physical_microns);
-% convert dot size to pixels
-dot_diameters_image_pixels = dot_diameters_physical_microns * 1e-3 * M / pixel_pitch;    
+% this is teh dot daimeter obtained from geometric optics (mm)
+dot_diameters_geometric = dot_diameters_physical_microns * 1e-3 * M;
+
+% this is teh dot diameter obtained from the diffraction limit
+dot_diameters_diffraction = 2.44 * f_number * (M+1) * wavelength;
+
+% this is the dot diameter contribution from the resolution of the sensor
+dot_diameters_sensor = pixel_pitch;
+
+% this is teh total diameter odf the dot on the image plane (mm)
+dot_diameters_image = sqrt(dot_diameters_geometric.^2 + dot_diameters_diffraction.^2 + dot_diameters_sensor.^2);
+
+% this is the dot diameter on the image plane in pixels
+dot_diameters_image_pixels = dot_diameters_image/ pixel_pitch ;    
 
 %% calculate the dot diameter in the image
 
@@ -379,69 +427,77 @@ dot_diameters_image_pixels = dot_diameters_physical_microns * 1e-3 * M / pixel_p
 
 figure_ctr = figure_ctr+1;
 figure(figure_ctr);
-set(gcf, 'Position', [200 200 900 500])
+% set(gcf, 'Position', [200 200 900 500])
+% set(gca, 'fontsize', 20)
 
 % bias error
 subplot(1,3,1)
 hold on
-plot(dot_diameters_image_pixels, err_U_bias, 'r*-');
-plot(dot_diameters_image_pixels, err_V_bias, 'b*-');
+plot(dot_diameters_image_pixels(starting_index:end), err_U_bias(starting_index:end), 'r*-', 'linewidth', 1.5);
+plot(dot_diameters_image_pixels(starting_index:end), err_V_bias(starting_index:end), 'b*-', 'linewidth', 1.5);
 grid on
 xlim([0 max(dot_diameters_image_pixels)*1.2])
 xlabel('dot diameter (pixels)');
 ylabel('error (pixels)');
 legend('\Delta x', '\Delta y', 'location', 'Northwest');
 title('bias error')
+set(gca, 'fontsize', 14)
 
 % random error
 subplot(1,3,2)
 hold on
-plot(dot_diameters_image_pixels, err_U_random, 'ro-');
-plot(dot_diameters_image_pixels, err_V_random, 'bo-');
+plot(dot_diameters_image_pixels(starting_index:end), err_U_random(starting_index:end), 'ro-');
+plot(dot_diameters_image_pixels(starting_index:end), err_V_random(starting_index:end), 'bo-');
 grid on
 xlim([0 max(dot_diameters_image_pixels)*1.2])
 xlabel('dot diameter (pixels)');
 ylabel('error (pixels)');
 legend('\Delta x', '\Delta y', 'location', 'Northwest');
 title('random error')
+set(gca, 'fontsize', 14)
 
 % total error
 subplot(1,3,3)
 hold on
-plot(dot_diameters_image_pixels, err_U_rms, 'rs-');
-plot(dot_diameters_image_pixels, err_V_rms, 'bs-');
+plot(dot_diameters_image_pixels(starting_index:end), err_U_rms(starting_index:end), 'rs-');
+plot(dot_diameters_image_pixels(starting_index:end), err_V_rms(starting_index:end), 'bs-');
 grid on
 xlim([0 max(dot_diameters_image_pixels)*1.2])
 xlabel('dot diameter (pixels)');
 ylabel('error (pixels)');
 legend('\Delta x', '\Delta y', 'location', 'Northwest');
 title('total error')
+set(gca, 'fontsize', 14)
+
+
 
 % save results to file
-savefig(gcf, [figure_save_filepath 'errors-displacement-physical-diameter.fig']);
-print(gcf, [figure_save_filepath 'errors-displacement-physical-diameter.eps'], '-depsc');
-print(gcf, [figure_save_filepath 'errors-displacement-physical-diameter.png'], '-dpng');
+% savefig(gcf, [figure_save_filepath 'errors-displacement-physical-diameter.fig']);
+% print(gcf, [figure_save_filepath 'errors-displacement-physical-diameter.eps'], '-depsc');
+% print(gcf, [figure_save_filepath 'errors-displacement-physical-diameter.png'], '-dpng');
+save_figure_to_file(gcf, figure_save_filepath, 'errors-displacement-physical-diameter');
 
 % PLOT RANDOM ERROR SEPARATELY
 
 figure_ctr = figure_ctr+1;
 figure(figure_ctr);
+semilogy(dot_diameters_image_pixels(starting_index:end), err_U_random(starting_index:end), 'ro-');
 hold on
-plot(dot_diameters_image_pixels, err_U_random, 'ro-');
-plot(dot_diameters_image_pixels, err_V_random, 'bo-');
+semilogy(dot_diameters_image_pixels(starting_index:end), err_V_random(starting_index:end), 'bo-');
 grid on
 xlabel('dot diameter (pixels)');
 ylabel('error (pixels)');
 legend('\Delta x', '\Delta y', 'location', 'Northwest');
 title('random error')
 legend('\Delta x', '\Delta y', 'location', 'Northwest');
+set(gca, 'fontsize', 14)
 
 % save results to file
 plot_filename = 'random_error';
-savefig([figure_save_filepath plot_filename '.fig'])
-print([figure_save_filepath plot_filename '.png'], '-dpng');
-print([figure_save_filepath plot_filename '.eps'], '-deps');
-
+% savefig([figure_save_filepath plot_filename '.fig'])
+% print([figure_save_filepath plot_filename '.png'], '-dpng');
+% print([figure_save_filepath plot_filename '.eps'], '-deps');
+save_figure_to_file(gcf, figure_save_filepath, plot_filename);
 
 % figure_ctr = figure_ctr+1;
 % figure(figure_ctr);
