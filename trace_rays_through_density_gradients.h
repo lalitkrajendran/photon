@@ -245,7 +245,7 @@ __device__ light_ray_data_t trace_rays_through_density_gradients(light_ray_data_
  		float4 val = tex3D(tex_data, round(lookup.x), round(lookup.y), round(lookup.z)); //*params.dataScalar;
 
  		// calculate the change in ray direction
- 		normal = -make_float3(val.x,val.y,val.z);
+ 		normal = make_float3(-val.x,-val.y,val.z);
 
  		// update the ray direction
  		dir = dir + params.step_size*normal;
@@ -341,9 +341,9 @@ void loadNRRD(DataFile* datafile, int data_min, int data_max)
 	zmax = zmin + (sizez-1)*del_z;
 
 	printf("\n******************** Co-ordinate System Info ******************************\n");
-	printf("xmin: %f, xmax: %f, N_x: %d, del_x: %f\n", xmin,xmax,sizex,del_x);
-	printf("ymin: %f, ymax: %f, N_y: %d, del_y: %f\n", ymin,ymax,sizey,del_y);
-	printf("zmin: %f, zmax: %f, N_z: %d, del_z: %f\n", zmin,zmax,sizez,del_z);
+	printf("xmin: %g, xmax: %g, N_x: %d, del_x: %f\n", xmin,xmax,sizex,del_x);
+	printf("ymin: %g, ymax: %g, N_y: %d, del_y: %f\n", ymin,ymax,sizey,del_y);
+	printf("zmin: %g, zmax: %g, N_z: %d, del_z: %f\n", zmin,zmax,sizez,del_z);
 
 
 	// not sure what these statements do

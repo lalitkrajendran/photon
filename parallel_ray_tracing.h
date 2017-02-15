@@ -270,7 +270,7 @@ int add(int a, int b);
 void start_ray_tracing(float , float ,scattering_data_t* , char* ,lightfield_source_t* ,
 		int ,float, float, int , double (*element_center)[3],element_data_t*,
 		double (*element_plane_parameters)[4], int* ,camera_design_t* , float*,
-		bool, char* );
+		bool, char* , char* , char*);
 
 }
 
