@@ -13,7 +13,7 @@ import tifffile as TIFF
 # img2 = TIFF.imread('/home/barracuda/a/lrajendr/Projects/camera_simulation/results/images/bos/error-analysis/dns/0/2/bos_pattern_image_2.tif')
 
 # filepath containing images
-img_filepath = '/home/barracuda/a/lrajendr/Projects/camera_simulation/results/images/bos/error-analysis/dof/f16/'
+img_filepath = '/home/barracuda/a/lrajendr/Projects/camera_simulation/results/images/bos/error-analysis/bias/grad_x=5.00/10/nz=0100/'
 
 # load images
 img1 = TIFF.imread(img_filepath + 'bos_pattern_image_1.tif')

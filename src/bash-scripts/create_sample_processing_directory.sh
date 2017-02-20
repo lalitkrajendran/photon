@@ -1,7 +1,9 @@
 # this script creates all the subfolders for a processing case
 
 # specify top directory
-top_write_directory=/home/barracuda/a/lrajendr/Projects/camera_simulation/results/images/bos/error-analysis/dot-size/processing
+top_write_directory=/home/barracuda/a/lrajendr/Projects/camera_simulation/results/images/bos/error-analysis/seeding/processing
+#top_write_directory=/home/barracuda/a/lrajendr/Projects/camera_simulation/results/images/bos/error-analysis/dot-size/processing
+
 
 # set case name
 #case_name=50x50-f16-grad_x3.0

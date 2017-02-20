@@ -46,15 +46,18 @@ def _todict(matobj):
             dict[strg] = elem
     return dict
 
-# get the startin index, and the number of parameter files to read from the user
-script, starting_index, number_of_parameter_files = argv
+# get the startin index, and the number of parameter files to read at a time
+script, filepath, starting_index, number_of_parameter_files = argv
+# starting_index = 1
+# number_of_parameter_files = 1
 
 # convert string variables to integers
 starting_index = int(starting_index)
 number_of_parameter_files = int(number_of_parameter_files)
 
 # specify directory where parameters are stored
-bos_simulation_parameters_read_directory = '../data/bos_parameters/dof/'
+# bos_simulation_parameters_read_directory = '../data/bos_parameters/magnification/'
+bos_simulation_parameters_read_directory = filepath
 
 # This is the list of camera parameters to run the simulation over
 bos_parameter_list = sorted(glob.glob(bos_simulation_parameters_read_directory + '*.mat'))
@@ -103,6 +106,13 @@ for i in range(starting_index,starting_index+number_of_parameter_files):
     if not (os.path.exists(bos_pattern_image_top_directory)):
         # This creates the bos pattern image directory
         os.makedirs(bos_pattern_image_top_directory)
+
+    # create the directories to save final light ray positions and directions
+    if not (os.path.exists(bos_pattern_image_top_directory + 'light-ray-positions/')):
+        os.makedirs(bos_pattern_image_top_directory + 'light-ray-positions/')
+
+    if not (os.path.exists(bos_pattern_image_top_directory + 'light-ray-directions/')):
+        os.makedirs(bos_pattern_image_top_directory + 'light-ray-directions/')
 
     # convert int variables to float
     for i in piv_simulation_parameters:

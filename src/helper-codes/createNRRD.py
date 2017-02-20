@@ -45,6 +45,47 @@ def save_nrrd(data,nrrd_filename):
     # save data to nrrd file
     nrrd.write(nrrd_filename, np.array(data['rho']).astype('float32'), options)
 
+def calculate_theoretical_deflection(data, grad_x, z_1, z_2):
+# this function calculates the theoretical displacement of a dot pattern on the camera sensor for a constant density
+# gradient field using the paraxial approximation
+
+    # distance between center of density gradient and dot pattern (m)
+    Z_D = (z_1+z_2)/2 * 1e-6
+
+    # magnification
+    M = 0.087
+
+    # this is the density of the undisturbed medium (kg/m^3)
+    rho_0 = 1.225
+
+    # this is the gladstone-dale constant (m^3/kg)
+    K = 0.225e-3
+
+    # this is the refractive index of the undisturbed medium
+    n_0 = K * rho_0 + 1
+
+    # this is the density gradient (kg/m^4)
+    drho_dx = grad_x/((data['x'].max() - data['x'].min())*1e-6)
+
+    # this is the thickness of the density gradient volume
+    del_z = (data['z'].max() - data['z'].min())*1e-6
+
+    # this is the gradient of refractive index (m^-1)
+    dn_dx = K * drho_dx
+
+    # angular deflection of light ray (radians)
+    epsilon_x = 1/n_0 * dn_dx * del_z
+
+    # this is the displacement on the sensor (m)
+    displacement = Z_D * M * epsilon_x
+
+    # this is the width of a pixel on the camera sensor (m)
+    pixel_pitch = 17e-6
+
+    print 'angular deflectino of ray (radians): %.2G' % epsilon_x
+    print 'displacement on the sensor (mm): %.2G' % (displacement*1e3)
+    print 'displacement on the sensor (pixels): %.2G' % (displacement/pixel_pitch)
+
 #script, first, second, third = argv
 
 data = {}
@@ -115,6 +156,7 @@ for k in range(0,nz):
 #nrrd_filename = '/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/const_grad_BOS_grad_x_08.nrrd'
 nrrd_filename = '/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/const_grad_BOS_grad_x_%.2f_zmin_%02d_zmax_%02d.nrrd' % (grad_x, z_1/1e3, z_2/1e3)
 
+calculate_theoretical_deflection(data, grad_x, z_1, z_2)
 save_nrrd(data,nrrd_filename)
 
 # # estimate ray deflection through the volume

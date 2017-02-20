@@ -21,3 +21,5 @@ test.bin
 test_directory_sayantan_params/1e6/particle_positions/*.p
 test_directory_sayantan_params/*/particle_positions/*.p
 test_directory_sayantan_params/particle_positions/*.p
+
+/src/sample-codes

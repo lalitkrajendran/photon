@@ -4,6 +4,7 @@
 # this is the case name
 #case_name=50x50-f16-grad_x2.0
 #case_name=$1
+case_name=64
 
 # this is the base name for the images
 image_base_name=dotsize_
@@ -17,7 +18,8 @@ rm -r $destination
 mkdir $destination
 
 # this is the source filepath
-filepath=/home/barracuda/a/lrajendr/Projects/camera_simulation/results/images/bos/error-analysis/dns/0
+filepath=/home/barracuda/a/lrajendr/Projects/camera_simulation/results/images/bos/error-analysis/seeding/$case_name
+#filepath=/home/barracuda/a/lrajendr/Projects/camera_simulation/results/images/bos/error-analysis/dns/0
 #filepath=/home/barracuda/a/lrajendr/Projects/camera_simulation/results/images/bos/error-analysis/dot-size/$case_name
 #filepath=/home/barracuda/a/lrajendr/Projects/camera_simulation/results/images/bos/error-analysis/focusing/$case_name
 
@@ -29,16 +31,15 @@ echo "number of folders: " $num_folders
 
 # find the names of the folders in the path
 folder_names=$(find $filepath/* -maxdepth 0 -type d | sort --version-sort)
-
 # iterate through the folder names
 for dir in $folder_names
 do
   # print out the folder names
-  echo $dir
+  #echo $dir
   #echo
   # find the subfolders contained in this folder
   subfolder_names=$(find $dir/* -maxdepth 0 -type d | sort --version-sort)
-  
+  echo $subfolder_names  
   # loop through the subfolders and find the names
   for dir_sub in $subfolder_names
   do

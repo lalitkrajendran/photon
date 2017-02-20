@@ -1,13 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="c90bfca8-8f44-482f-ae09-651496f61998" name="Default" comment="">
+    <list default="true" id="c90bfca8-8f44-482f-ae09-651496f61998" name="Default" comment="added lines to">
       <change type="DELETED" beforePath="$PROJECT_DIR$/src/batch.sh" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/createNRRD.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/copy_images_to_single_folder.sh" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/post-processing-codes/test.fig" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/pre-processing-codes/createNRRD.py" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/bash-scripts/copy_images_to_single_folder.sh" afterPath="$PROJECT_DIR$/src/bash-scripts/copy_images_to_single_folder.sh" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/bash-scripts/create_sample_processing_directory.sh" afterPath="$PROJECT_DIR$/src/bash-scripts/create_sample_processing_directory.sh" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/batch_create_bos_params.py" afterPath="$PROJECT_DIR$/src/batch_create_bos_params.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/copy_images_to_single_folder.sh" afterPath="$PROJECT_DIR$/src/copy_images_to_single_folder.sh" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/batch_run_bos_simulation.py" afterPath="$PROJECT_DIR$/src/batch_run_bos_simulation.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/createNRRD.py" afterPath="$PROJECT_DIR$/src/createNRRD.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/create_bos_simulation_parameters.py" afterPath="$PROJECT_DIR$/src/create_bos_simulation_parameters.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/post-processing-codes/compareImages_BOS.py" afterPath="$PROJECT_DIR$/src/post-processing-codes/compareImages_BOS.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/post-processing-codes/error_analysis.m" afterPath="$PROJECT_DIR$/src/post-processing-codes/error_analysis.m" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/post-processing-codes/measure_dot_intensity_profile.m" afterPath="$PROJECT_DIR$/src/post-processing-codes/measure_dot_intensity_profile.m" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/post-processing-codes/plot2d.m" afterPath="$PROJECT_DIR$/src/post-processing-codes/plot2d.m" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/run_piv_simulation_02.py" afterPath="$PROJECT_DIR$/src/run_piv_simulation_02.py" />
     </list>
@@ -30,21 +38,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="run_piv_challenge_simulation_01.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/run_piv_challenge_simulation_01.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2955">
-              <caret line="203" column="89" selection-start-line="203" selection-start-column="89" selection-end-line="203" selection-end-column="89" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="batch_run_bos_simulation.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/batch_run_bos_simulation.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="430">
-              <caret line="109" column="0" selection-start-line="109" selection-start-column="0" selection-end-line="109" selection-end-column="0" />
+            <state relative-caret-position="840">
+              <caret line="56" column="72" selection-start-line="56" selection-start-column="72" selection-end-line="56" selection-end-column="72" />
               <folding>
                 <element signature="e#16#27#0" expanded="true" />
               </folding>
@@ -52,26 +50,46 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="run_piv_simulation_02.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/run_piv_simulation_02.py">
+      <file leaf-file-name="compareImages_BOS.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/post-processing-codes/compareImages_BOS.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="398">
-              <caret line="261" column="71" selection-start-line="261" selection-start-column="71" selection-end-line="261" selection-end-column="71" />
+            <state relative-caret-position="195">
+              <caret line="13" column="0" selection-start-line="13" selection-start-column="0" selection-end-line="13" selection-end-column="0" />
               <folding>
-                <element signature="e#0#11#0" expanded="true" />
+                <element signature="e#75#103#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="perform_ray_tracing_03.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/perform_ray_tracing_03.py">
+      <file leaf-file-name="batch_create_bos_params.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/batch_create_bos_params.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="188">
-              <caret line="1888" column="0" selection-start-line="1888" selection-start-column="0" selection-end-line="1888" selection-end-column="0" />
+            <state relative-caret-position="-60">
+              <caret line="68" column="24" selection-start-line="68" selection-start-column="24" selection-end-line="68" selection-end-column="24" />
               <folding>
-                <element signature="e#0#18#0" expanded="true" />
+                <element signature="e#0#46#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="run_piv_simulation_02.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/run_piv_simulation_02.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="351">
+              <caret line="1706" column="0" selection-start-line="1706" selection-start-column="0" selection-end-line="1706" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="createNRRD.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/createNRRD.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="51">
+              <caret line="96" column="10" selection-start-line="96" selection-start-column="10" selection-end-line="96" selection-end-column="10" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -126,20 +144,23 @@
         <option value="$PROJECT_DIR$/create_bos_texture.py" />
         <option value="$PROJECT_DIR$/run_piv_simulation_02.py" />
         <option value="$PROJECT_DIR$/src/run_piv_challenge_simulation_01.py" />
-        <option value="$PROJECT_DIR$/src/batch_run_bos_simulation.py" />
-        <option value="$PROJECT_DIR$/src/create_bos_simulation_parameters.py" />
-        <option value="$PROJECT_DIR$/src/batch_create_bos_params.py" />
         <option value="$PROJECT_DIR$/src/perform_ray_tracing_03.py" />
         <option value="$PROJECT_DIR$/src/ctypes_classes.py" />
+        <option value="$PROJECT_DIR$/src/batch_params_focusing.py" />
+        <option value="$PROJECT_DIR$/src/create_bos_simulation_parameters.py" />
         <option value="$PROJECT_DIR$/src/run_piv_simulation_02.py" />
+        <option value="$PROJECT_DIR$/src/batch_run_bos_simulation.py" />
+        <option value="$PROJECT_DIR$/src/createNRRD.py" />
+        <option value="$PROJECT_DIR$/src/batch_create_bos_params.py" />
+        <option value="$PROJECT_DIR$/src/post-processing-codes/compareImages_BOS.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="-1" />
-    <option name="y" value="13" />
-    <option name="width" value="1252" />
-    <option name="height" value="973" />
+    <option name="x" value="126" />
+    <option name="y" value="121" />
+    <option name="width" value="1220" />
+    <option name="height" value="754" />
   </component>
   <component name="ProjectInspectionProfilesVisibleTreeState">
     <entry key="Project Default">
@@ -186,15 +207,64 @@
     </navigator>
     <panes>
       <pane id="ProjectPane">
-        <subPane />
+        <subPane>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="camera_simulation" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="camera_simulation" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="camera_simulation" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="camera_simulation" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="camera_simulation" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="camera_simulation" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="camera_simulation" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="post-processing-codes" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+        </subPane>
       </pane>
-      <pane id="Scratches" />
       <pane id="Scope" />
+      <pane id="Scratches" />
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../../../../../scp-dump" />
-    <property name="settings.editor.selected.configurable" value="reference.settingsdialog.IDE.editor.colors" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../SchlierenRayVis/pyCodes/h5tonrrd/src/h5tonrrd_rho.py" />
+    <property name="settings.editor.selected.configurable" value="vcs.Git" />
     <property name="settings.editor.splitter.proportion" value="0.2" />
     <property name="ToolWindowTerminal.ShowToolbar" value="false" />
   </component>
@@ -204,25 +274,8 @@
       <recent name="$PROJECT_DIR$/../../../../../scp-dump" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.batch_run_bos_simulation">
-    <configuration default="false" name="run_piv_challenge_simulation_01" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <module name="camera_simulation" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/run_piv_challenge_simulation_01.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <method />
-    </configuration>
-    <configuration default="false" name="run_piv_challenge_simulation_01 (1)" type="PythonConfigurationType" factoryName="Python" temporary="true">
+  <component name="RunManager" selected="Python.compareImages_BOS">
+    <configuration default="false" name="batch_run_bos_simulation" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -234,12 +287,12 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <module name="camera_simulation" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/run_piv_challenge_simulation_01.py" />
-      <option name="PARAMETERS" value="" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/batch_run_bos_simulation.py" />
+      <option name="PARAMETERS" value="1 1" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <method />
     </configuration>
-    <configuration default="false" name="create_bos_simulation_parameters" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration default="false" name="batch_params_focusing" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -251,7 +304,7 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <module name="camera_simulation" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/create_bos_simulation_parameters.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/batch_params_focusing.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <method />
@@ -273,7 +326,24 @@
       <option name="SHOW_COMMAND_LINE" value="false" />
       <method />
     </configuration>
-    <configuration default="false" name="batch_run_bos_simulation" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration default="false" name="compareImages_BOS" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/post-processing-codes" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="camera_simulation" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/post-processing-codes/compareImages_BOS.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <method />
+    </configuration>
+    <configuration default="false" name="createNRRD" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -285,7 +355,7 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <module name="camera_simulation" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/batch_run_bos_simulation.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/createNRRD.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <method />
@@ -425,19 +495,19 @@
       <method />
     </configuration>
     <list size="5">
-      <item index="0" class="java.lang.String" itemvalue="Python.run_piv_challenge_simulation_01" />
-      <item index="1" class="java.lang.String" itemvalue="Python.run_piv_challenge_simulation_01 (1)" />
-      <item index="2" class="java.lang.String" itemvalue="Python.create_bos_simulation_parameters" />
-      <item index="3" class="java.lang.String" itemvalue="Python.batch_create_bos_params" />
-      <item index="4" class="java.lang.String" itemvalue="Python.batch_run_bos_simulation" />
+      <item index="0" class="java.lang.String" itemvalue="Python.batch_run_bos_simulation" />
+      <item index="1" class="java.lang.String" itemvalue="Python.batch_params_focusing" />
+      <item index="2" class="java.lang.String" itemvalue="Python.batch_create_bos_params" />
+      <item index="3" class="java.lang.String" itemvalue="Python.compareImages_BOS" />
+      <item index="4" class="java.lang.String" itemvalue="Python.createNRRD" />
     </list>
     <recent_temporary>
       <list size="5">
-        <item index="0" class="java.lang.String" itemvalue="Python.batch_run_bos_simulation" />
-        <item index="1" class="java.lang.String" itemvalue="Python.run_piv_challenge_simulation_01 (1)" />
-        <item index="2" class="java.lang.String" itemvalue="Python.batch_create_bos_params" />
-        <item index="3" class="java.lang.String" itemvalue="Python.create_bos_simulation_parameters" />
-        <item index="4" class="java.lang.String" itemvalue="Python.run_piv_challenge_simulation_01" />
+        <item index="0" class="java.lang.String" itemvalue="Python.compareImages_BOS" />
+        <item index="1" class="java.lang.String" itemvalue="Python.batch_create_bos_params" />
+        <item index="2" class="java.lang.String" itemvalue="Python.createNRRD" />
+        <item index="3" class="java.lang.String" itemvalue="Python.batch_run_bos_simulation" />
+        <item index="4" class="java.lang.String" itemvalue="Python.batch_params_focusing" />
       </list>
     </recent_temporary>
   </component>
@@ -521,7 +591,35 @@
       <option name="project" value="LOCAL" />
       <updated>1461855370284</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="added lines to create multiple image pairs for a given dot size, and logic to recursively create directories if they do not exist">
+      <created>1478184519703</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1478184519703</updated>
+    </task>
+    <task id="LOCAL-00011" summary="added lines to specify the minimum and maximum coordinates along X and Y for the dot pattern">
+      <created>1478184582346</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1478184582346</updated>
+    </task>
+    <task id="LOCAL-00012" summary="added logic to take user defined values for the minimum and maximum coordinates of the dot pattern, and logic to use a user-defined seed for random number generation">
+      <created>1478184658528</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1478184658528</updated>
+    </task>
+    <task id="LOCAL-00013" summary="added logic to create write directories recursively&#10;">
+      <created>1478184720018</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1478184720018</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="TodoView">
@@ -534,19 +632,19 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="-1" y="13" width="1252" height="973" extended-state="0" />
+    <frame x="126" y="121" width="1220" height="754" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.22177091" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.21851543" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32792583" sideWeight="0.49563146" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32851985" sideWeight="0.50436854" order="11" side_tool="true" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.30384168" sideWeight="0.49717513" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3275649" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.36466593" sideWeight="0.49717513" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.20227458" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.3625" sideWeight="0.49717513" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.19349457" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.41694915" sideWeight="0.49717513" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="true" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.31082654" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.30945122" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -578,19 +676,23 @@
     <MESSAGE value="rendered images match with rod's code" />
     <MESSAGE value="uncommented the lines which normalizes and scales the image intensity" />
     <MESSAGE value="able to pass variables required for generate lightfield function to C, and the values are the same as the python function" />
-    <option name="LAST_COMMIT_MESSAGE" value="able to pass variables required for generate lightfield function to C, and the values are the same as the python function" />
+    <MESSAGE value="added lines to create multiple image pairs for a given dot size, and logic to recursively create directories if they do not exist" />
+    <MESSAGE value="added lines to specify the minimum and maximum coordinates along X and Y for the dot pattern" />
+    <MESSAGE value="added logic to take user defined values for the minimum and maximum coordinates of the dot pattern, and logic to use a user-defined seed for random number generation" />
+    <MESSAGE value="added logic to create write directories recursively&#10;" />
+    <option name="LAST_COMMIT_MESSAGE" value="added logic to create write directories recursively&#10;" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="python-line">
           <url>file://$PROJECT_DIR$/src/batch_create_bos_params.py</url>
-          <line>74</line>
+          <line>177</line>
           <option name="timeStamp" value="292" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="python-line">
           <url>file://$PROJECT_DIR$/src/create_bos_simulation_parameters.py</url>
-          <line>228</line>
+          <line>233</line>
           <option name="timeStamp" value="297" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="python-line">
@@ -605,37 +707,33 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="python-line">
           <url>file://$PROJECT_DIR$/src/run_piv_simulation_02.py</url>
-          <line>781</line>
-          <option name="timeStamp" value="304" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="python-line">
-          <url>file://$PROJECT_DIR$/src/run_piv_simulation_02.py</url>
           <line>1162</line>
           <option name="timeStamp" value="307" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="python-line">
-          <url>file://$PROJECT_DIR$/src/run_piv_simulation_02.py</url>
-          <line>259</line>
-          <option name="timeStamp" value="308" />
+          <url>file://$PROJECT_DIR$/src/post-processing-codes/compareImages_BOS.py</url>
+          <line>38</line>
+          <option name="timeStamp" value="310" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="python-line">
           <url>file://$PROJECT_DIR$/src/run_piv_simulation_02.py</url>
-          <line>286</line>
-          <option name="timeStamp" value="309" />
+          <line>1300</line>
+          <option name="timeStamp" value="311" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="python-line">
+          <url>file://$PROJECT_DIR$/src/run_piv_simulation_02.py</url>
+          <line>1320</line>
+          <option name="timeStamp" value="312" />
         </line-breakpoint>
       </breakpoints>
       <breakpoints-dialog>
         <breakpoints-dialog />
       </breakpoints-dialog>
-      <option name="time" value="310" />
+      <option name="time" value="313" />
     </breakpoint-manager>
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/run_piv_challenge_simulation_01.py" />
-    <entry file="file://$PROJECT_DIR$/run_piv_challenge_simulation_01.py" />
-    <entry file="file://$USER_HOME$/anaconda/lib/python2.7/site-packages/numpy/core/function_base.py" />
-    <entry file="file://$PROJECT_DIR$/perform_ray_tracing_03.m" />
     <entry file="file://$USER_HOME$/anaconda/lib/python2.7/site-packages/numpy/matrixlib/defmatrix.py" />
     <entry file="file://$PROJECT_DIR$/bhmie.f" />
     <entry file="file://$APPLICATION_HOME_DIR$/helpers/pydev/pydev_monkey_qt.py" />
@@ -697,13 +795,6 @@
     <entry file="file://$PROJECT_DIR$/run_piv_challenge_simulation_01.py" />
     <entry file="file://$PROJECT_DIR$/perform_ray_tracing_03.py" />
     <entry file="file://$PROJECT_DIR$/run_piv_simulation_02.py" />
-    <entry file="file://$PROJECT_DIR$/src/createNRRD.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-995">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$USER_HOME$/Software/anaconda2/lib/python2.7/site-packages/scipy/io/matlab/mio.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="368">
@@ -711,51 +802,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/create_bos_simulation_parameters.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2640">
-          <caret line="176" column="72" selection-start-line="176" selection-start-column="72" selection-end-line="176" selection-end-column="72" />
-          <folding>
-            <element signature="e#0#18#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/batch_create_bos_params.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="720">
-          <caret line="48" column="50" selection-start-line="48" selection-start-column="50" selection-end-line="48" selection-end-column="50" />
-          <folding>
-            <element signature="e#0#46#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/run_piv_challenge_simulation_01.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2955">
-          <caret line="203" column="89" selection-start-line="203" selection-start-column="89" selection-end-line="203" selection-end-column="89" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/ctypes_classes.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="742">
           <caret line="90" column="0" selection-start-line="90" selection-start-column="0" selection-end-line="90" selection-end-column="0" />
-          <folding>
-            <element signature="e#0#18#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/batch_run_bos_simulation.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="430">
-          <caret line="109" column="0" selection-start-line="109" selection-start-column="0" selection-end-line="109" selection-end-column="0" />
-          <folding>
-            <element signature="e#16#27#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -763,26 +813,96 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="460">
           <caret line="4149" column="0" selection-start-line="4149" selection-start-column="0" selection-end-line="4149" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/batch_params_focusing.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="435">
+          <caret line="32" column="70" selection-start-line="32" selection-start-column="70" selection-end-line="32" selection-end-column="70" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/run_piv_challenge_simulation_01.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="361">
+          <caret line="231" column="28" selection-start-line="231" selection-start-column="28" selection-end-line="231" selection-end-column="28" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/post-processing-codes/compareImages.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="435">
+          <caret line="30" column="44" selection-start-line="30" selection-start-column="44" selection-end-line="30" selection-end-column="44" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/create_bos_simulation_parameters.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="240">
+          <caret line="17" column="0" selection-start-line="17" selection-start-column="0" selection-end-line="18" selection-end-column="68" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/perform_ray_tracing_03.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="188">
-          <caret line="1888" column="0" selection-start-line="1888" selection-start-column="0" selection-end-line="1888" selection-end-column="0" />
+        <state relative-caret-position="24270">
+          <caret line="1628" column="4" selection-start-line="1628" selection-start-column="4" selection-end-line="1628" selection-end-column="4" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../SchlierenRayVis/pyCodes/h5tonrrd/src/h5tonrrd_rho.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/batch_run_bos_simulation.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="840">
+          <caret line="56" column="72" selection-start-line="56" selection-start-column="72" selection-end-line="56" selection-end-column="72" />
           <folding>
-            <element signature="e#0#18#0" expanded="true" />
+            <element signature="e#16#27#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/run_piv_simulation_02.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="398">
-          <caret line="261" column="71" selection-start-line="261" selection-start-column="71" selection-end-line="261" selection-end-column="71" />
+        <state relative-caret-position="351">
+          <caret line="1706" column="0" selection-start-line="1706" selection-start-column="0" selection-end-line="1706" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/batch_create_bos_params.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-60">
+          <caret line="68" column="24" selection-start-line="68" selection-start-column="24" selection-end-line="68" selection-end-column="24" />
           <folding>
-            <element signature="e#0#11#0" expanded="true" />
+            <element signature="e#0#46#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/createNRRD.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="51">
+          <caret line="96" column="10" selection-start-line="96" selection-start-column="10" selection-end-line="96" selection-end-column="10" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/post-processing-codes/compareImages_BOS.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="195">
+          <caret line="13" column="0" selection-start-line="13" selection-start-column="0" selection-end-line="13" selection-end-column="0" />
+          <folding>
+            <element signature="e#75#103#0" expanded="true" />
           </folding>
         </state>
       </provider>

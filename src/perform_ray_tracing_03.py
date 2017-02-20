@@ -1630,7 +1630,7 @@ def prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, sc
                                      lightray_number_per_particle, beam_wavelength,aperture_f_number,
                                  element_data, element_center,
                                  element_plane_parameters, element_system_index,camera_design,I,density_grad_filename,
-                                 simulate_density_gradients):
+                                 simulate_density_gradients, lightray_positions_filepath, lightray_directions_filepath):
     #-------------------------------------------------------------------------------------------------------------------
     # convert variables to appropriate ctypes formats
     # -------------------------------------------------------------------------------------------------------------------
@@ -1878,7 +1878,7 @@ def prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, sc
                                        ctypes.c_float, ctypes.c_float, ctypes.c_int,
                                        _double3p, ctypes.POINTER(element_data_struct),
                                        _double4p, _intp, ctypes.POINTER(camera_design_struct), _floatp,
-                                            ctypes.c_bool, ctypes.c_char_p]
+                                            ctypes.c_bool, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
 
 
     #  define return type
@@ -1891,7 +1891,8 @@ def prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, sc
                            beam_wavelength, aperture_f_number, num_elements, element_center, element_data_ctypes_struct,
                            element_plane_parameters,
                            np.asarray(element_system_index).astype('int32'), camera_design_ctypes_struct,
-                                I2,simulate_density_gradients,density_grad_filename)
+                                I2,simulate_density_gradients,density_grad_filename,lightray_positions_filepath,
+                                lightray_directions_filepath)
 
     print "done ray tracing"
 
@@ -2049,27 +2050,47 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     # simulate_density_gradients = True
     # density_grad_filename = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/const_grad_BOS_grad_x_20.nrrd"
 
+    # filepaths to save final light ray positions and directions
+    lightray_positions_filepath = piv_simulation_parameters['output_data']['lightray_positions_filepath']
+    lightray_directions_filepath = piv_simulation_parameters['output_data']['lightray_directions_filepath']
+
     # convert the data to ctypes compatible format and call the CUDA function
     I = prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, scattering_type,
                            lightfield_source, lightray_number_per_particle, beam_wavelength,aperture_f_number, element_data, element_center,
                            element_plane_parameters, element_system_index,piv_simulation_parameters['camera_design'],
-                                              I,density_grad_filename,simulate_density_gradients)
+                                              I,density_grad_filename,simulate_density_gradients, lightray_positions_filepath
+                                     , lightray_directions_filepath)
+
+
+    # this is the raw verion of the original image
+    I_raw = I
 
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # % Adding image noise                                                      %
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    # # this sets the seed for the image noise
-    # np.random.seed(2891)
-    # # this generates random numbers from a normal distribution to add to the image array
-    # image_noise = np.random.normal(0.0, scale=0.03*I.max(), size=I.shape)
+    # this sets the seed for the image noise
+    np.random.seed(2891)
+
+    # for r in range(0,I.shape[0]):
+    #     for c in range(0,I.shape[0]):
+    #         if(I[r,c] > 0.0)
+    #             image_noise = np.random.normal(0.0, scale=0.03 * I[r,c], size=I.shape)
     #
-    # # this adds the image noise
-    # I += image_noise
 
-    # this is the raw verion of the original image
-    I_raw = I
+    ## make a copy of the image array with non-zero elements made 1 so the image noise function doesn't crash
+    #I_temp = np.where(I, I, 1)
 
+    # this generates random numbers from a normal distribution to add to the image array
+    image_noise = (np.random.normal(0.0, scale = 0.03 * I.max(), size=I.shape))
+    # image_noise = np.random.normal(0.0, scale=0.03 * I.max(), size=I.shape)
+
+    # this adds the image noise only to elements of I that are non-zero
+    #I = np.where(I, I+image_noise, I)
+    I += image_noise
+    
+    # this ensures that the intensity array remains positive
+    I = abs(I)
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # % Rescales and resamples image for export                                 %
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2081,7 +2102,7 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     # I = (2 ** pixel_bit_depth - 1) * I / (2 ** 16 - 1)
     I = (2 ** pixel_bit_depth - 1) * I / (np.max(I[np.isfinite(I)]) - 1)
 
-    # % This rounds the values of the image to the nearest integer
+        # % This rounds the values of the image to the nearest integer
     I = np.round(I)
 
     # % This rescales the image to the full 16 bit range (but only bit_depth bits

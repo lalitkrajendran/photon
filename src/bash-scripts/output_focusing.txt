@@ -1,0 +1,626 @@
+nohup: ignoring input
+total number of files: 51
+number of files to be read in one call: 10
+10
+/home/barracuda/a/lrajendr/Projects/camera_simulation/src/tifffile.py:265: UserWarning: failed to import the optional _tifffile C extension module.
+Loading of some compressed images will be very slow.
+Tifffile.c can be obtained at http://www.lfd.uci.edu/~gohlke/
+  "failed to import the optional _tifffile C extension module.\n"
+Number of cases: 51
+
+
+
+
+
+Running case 10 simulation . . . 
+parameter_filename_read: /home/shannon/c/aether/Projects/BOS/error-analysis/data/parameters/focusing/bos_simulation_parameters_0010.mat
+Simulating bos_pattern images . . . 
+number of particles: 300012
+num_particles: 300012, source_point_number: 10000, num_rays: 5000000
+grid: 1, 10000
+1 out of 31
+2 out of 31
+3 out of 31
+4 out of 31
+5 out of 31
+6 out of 31
+7 out of 31
+8 out of 31
+9 out of 31
+10 out of 31
+11 out of 31
+12 out of 31
+13 out of 31
+14 out of 31
+15 out of 31
+16 out of 31
+17 out of 31
+18 out of 31
+19 out of 31
+20 out of 31
+21 out of 31
+22 out of 31
+23 out of 31
+24 out of 31
+25 out of 31
+26 out of 31
+27 out of 31
+28 out of 31
+29 out of 31
+30 out of 31
+31 out of 31
+time_spent : 0.357833 minutes
+exiting cuda code
+done ray tracing
+number of particles: 300012
+file: /home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/const_grad_BOS_grad_x_5.00_zmin_200_zmax_400.nrrd
+loading file /home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/const_grad_BOS_grad_x_5.00_zmin_200_zmax_400.nrrd : 
+******************** Co-ordinate System Info ******************************
+xmin: -87500, xmax: 87500.2, N_x: 200, del_x: 879.398000
+ymin: -87500, ymax: 87500.2, N_y: 200, del_y: 879.398000
+zmin: 2.1e+06, zmax: 2.3e+06, N_z: 100, del_z: 2020.250000
+ size: 200.000000 200.000000 100.000000   ...done
+Min: 1.000218, Max: 1.001466 
+setting up renderer
+setData(-1358180336, 200, 200, 100)
+grid_x: 875.001038, grid_y: 875.001038, grid_z: 2000.047485
+step_size: 879.398010
+Setting up data texture
+num_particles: 300012, source_point_number: 10000, num_rays: 5000000
+grid: 1, 10000
+1 out of 31
+2 out of 31
+3 out of 31
+4 out of 31
+5 out of 31
+6 out of 31
+7 out of 31
+8 out of 31
+9 out of 31
+10 out of 31
+11 out of 31
+12 out of 31
+13 out of 31
+14 out of 31
+15 out of 31
+16 out of 31
+17 out of 31
+18 out of 31
+19 out of 31
+20 out of 31
+21 out of 31
+22 out of 31
+23 out of 31
+24 out of 31
+25 out of 31
+26 out of 31
+27 out of 31
+28 out of 31
+29 out of 31
+30 out of 31
+31 out of 31
+time_spent : 3.341667 minutes
+exiting cuda code
+done ray tracing
+
+
+
+
+
+Running case 11 simulation . . . 
+parameter_filename_read: /home/shannon/c/aether/Projects/BOS/error-analysis/data/parameters/focusing/bos_simulation_parameters_0011.mat
+Simulating bos_pattern images . . . 
+number of particles: 300012
+num_particles: 300012, source_point_number: 10000, num_rays: 5000000
+grid: 1, 10000
+1 out of 31
+2 out of 31
+3 out of 31
+4 out of 31
+5 out of 31
+6 out of 31
+7 out of 31
+8 out of 31
+9 out of 31
+10 out of 31
+11 out of 31
+12 out of 31
+13 out of 31
+14 out of 31
+15 out of 31
+16 out of 31
+17 out of 31
+18 out of 31
+19 out of 31
+20 out of 31
+21 out of 31
+22 out of 31
+23 out of 31
+24 out of 31
+25 out of 31
+26 out of 31
+27 out of 31
+28 out of 31
+29 out of 31
+30 out of 31
+31 out of 31
+time_spent : 0.395833 minutes
+exiting cuda code
+done ray tracing
+number of particles: 300012
+file: /home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/const_grad_BOS_grad_x_5.00_zmin_200_zmax_400.nrrd
+loading file /home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/const_grad_BOS_grad_x_5.00_zmin_200_zmax_400.nrrd : 
+******************** Co-ordinate System Info ******************************
+xmin: -87500, xmax: 87500.2, N_x: 200, del_x: 879.398000
+ymin: -87500, ymax: 87500.2, N_y: 200, del_y: 879.398000
+zmin: 2.1e+06, zmax: 2.3e+06, N_z: 100, del_z: 2020.250000
+ size: 200.000000 200.000000 100.000000   ...done
+Min: 1.000218, Max: 1.001466 
+setting up renderer
+setData(104558544, 200, 200, 100)
+grid_x: 875.001038, grid_y: 875.001038, grid_z: 2000.047485
+step_size: 879.398010
+Setting up data texture
+num_particles: 300012, source_point_number: 10000, num_rays: 5000000
+grid: 1, 10000
+1 out of 31
+2 out of 31
+3 out of 31
+4 out of 31
+5 out of 31
+6 out of 31
+7 out of 31
+8 out of 31
+9 out of 31
+10 out of 31
+11 out of 31
+12 out of 31
+13 out of 31
+14 out of 31
+15 out of 31
+16 out of 31
+17 out of 31
+18 out of 31
+19 out of 31
+20 out of 31
+21 out of 31
+22 out of 31
+23 out of 31
+24 out of 31
+25 out of 31
+26 out of 31
+27 out of 31
+28 out of 31
+29 out of 31
+30 out of 31
+31 out of 31
+time_spent : 3.342500 minutes
+exiting cuda code
+done ray tracing
+
+
+
+
+
+Running case 12 simulation . . . 
+parameter_filename_read: /home/shannon/c/aether/Projects/BOS/error-analysis/data/parameters/focusing/bos_simulation_parameters_0012.mat
+Simulating bos_pattern images . . . 
+number of particles: 300012
+num_particles: 300012, source_point_number: 10000, num_rays: 5000000
+grid: 1, 10000
+1 out of 31
+2 out of 31
+3 out of 31
+4 out of 31
+5 out of 31
+6 out of 31
+7 out of 31
+8 out of 31
+9 out of 31
+10 out of 31
+11 out of 31
+12 out of 31
+13 out of 31
+14 out of 31
+15 out of 31
+16 out of 31
+17 out of 31
+18 out of 31
+19 out of 31
+20 out of 31
+21 out of 31
+22 out of 31
+23 out of 31
+24 out of 31
+25 out of 31
+26 out of 31
+27 out of 31
+28 out of 31
+29 out of 31
+30 out of 31
+31 out of 31
+time_spent : 0.391833 minutes
+exiting cuda code
+done ray tracing
+number of particles: 300012
+file: /home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/const_grad_BOS_grad_x_5.00_zmin_200_zmax_400.nrrd
+loading file /home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/const_grad_BOS_grad_x_5.00_zmin_200_zmax_400.nrrd : 
+******************** Co-ordinate System Info ******************************
+xmin: -87500, xmax: 87500.2, N_x: 200, del_x: 879.398000
+ymin: -87500, ymax: 87500.2, N_y: 200, del_y: 879.398000
+zmin: 2.1e+06, zmax: 2.3e+06, N_z: 100, del_z: 2020.250000
+ size: 200.000000 200.000000 100.000000   ...done
+Min: 1.000218, Max: 1.001466 
+setting up renderer
+setData(120558560, 200, 200, 100)
+grid_x: 875.001038, grid_y: 875.001038, grid_z: 2000.047485
+step_size: 879.398010
+Setting up data texture
+num_particles: 300012, source_point_number: 10000, num_rays: 5000000
+grid: 1, 10000
+1 out of 31
+2 out of 31
+3 out of 31
+4 out of 31
+5 out of 31
+6 out of 31
+7 out of 31
+8 out of 31
+9 out of 31
+10 out of 31
+11 out of 31
+12 out of 31
+13 out of 31
+14 out of 31
+15 out of 31
+16 out of 31
+17 out of 31
+18 out of 31
+19 out of 31
+20 out of 31
+21 out of 31
+22 out of 31
+23 out of 31
+24 out of 31
+25 out of 31
+26 out of 31
+27 out of 31
+28 out of 31
+29 out of 31
+30 out of 31
+31 out of 31
+time_spent : 3.341500 minutes
+exiting cuda code
+done ray tracing
+
+
+
+
+
+Running case 13 simulation . . . 
+parameter_filename_read: /home/shannon/c/aether/Projects/BOS/error-analysis/data/parameters/focusing/bos_simulation_parameters_0013.mat
+Simulating bos_pattern images . . . 
+number of particles: 300012
+num_particles: 300012, source_point_number: 10000, num_rays: 5000000
+grid: 1, 10000
+1 out of 31
+2 out of 31
+3 out of 31
+4 out of 31
+5 out of 31
+6 out of 31
+7 out of 31
+8 out of 31
+9 out of 31
+10 out of 31
+11 out of 31
+12 out of 31
+13 out of 31
+14 out of 31
+15 out of 31
+16 out of 31
+17 out of 31
+18 out of 31
+19 out of 31
+20 out of 31
+21 out of 31
+22 out of 31
+23 out of 31
+24 out of 31
+25 out of 31
+26 out of 31
+27 out of 31
+28 out of 31
+29 out of 31
+30 out of 31
+31 out of 31
+time_spent : 0.378833 minutes
+exiting cuda code
+done ray tracing
+number of particles: 300012
+file: /home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/const_grad_BOS_grad_x_5.00_zmin_200_zmax_400.nrrd
+loading file /home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/const_grad_BOS_grad_x_5.00_zmin_200_zmax_400.nrrd : 
+******************** Co-ordinate System Info ******************************
+xmin: -87500, xmax: 87500.2, N_x: 200, del_x: 879.398000
+ymin: -87500, ymax: 87500.2, N_y: 200, del_y: 879.398000
+zmin: 2.1e+06, zmax: 2.3e+06, N_z: 100, del_z: 2020.250000
+ size: 200.000000 200.000000 100.000000   ...done
+Min: 1.000218, Max: 1.001466 
+setting up renderer
+setData(136558576, 200, 200, 100)
+grid_x: 875.001038, grid_y: 875.001038, grid_z: 2000.047485
+step_size: 879.398010
+Setting up data texture
+num_particles: 300012, source_point_number: 10000, num_rays: 5000000
+grid: 1, 10000
+1 out of 31
+2 out of 31
+3 out of 31
+4 out of 31
+5 out of 31
+6 out of 31
+7 out of 31
+8 out of 31
+9 out of 31
+10 out of 31
+11 out of 31
+12 out of 31
+13 out of 31
+14 out of 31
+15 out of 31
+16 out of 31
+17 out of 31
+18 out of 31
+19 out of 31
+20 out of 31
+21 out of 31
+22 out of 31
+23 out of 31
+24 out of 31
+25 out of 31
+26 out of 31
+27 out of 31
+28 out of 31
+29 out of 31
+30 out of 31
+31 out of 31
+time_spent : 3.341167 minutes
+exiting cuda code
+done ray tracing
+
+
+
+
+
+Running case 14 simulation . . . 
+parameter_filename_read: /home/shannon/c/aether/Projects/BOS/error-analysis/data/parameters/focusing/bos_simulation_parameters_0014.mat
+Simulating bos_pattern images . . . 
+number of particles: 300012
+num_particles: 300012, source_point_number: 10000, num_rays: 5000000
+grid: 1, 10000
+1 out of 31
+2 out of 31
+3 out of 31
+4 out of 31
+5 out of 31
+6 out of 31
+7 out of 31
+8 out of 31
+9 out of 31
+10 out of 31
+11 out of 31
+12 out of 31
+13 out of 31
+14 out of 31
+15 out of 31
+16 out of 31
+17 out of 31
+18 out of 31
+19 out of 31
+20 out of 31
+21 out of 31
+22 out of 31
+23 out of 31
+24 out of 31
+25 out of 31
+26 out of 31
+27 out of 31
+28 out of 31
+29 out of 31
+30 out of 31
+31 out of 31
+time_spent : 0.389167 minutes
+exiting cuda code
+done ray tracing
+number of particles: 300012
+file: /home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/const_grad_BOS_grad_x_5.00_zmin_200_zmax_400.nrrd
+loading file /home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/const_grad_BOS_grad_x_5.00_zmin_200_zmax_400.nrrd : 
+******************** Co-ordinate System Info ******************************
+xmin: -87500, xmax: 87500.2, N_x: 200, del_x: 879.398000
+ymin: -87500, ymax: 87500.2, N_y: 200, del_y: 879.398000
+zmin: 2.1e+06, zmax: 2.3e+06, N_z: 100, del_z: 2020.250000
+ size: 200.000000 200.000000 100.000000   ...done
+Min: 1.000218, Max: 1.001466 
+setting up renderer
+setData(152558592, 200, 200, 100)
+grid_x: 875.001038, grid_y: 875.001038, grid_z: 2000.047485
+step_size: 879.398010
+Setting up data texture
+num_particles: 300012, source_point_number: 10000, num_rays: 5000000
+grid: 1, 10000
+1 out of 31
+2 out of 31
+3 out of 31
+4 out of 31
+5 out of 31
+6 out of 31
+7 out of 31
+8 out of 31
+9 out of 31
+10 out of 31
+11 out of 31
+12 out of 31
+13 out of 31
+14 out of 31
+15 out of 31
+16 out of 31
+17 out of 31
+18 out of 31
+19 out of 31
+20 out of 31
+21 out of 31
+22 out of 31
+23 out of 31
+24 out of 31
+25 out of 31
+26 out of 31
+27 out of 31
+28 out of 31
+29 out of 31
+30 out of 31
+31 out of 31
+time_spent : 3.340667 minutes
+exiting cuda code
+done ray tracing
+
+
+
+
+
+Running case 15 simulation . . . 
+parameter_filename_read: /home/shannon/c/aether/Projects/BOS/error-analysis/data/parameters/focusing/bos_simulation_parameters_0015.mat
+Simulating bos_pattern images . . . 
+number of particles: 300012
+num_particles: 300012, source_point_number: 10000, num_rays: 5000000
+grid: 1, 10000
+1 out of 31
+2 out of 31
+3 out of 31
+4 out of 31
+5 out of 31
+6 out of 31
+7 out of 31
+8 out of 31
+9 out of 31
+10 out of 31
+11 out of 31
+12 out of 31
+13 out of 31
+14 out of 31
+15 out of 31
+16 out of 31
+17 out of 31
+18 out of 31
+19 out of 31
+20 out of 31
+21 out of 31
+22 out of 31
+23 out of 31
+24 out of 31
+25 out of 31
+26 out of 31
+27 out of 31
+28 out of 31
+29 out of 31
+30 out of 31
+31 out of 31
+time_spent : 0.386667 minutes
+exiting cuda code
+done ray tracing
+number of particles: 300012
+file: /home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/const_grad_BOS_grad_x_5.00_zmin_200_zmax_400.nrrd
+loading file /home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/const_grad_BOS_grad_x_5.00_zmin_200_zmax_400.nrrd : 
+******************** Co-ordinate System Info ******************************
+xmin: -87500, xmax: 87500.2, N_x: 200, del_x: 879.398000
+ymin: -87500, ymax: 87500.2, N_y: 200, del_y: 879.398000
+zmin: 2.1e+06, zmax: 2.3e+06, N_z: 100, del_z: 2020.250000
+ size: 200.000000 200.000000 100.000000   ...done
+Min: 1.000218, Max: 1.001466 
+setting up renderer
+setData(168558608, 200, 200, 100)
+grid_x: 875.001038, grid_y: 875.001038, grid_z: 2000.047485
+step_size: 879.398010
+Setting up data texture
+num_particles: 300012, source_point_number: 10000, num_rays: 5000000
+grid: 1, 10000
+1 out of 31
+2 out of 31
+3 out of 31
+4 out of 31
+5 out of 31
+6 out of 31
+7 out of 31
+8 out of 31
+9 out of 31
+10 out of 31
+11 out of 31
+12 out of 31
+13 out of 31
+14 out of 31
+15 out of 31
+16 out of 31
+17 out of 31
+18 out of 31
+19 out of 31
+20 out of 31
+21 out of 31
+22 out of 31
+23 out of 31
+24 out of 31
+25 out of 31
+26 out of 31
+27 out of 31
+28 out of 31
+29 out of 31
+30 out of 31
+31 out of 31
+time_spent : 3.340833 minutes
+exiting cuda code
+done ray tracing
+
+
+
+
+
+Running case 16 simulation . . . 
+parameter_filename_read: /home/shannon/c/aether/Projects/BOS/error-analysis/data/parameters/focusing/bos_simulation_parameters_0016.mat
+Simulating bos_pattern images . . . 
+number of particles: 300012
+num_particles: 300012, source_point_number: 10000, num_rays: 5000000
+grid: 1, 10000
+1 out of 31
+2 out of 31
+3 out of 31
+4 out of 31
+5 out of 31
+6 out of 31
+7 out of 31
+8 out of 31
+9 out of 31
+10 out of 31
+11 out of 31
+12 out of 31
+13 out of 31
+14 out of 31
+15 out of 31
+16 out of 31
+17 out of 31
+18 out of 31
+19 out of 31
+20 out of 31
+21 out of 31
+22 out of 31
+23 out of 31
+24 out of 31
+25 out of 31
+26 out of 31
+27 out of 31
+28 out of 31
+29 out of 31
+30 out of 31
+31 out of 31
+time_spent : 0.385500 minutes
+exiting cuda code
+done ray tracing
+number of particles: 300012
+file: /home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/const_grad_BOS_grad_x_5.00_zmin_200_zmax_400.nrrd

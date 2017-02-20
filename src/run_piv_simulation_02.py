@@ -1205,7 +1205,14 @@ def generate_bos_lightfield_data(piv_simulation_parameters,optical_system):
     else:
         Y_Max = +7.5e4
 
+    # set the seed of the random number generator. this will be different for each simulation
+    if(piv_simulation_parameters['bos_pattern']['random_number_seed'][0]):
+        np.random.seed(piv_simulation_parameters['bos_pattern']['random_number_seed'][0])
     x_grid_point_coordinate_vector = X_Min + (X_Max - X_Min) * np.random.rand(x_grid_point_number, y_grid_point_number)
+
+    # set the seed of the random number generator. this will be different for each simulation
+    if(piv_simulation_parameters['bos_pattern']['random_number_seed'][1]):
+        np.random.seed(piv_simulation_parameters['bos_pattern']['random_number_seed'][1])
     y_grid_point_coordinate_vector = Y_Min + (Y_Max - Y_Min) * np.random.rand(x_grid_point_number, y_grid_point_number)
 
     # % This generates a series of points that fill the circle of the grid point
@@ -1213,12 +1220,8 @@ def generate_bos_lightfield_data(piv_simulation_parameters,optical_system):
     [x_lightray_coordinates,y_lightray_coordinates] = calculate_sunflower_coordinates(grid_point_diameter,particle_number_per_grid_point);
 
     # % These are the full coordinate vectors of all the lightrays
-    if(piv_simulation_parameters['bos_pattern']['random_number_seed'][0]):
-        np.random.seed(piv_simulation_parameters['bos_pattern']['random_number_seed'][0])
     x = np.zeros(int(particle_number_per_grid_point*x_grid_point_number*y_grid_point_number))
 
-    if(piv_simulation_parameters['bos_pattern']['random_number_seed'][1]):
-        np.random.seed(piv_simulation_parameters['bos_pattern']['random_number_seed'][1])
     y = np.zeros(int(particle_number_per_grid_point*x_grid_point_number*y_grid_point_number))
 
     # % This is a counting index
@@ -1703,6 +1706,16 @@ def run_piv_simulation_02(piv_simulation_parameters):
         ################################################################################################################
 
         piv_simulation_parameters['density_gradients']['simulate_density_gradients'] = False
+
+        piv_simulation_parameters['output_data']['lightray_positions_filepath'] = bos_pattern_image_directory + 'light-ray-positions/im1/'
+        piv_simulation_parameters['output_data']['lightray_directions_filepath'] = bos_pattern_image_directory + 'light-ray-directions/im1/'
+
+        # create the directories if they don't exist
+        if not os.path.exists(piv_simulation_parameters['output_data']['lightray_positions_filepath']):
+            os.makedirs(piv_simulation_parameters['output_data']['lightray_positions_filepath'])
+        if not os.path.exists(piv_simulation_parameters['output_data']['lightray_directions_filepath']):
+            os.makedirs(piv_simulation_parameters['output_data']['lightray_directions_filepath'])
+
         # % This performs the ray tracing to generate the sensor image
         I, I_raw = perform_ray_tracing_03(piv_simulation_parameters,optical_system,pixel_gain,scattering_data,scattering_type,lightfield_source,field_type)
 
@@ -1723,6 +1736,18 @@ def run_piv_simulation_02(piv_simulation_parameters):
         ################################################################################################################
 
         piv_simulation_parameters['density_gradients']['simulate_density_gradients'] = True
+
+        piv_simulation_parameters['output_data'][
+            'lightray_positions_filepath'] = bos_pattern_image_directory + 'light-ray-positions/im2/'
+        piv_simulation_parameters['output_data'][
+            'lightray_directions_filepath'] = bos_pattern_image_directory + 'light-ray-directions/im2/'
+
+        # create the directories if they don't exist
+        if not os.path.exists(piv_simulation_parameters['output_data']['lightray_positions_filepath']):
+            os.makedirs(piv_simulation_parameters['output_data']['lightray_positions_filepath'])
+        if not os.path.exists(piv_simulation_parameters['output_data']['lightray_directions_filepath']):
+            os.makedirs(piv_simulation_parameters['output_data']['lightray_directions_filepath'])
+
         # % This performs the ray tracing to generate the sensor image
         I, I_raw = perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain, scattering_data,
                                           scattering_type, lightfield_source, field_type)
@@ -1738,4 +1763,9 @@ def run_piv_simulation_02(piv_simulation_parameters):
 
         # % This saves the image to memory
         I_raw.tofile(raw_image_filename_write)
+
+        # save parameters to file
+        # save parameters to file
+        sio.savemat(bos_pattern_image_directory+'parameters.mat', piv_simulation_parameters, appendmat=True, format='5',
+                    long_field_names=True)
 
