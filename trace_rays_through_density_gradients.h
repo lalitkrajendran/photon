@@ -216,7 +216,7 @@ __device__ light_ray_data_t trace_rays_through_density_gradients(light_ray_data_
  	int insideBox = 1;
  	float3 lookupfn;
  	float3 normal;
-
+ 	float refractive_index=1;
  	//--------------------------------------------------------------------------------------
  	// trace light ray through the variable density medium
  	//--------------------------------------------------------------------------------------
@@ -224,6 +224,9 @@ __device__ light_ray_data_t trace_rays_through_density_gradients(light_ray_data_
  	{
  		// update loop index
  		i = i+1;
+
+ 		// update light ray position
+	    pos = pos + dir*params.step_size/refractive_index;
 
  		// calculate distance between the ray location and the minimum corner of the volume
  		float3 offset = pos-min_bound;
@@ -237,8 +240,8 @@ __device__ light_ray_data_t trace_rays_through_density_gradients(light_ray_data_
  		float3 lookup = {static_cast<float>(lookupfn.x*params.data_width), static_cast<float>(lookupfn.y*params.data_height), static_cast<float>(lookupfn.z*params.data_depth)};
 
  		// if the lookup index lies outside the volume, exit the loop
- 		if(pos.x < min_bound.x || pos.y < min_bound.y || pos.z < min_bound.z ||
- 				pos.x > max_bound.x || pos.y > max_bound.y || pos.z > max_bound.z )
+ 		if(pos.x <= min_bound.x || pos.y <= min_bound.y || pos.z <= min_bound.z ||
+ 				pos.x >= max_bound.x || pos.y >= max_bound.y || pos.z >= max_bound.z )
  			break;
 
  		// retrieve the refractive index gradient at the given location
@@ -247,12 +250,16 @@ __device__ light_ray_data_t trace_rays_through_density_gradients(light_ray_data_
  		// calculate the change in ray direction
  		normal = make_float3(-val.x,-val.y,val.z);
 
+// 		// get the refractive index at the current location
+ 		refractive_index = val.w;
+
  		// update the ray direction
  		dir = dir + params.step_size*normal;
  		// normalize the direction to ensure that it is a unit vector
  		dir = normalize(dir);
  		// update the ray position
-	    pos = pos + dir*params.step_size;
+//	    pos = pos + dir*params.step_size/refractive_index;
+//	    pos = pos + dir*params.step_size;
 
    }
 
@@ -260,6 +267,8 @@ __device__ light_ray_data_t trace_rays_through_density_gradients(light_ray_data_
  	light_ray_data.ray_source_coordinates = pos;
  	// this is the final direction of the ray
  	light_ray_data.ray_propagation_direction = normalize(dir);
+
+// 	printf("refractive_index: %f\n", refractive_index);
 
  	return light_ray_data;
 }
@@ -485,6 +494,9 @@ density_grad_params_t setData(float* data, density_grad_params_t _params)
 			_params.data[data_loc].y = normal.y;
 			_params.data[data_loc].z = normal.z;
 			_params.data[data_loc].w = data[size_t(z*data_width*data_height + y*data_width + x)];
+
+			if(_params.data[data_loc].w == 0)
+				printf("_params.data[data_loc].w == 0 at data_loc: %d\n", data_loc);
 
 			if (_params.data[(z*data_width*data_height + y*data_width + x)].w < _params.data_min)
 			  _params.data_min = _params.data[(z*data_width*data_height + y*data_width + x)].w;

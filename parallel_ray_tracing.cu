@@ -1833,11 +1833,12 @@ void read_from_file()
 //	file_density_grad.close();
 
 	// specify if the density gradient effects have to be simulated or not
-//	bool simulate_density_gradients = true;
-	bool simulate_density_gradients = false;
+	bool simulate_density_gradients = true;
+//	bool simulate_density_gradients = false;
 
 	// specify name of the file containing density gradient data
-	char density_grad_filename[] = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/const_grad_BOS_grad_x_10.nrrd";
+	char density_grad_filename[] = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/const_grad_BOS_grad_x_0.50_zmin_200_zmax_400.nrrd";
+//	char density_grad_filename[] = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/const_grad_BOS_grad_x_10.nrrd";
 //	char density_grad_filename[] = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/const_grad_BOS.nrrd";
 	//	char density_grad_filename[] = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/test.nrrd";
 	char lightray_position_save_path[] ="/home/barracuda/a/lrajendr/temp/";
