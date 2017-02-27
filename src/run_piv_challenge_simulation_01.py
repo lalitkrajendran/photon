@@ -139,15 +139,16 @@ Z_Max = +7.5e3
 total_particle_number = 100000
 
 # initialize random number seed
-RAND_SEED = 5
-np.random.seed(RAND_SEED)
+# RAND_SEED = 5
+# np.random.seed(RAND_SEED)
+np.random.seed()
 
 # This generates the particle positions
-np.random.seed(5)
+# np.random.seed(5)
 X = (X_Max - X_Min) * np.random.rand(int(total_particle_number), 1) + X_Min
-np.random.seed(22)
+# np.random.seed(22)
 Y = (Y_Max - Y_Min) * np.random.rand(int(total_particle_number), 1) + Y_Min
-np.random.seed(51)
+# np.random.seed(51)
 Z = (Z_Max - Z_Min) * np.random.rand(int(total_particle_number), 1) + Z_Min
 
 # # BOS

@@ -11,7 +11,7 @@ start_case=$2
 
 # set directory where the parameter files are stored
 #parameter_file_path=/home/barracuda/a/lrajendr/Projects/camera_simulation/data/bos_parameters/$error_analysis_parameter
-parameter_file_path=/home/shannon/c/aether/Projects/BOS/error-analysis/data/parameters/$error_analysis_parameter
+parameter_file_path=/home/shannon/c/aether/Projects/BOS/error-analysis/analysis/data/parameters/$error_analysis_parameter
 
 # set directory where ray tracing code is located
 src_filepath=/home/barracuda/a/lrajendr/Projects/camera_simulation/src

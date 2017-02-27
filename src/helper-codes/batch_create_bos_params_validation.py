@@ -13,7 +13,7 @@ sys.path.append('/home/barracuda/a/lrajendr/Projects/camera_simulation/src/')
 
 # set filepath
 # filepath = '/home/barracuda/a/lrajendr/Projects/camera_simulation/data/bos_parameters/focusing/'
-filepath = '/home/shannon/c/aether/Projects/BOS/error-analysis/analysis/data/parameters/focusing/'
+filepath = '/home/shannon/c/aether/Projects/BOS/error-analysis/analysis/data/parameters/validation/without-error/'
 
 # if the write directory does not exist, create it
 if (not (os.path.exists(filepath))):
@@ -26,8 +26,8 @@ filename_base = 'bos_simulation_parameters_'
 dot_size_microns = 5e2
 
 # this is the first derivative of density gradient
-# grad_x_array = np.linspace(start=0.5, stop=5.0, num=10, endpoint=True)
-grad_x = 5.0
+grad_x_array = np.linspace(start=0.5, stop=5.0, num=10, endpoint=True)
+# grad_x = 5.0
 
 # this is the number of image pairs that will be create for a single parameter value. this is to ensure an adequate number of
 # vectors for error analysis
@@ -36,19 +36,16 @@ number_of_image_pairs = 1
 offset = 0
 
 # set the seeding density required (no. of dots per 32x32 window)
-seeding_density = 2.0
-
-# create array of image plane perturbations as a fraction (0.5 = 50% shift)
-image_plane_perturbation_array = np.linspace(0.000, 0.020, num=21, endpoint=True)
+seeding_density = 10.0
 
 # create an array of random numbers that will serve as the seed to the random number generator that in turn generates
 # positions of the dots in the pattern
 random_number_seed = np.random.randint(low=1, high=100000, size=(number_of_image_pairs, 2))
 
-for image_plane_perturbation_index in range(0,len(image_plane_perturbation_array)):
+for grad_x_index in range(0,len(grad_x_array)):
     
-    # set image plane perturbation
-    image_plane_perturbation = image_plane_perturbation_array[image_plane_perturbation_index]
+    # set density gradient
+    grad_x = grad_x_array[grad_x_index]
     
     # call function to create params for each dot size
     piv_simulation_parameters = CBS.create_bos_simulation_parameters()
@@ -93,9 +90,9 @@ for image_plane_perturbation_index in range(0,len(image_plane_perturbation_array
     print 'nx', ny
 
     # modify the f# of the lens
-    f_number = 2.8
+    f_number = 22
     piv_simulation_parameters['lens_design']['aperture_f_number'] = f_number
-    
+
     # modify lens focal length
     piv_simulation_parameters['lens_design']['focal_length'] = 200e3 #105e3
 
@@ -103,10 +100,10 @@ for image_plane_perturbation_index in range(0,len(image_plane_perturbation_array
     piv_simulation_parameters['bos_pattern']['particle_number_per_grid_point'] = 10
 
     # add a perturbation to the image distance
-    piv_simulation_parameters['lens_design']['perturbation'] = image_plane_perturbation
+    # piv_simulation_parameters['lens_design']['perturbation'] = image_plane_perturbation
     
     # top_write_directory = '/home/shannon/a/lrajendr/Projects/camera_simulation/results/images/bos/error-analysis/seeding/'
-    top_write_directory = '/home/shannon/c/aether/Projects/BOS/error-analysis/analysis/data/images/focusing/'
+    top_write_directory = '/home/shannon/c/aether/Projects/BOS/error-analysis/analysis/data/images/validation/without-error/'
 
     # for each dot size, 40 image pairs will be created. so loop through all the cases, initialize a random number to
     # ensure a different dot pattern for each image pair and also set the final directory where the images for each case
@@ -115,15 +112,15 @@ for image_plane_perturbation_index in range(0,len(image_plane_perturbation_array
         # set the location where the rendered images will be saved
         # piv_simulation_parameters['output_data']['bos_pattern_image_directory'] = top_write_directory + '%d/%d/'\
         #                                                                         % (dot_size_microns[i], image_pair_index+1)
-        piv_simulation_parameters['output_data']['bos_pattern_image_directory'] = top_write_directory + 'grad_x=%.2f/perturbation=%05d/%d/' % \
-                                                                                  (grad_x, image_plane_perturbation*10000, offset + image_pair_index+1)
+        piv_simulation_parameters['output_data']['bos_pattern_image_directory'] = top_write_directory + 'grad_x=%.2f/%d/' % \
+                                                                                  (grad_x, offset + image_pair_index+1)
 
         # set the random number controlling the position of dots in the dot pattern
         piv_simulation_parameters['bos_pattern']['random_number_seed'] = random_number_seed[image_pair_index,:]
 
         print "output directory", piv_simulation_parameters['output_data']['bos_pattern_image_directory']
 
-        filename_full = filename_base + '%04d' % (image_plane_perturbation_index*number_of_image_pairs + image_pair_index+1) + '.mat'
+        filename_full = filename_base + '%04d' % (grad_x_index*number_of_image_pairs + image_pair_index+1) + '.mat'
 
         piv_simulation_parameters['density_gradients'][
             'density_gradient_filename'] = '/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/const_grad_BOS_grad_x_%.2f_zmin_200_zmax_400.nrrd' % grad_x

@@ -41,7 +41,7 @@ for name in $folder_names
 do
   # print out the folder names
   dir=$filepath/$name
-  echo $dir
+  echo 'dir', $dir
   #echo 
   # create a copy of the .tif files with a different name
   for file in $(find $dir/* -name *.tif)

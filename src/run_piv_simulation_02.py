@@ -538,7 +538,7 @@ def calculate_particle_diameter_indices(piv_simulation_parameters,particle_diame
 
     # This generates a list of random numbers to randomly determine the
     # particle diameters
-    np.random.seed(232)
+    # np.random.seed(232)
     random_vector = np.random.rand(particle_number)
 
     # This initializes a vector of the particle diameters
@@ -886,7 +886,7 @@ def calculate_sunflower_coordinates(grid_point_diameter,lightray_number_per_grid
         circle_lightray_point_number = np.round(rho*(2.0 * np.pi * radius_current))
         
         # This is a vector of angles for the points
-        np.random.seed(714)
+        # np.random.seed(714)
         theta_current = (2.0*np.pi/circle_lightray_point_number)*(np.arange(1.0,circle_lightray_point_number)-1.0) + 2.0*np.pi*np.random.rand(1,1)
         
         # These are the coordinates of the current radius's points
@@ -1173,10 +1173,6 @@ def generate_bos_lightfield_data(piv_simulation_parameters,optical_system):
     # % This is the object distance of the lens
     z_object = v1_vertex_plane - h1_principal_plane + object_distance
 
-    # this perturbs the image distance by a small amount to see where the focal plane lies
-    if('perturbation' in piv_simulation_parameters['lens_design'].keys()):
-        image_distance += (1 + piv_simulation_parameters['lens_design']['perturbation']) * image_distance
-
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # % Generates the bos pattern data
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1205,14 +1201,14 @@ def generate_bos_lightfield_data(piv_simulation_parameters,optical_system):
     else:
         Y_Max = +7.5e4
 
-    # set the seed of the random number generator. this will be different for each simulation
-    if(piv_simulation_parameters['bos_pattern']['random_number_seed'][0]):
-        np.random.seed(piv_simulation_parameters['bos_pattern']['random_number_seed'][0])
+    # # set the seed of the random number generator. this will be different for each simulation
+    # if(piv_simulation_parameters['bos_pattern']['random_number_seed'][0]):
+    #     np.random.seed(piv_simulation_parameters['bos_pattern']['random_number_seed'][0])
     x_grid_point_coordinate_vector = X_Min + (X_Max - X_Min) * np.random.rand(x_grid_point_number, y_grid_point_number)
 
-    # set the seed of the random number generator. this will be different for each simulation
-    if(piv_simulation_parameters['bos_pattern']['random_number_seed'][1]):
-        np.random.seed(piv_simulation_parameters['bos_pattern']['random_number_seed'][1])
+    # # set the seed of the random number generator. this will be different for each simulation
+    # if(piv_simulation_parameters['bos_pattern']['random_number_seed'][1]):
+    #     np.random.seed(piv_simulation_parameters['bos_pattern']['random_number_seed'][1])
     y_grid_point_coordinate_vector = Y_Min + (Y_Max - Y_Min) * np.random.rand(x_grid_point_number, y_grid_point_number)
 
     # % This generates a series of points that fill the circle of the grid point

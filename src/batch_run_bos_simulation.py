@@ -48,12 +48,14 @@ def _todict(matobj):
 
 # get the startin index, and the number of parameter files to read at a time
 script, filepath, starting_index, number_of_parameter_files = argv
-# starting_index = 1
-# number_of_parameter_files = 1
 
 # convert string variables to integers
 starting_index = int(starting_index)
 number_of_parameter_files = int(number_of_parameter_files)
+
+# filepath = '/home/shannon/c/aether/Projects/BOS/error-analysis/analysis/data/parameters/validation/without-error/'
+# starting_index = 1
+# number_of_parameter_files = 1
 
 # specify directory where parameters are stored
 # bos_simulation_parameters_read_directory = '../data/bos_parameters/magnification/'
@@ -63,6 +65,10 @@ bos_simulation_parameters_read_directory = filepath
 bos_parameter_list = sorted(glob.glob(bos_simulation_parameters_read_directory + '*.mat'))
 print "Number of cases: %d" % len(bos_parameter_list)
 
+# initialize the random number generator
+np.random.seed()
+
+# start the clock
 start = time.time()
 
 # This iterates through the different cases performing the image simulation

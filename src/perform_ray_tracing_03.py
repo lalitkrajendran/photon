@@ -387,13 +387,13 @@ def generate_lightfield_angular_data(lens_pitch, image_distance, scattering_data
 
         # % This creates random radial coordinates for the lightrays to intersect
         # % on the lens
-        np.random.seed(1105)
+        # np.random.seed(1105)
         r_temp = np.random.rand(1, lightray_number_per_particle)
         r = R * np.sqrt(r_temp)
 
         # % This creates random angular coordinates for the lightrays to
         # % intersect on the lens
-        np.random.seed(4092)
+        # np.random.seed(4092)
         psi_temp = np.random.rand(1, lightray_number_per_particle)
         psi = 2.0 * np.pi * psi_temp
 
@@ -1851,14 +1851,14 @@ def prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, sc
     # import cuda code
     cuda_func = ctypes.CDLL('/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/Debug/libparallel_ray_tracing.so')
 
-    # # specify the properties of the function that will save the input parameters to a file for debugging later
-    # # these are the argument data types
+    # specify the properties of the function that will save the input parameters to a file for debugging later
+    # these are the argument data types
     # cuda_func.save_to_file.argtypes = [ctypes.c_float, ctypes.c_float, ctypes.POINTER(scattering_data_struct),
     #                                    ctypes.c_char_p, ctypes.POINTER(lightfield_source_struct), ctypes.c_int, \
     #                                     ctypes.c_float, ctypes.c_float, ctypes.c_int,
     #                                    _double3p,ctypes.POINTER(element_data_struct),
     #                                    _double4p,_intp,ctypes.POINTER(camera_design_struct),_floatp,
-    #                                         ctypes.c_bool, ctypes.c_char_p]
+    #                                         ctypes.c_bool, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
     #
     # # # define return type
     # cuda_func.save_to_file.restype = None
@@ -1868,7 +1868,8 @@ def prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, sc
     #                        lightfield_source_ctypes, lightray_number_per_particle,
     #                        beam_wavelength, aperture_f_number,num_elements,element_center,element_data_ctypes_struct,element_plane_parameters,
     #                        np.asarray(element_system_index).astype('int32'),camera_design_ctypes_struct,
-    #                           I2,simulate_density_gradients,density_grad_filename)
+    #                           I2,simulate_density_gradients,density_grad_filename,lightray_positions_filepath,
+    #                             lightray_directions_filepath)
 
     # specify the properties of the function that will start the ray tracing process
 
@@ -1976,6 +1977,11 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     #
     # % This is the Z position of the sensor
     z_sensor = 0.0
+
+    # this perturbs the image distance by a small amount to see where the focal plane lies
+    if('perturbation' in piv_simulation_parameters['lens_design'].keys()):
+        z_sensor += (piv_simulation_parameters['lens_design']['perturbation']) * image_distance
+        
     piv_simulation_parameters['camera_design']['z_sensor'] = z_sensor
 
     piv_simulation_parameters['camera_design']['pixel_gain'] = pixel_gain
@@ -2033,13 +2039,13 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     # generate a set of random numbers using MT 19937
     # % This creates random radial coordinates for the lightrays to intersect
     # % on the lens
-    np.random.seed(1105)
+    # np.random.seed(1105)
     r_temp = np.random.rand(1, lightray_number_per_particle).astype('float32')
     r_temp.tofile('../data/random1.bin')
 
     # % This creates random angular coordinates for the lightrays to
     # % intersect on the lens
-    np.random.seed(4092)
+    # np.random.seed(4092)
     psi_temp = np.random.rand(1, lightray_number_per_particle).astype('float32')
     psi_temp.tofile('../data/random2.bin')
 
@@ -2070,7 +2076,7 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     # this sets the seed for the image noise
-    np.random.seed(2891)
+    # np.random.seed(2891)
 
     # for r in range(0,I.shape[0]):
     #     for c in range(0,I.shape[0]):
