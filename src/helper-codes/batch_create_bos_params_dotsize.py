@@ -66,9 +66,6 @@ offset = 0
 # seeding_density = np.linspace(start=1.0, stop=20.0, num=20, endpoint=True)
 seeding_density=10.0
 
-# create an array of random numbers that will serve as the seed to the random number generator that in turn generates
-# positions of the dots in the pattern
-random_number_seed = np.random.randint(low=1, high=100000, size=(number_of_image_pairs, 2))
 
 for grad_x_index in range(0,grad_x_array.size):
     grad_x = grad_x_array[grad_x_index]
@@ -187,9 +184,6 @@ for grad_x_index in range(0,grad_x_array.size):
             # # if the write directory does not exist, create it
             # if (not (os.path.exists(piv_simulation_parameters['output_data']['bos_pattern_image_directory']))):
             #     os.makedirs(piv_simulation_parameters['output_data']['bos_pattern_image_directory'])
-
-            # set the random number controlling the position of dots in the dot pattern
-            piv_simulation_parameters['bos_pattern']['random_number_seed'] = random_number_seed[image_pair_index,:]
 
             print "output directory", piv_simulation_parameters['output_data']['bos_pattern_image_directory']
 

@@ -43,9 +43,6 @@ image_plane_perturbation = 0.007
 
 # create array of f-numbers
 f_number_array = np.array([2.8, 4, 5.6, 8, 11, 16, 22, 32, 64])
-# create an array of random numbers that will serve as the seed to the random number generator that in turn generates
-# positions of the dots in the pattern
-random_number_seed = np.random.randint(low=1, high=100000, size=(number_of_image_pairs, 2))
 
 for f_number_index in range(0,len(f_number_array)):
     
@@ -117,9 +114,6 @@ for f_number_index in range(0,len(f_number_array)):
         #                                                                         % (dot_size_microns[i], image_pair_index+1)
         piv_simulation_parameters['output_data']['bos_pattern_image_directory'] = top_write_directory + 'grad_x=%.2f/f_number=%02d/%d/' % \
                                                                                   (grad_x, f_number, offset + image_pair_index+1)
-
-        # set the random number controlling the position of dots in the dot pattern
-        piv_simulation_parameters['bos_pattern']['random_number_seed'] = random_number_seed[image_pair_index,:]
 
         print "output directory", piv_simulation_parameters['output_data']['bos_pattern_image_directory']
 

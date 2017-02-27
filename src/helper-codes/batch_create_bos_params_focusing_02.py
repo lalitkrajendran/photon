@@ -41,10 +41,6 @@ seeding_density = 2.0
 # create array of image plane perturbations as a fraction (0.5 = 50% shift)
 image_plane_perturbation_array = np.linspace(0.000, 0.020, num=21, endpoint=True)
 
-# create an array of random numbers that will serve as the seed to the random number generator that in turn generates
-# positions of the dots in the pattern
-random_number_seed = np.random.randint(low=1, high=100000, size=(number_of_image_pairs, 2))
-
 for image_plane_perturbation_index in range(0,len(image_plane_perturbation_array)):
     
     # set image plane perturbation
@@ -117,9 +113,6 @@ for image_plane_perturbation_index in range(0,len(image_plane_perturbation_array
         #                                                                         % (dot_size_microns[i], image_pair_index+1)
         piv_simulation_parameters['output_data']['bos_pattern_image_directory'] = top_write_directory + 'grad_x=%.2f/perturbation=%05d/%d/' % \
                                                                                   (grad_x, image_plane_perturbation*10000, offset + image_pair_index+1)
-
-        # set the random number controlling the position of dots in the dot pattern
-        piv_simulation_parameters['bos_pattern']['random_number_seed'] = random_number_seed[image_pair_index,:]
 
         print "output directory", piv_simulation_parameters['output_data']['bos_pattern_image_directory']
 
