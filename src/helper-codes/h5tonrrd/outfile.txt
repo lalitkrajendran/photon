@@ -1,7 +1,0 @@
-filepath: /home/barracuda/a/lrajendr/SchlierenRayVis/Data/turbulent_channel_M_5/
-
-No. of files : 125
-
-Traceback (most recent call last):
-  File "<stdin>", line 203, in <module>
-IndexError: list index out of range
