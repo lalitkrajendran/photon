@@ -23,3 +23,7 @@ test_directory_sayantan_params/*/particle_positions/*.p
 test_directory_sayantan_params/particle_positions/*.p
 
 /src/sample-codes
+/data
+/results
+*~
+
