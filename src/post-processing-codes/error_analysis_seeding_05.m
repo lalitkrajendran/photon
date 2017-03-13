@@ -36,6 +36,7 @@ num_files_per_seeding = 5;
 set(0,'DefaultFigureWindowStyle','docked')
 
 %% read and write paths
+
 % this is the folder where the figures will be saved
 figure_save_filepath = '/home/barracuda/a/lrajendr/Projects/camera_simulation/results/images/bos/error-analysis/seeding/plots/';
 
@@ -62,7 +63,7 @@ end
 % V_ref_array = zeros(size(grad_x_array));
 
 % this is threshold for checking whether a vector is valid or not (pix.)
-valid_vector_detection_threshold = 0.2;
+valid_vector_detection_threshold = 0.5;
 
 % this is the magnification
 M = 0.0867; %123500./700000;
@@ -225,6 +226,9 @@ for grad_x_index = 1:num_cases_grad_x
             
             all_errors{grad_x_index, seeding_density_index}.errors_U = U_temp_valid - U_ref(grad_x_index, seeding_density_index);
             all_errors{grad_x_index, seeding_density_index}.errors_V = V_temp_valid - V_ref(grad_x_index, seeding_density_index);
+
+            all_errors{grad_x_index, seeding_density_index}.U = U_temp_valid;
+            all_errors{grad_x_index, seeding_density_index}.V = V_temp_valid;
             
             % calculate errors
             [err_U_bias_single(file_index), err_U_random_single(file_index), ...
@@ -267,6 +271,7 @@ end
 % select color map for all the plots
 cmap = parula;
 
+
 %%%% plot absolute bias error %%%%
 figure_ctr = figure_ctr+1;
 figure(figure_ctr);
@@ -276,6 +281,9 @@ hold on
 absolute_bias_error = sqrt(err_U_bias.^2 + err_V_bias.^2);
 % calculate ratio of errors
 ellipse_axes_ratio = err_V_bias./err_U_bias;
+
+% set an arbitrary scaling factor the size of the ellipse
+scaling_factor = 1;
 
 % calculate min and max error
 min_error_color = min(absolute_bias_error(:));
@@ -310,12 +318,13 @@ for grad_x_index = 1:num_cases_grad_x
         % assign the color for the current error
         color_spec = cmap(color_id,:);
         
-        % set an arbitrary scaling factor the size of the ellipse
-        scaling_factor = 0.2;
         
         % calculate the major and minor axes of the ellipse
-        rx = scaling_factor * 1/sqrt(1+ellipse_axes_ratio(grad_x_index, seeding_density_index)^2);
-        ry = scaling_factor * 1/sqrt(1+1/ellipse_axes_ratio(grad_x_index, seeding_density_index)^2);
+%         rx = scaling_factor * 1/sqrt(1+ellipse_axes_ratio(grad_x_index, seeding_density_index)^2);
+%         ry = scaling_factor * 1/sqrt(1+1/ellipse_axes_ratio(grad_x_index, seeding_density_index)^2);
+
+        rx = scaling_factor * err_U_bias(grad_x_index, seeding_density_index);
+        ry = scaling_factor * err_V_bias(grad_x_index, seeding_density_index);
         
         % draw a filled ellipse at the color value
         create_filled_ellipse(seeding_density, grad_x, rx, ry,color_spec)
@@ -377,13 +386,13 @@ for grad_x_index = 1:num_cases_grad_x
         % assign the color for the current error
         color_spec = cmap(color_id,:);
         
-        % set an arbitrary scaling factor the size of the ellipse
-        scaling_factor = 0.2;
-        
         % calculate the major and minor axes of the ellipse
-        rx = scaling_factor * 1/sqrt(1+ellipse_axes_ratio(grad_x_index, seeding_density_index)^2);
-        ry = scaling_factor * 1/sqrt(1+1/ellipse_axes_ratio(grad_x_index, seeding_density_index)^2);
-        
+%         rx = scaling_factor * 1/sqrt(1+ellipse_axes_ratio(grad_x_index, seeding_density_index)^2);
+%         ry = scaling_factor * 1/sqrt(1+1/ellipse_axes_ratio(grad_x_index, seeding_density_index)^2);
+
+        rx = scaling_factor * err_U_random(grad_x_index, seeding_density_index);
+        ry = scaling_factor * err_V_random(grad_x_index, seeding_density_index);
+
         % draw a filled ellipse at the color value
         create_filled_ellipse(seeding_density, grad_x, rx, ry,color_spec)
         
@@ -445,14 +454,15 @@ for grad_x_index = 1:num_cases_grad_x
         % assign the color for the current error
         color_spec = cmap(color_id,:);
         
-        % set an arbitrary scaling factor the size of the ellipse
-        scaling_factor = 0.2;
-        
         % calculate the major and minor axes of the ellipse
-        rx = scaling_factor * 1/sqrt(1+ellipse_axes_ratio(grad_x_index, seeding_density_index)^2);
-        ry = scaling_factor * 1/sqrt(1+1/ellipse_axes_ratio(grad_x_index, seeding_density_index)^2);
+%         rx = scaling_factor * 1/sqrt(1+ellipse_axes_ratio(grad_x_index, seeding_density_index)^2);
+%         ry = scaling_factor * 1/sqrt(1+1/ellipse_axes_ratio(grad_x_index, seeding_density_index)^2);
         
-%         fprintf('rx: %f, ry: %f\n', rx, ry);
+        rx = scaling_factor * err_U_total(grad_x_index, seeding_density_index);
+        ry = scaling_factor * err_V_total(grad_x_index, seeding_density_index);
+
+        
+        %         fprintf('rx: %f, ry: %f\n', rx, ry);
         
         % draw a filled ellipse at the color value
         create_filled_ellipse(seeding_density, grad_x, rx, ry,color_spec);
@@ -562,7 +572,7 @@ save_figure_to_file(gcf, figure_save_filepath, 'NIFIFO-U-seeding');
 num_bins = 20;
 
 % effect of seeding
-grad_index = 5;
+grad_x_index = 5;
 figure_ctr = figure_ctr+1;
 figure(figure_ctr);
 subplot(2,1,1)
@@ -575,7 +585,7 @@ end
 legend(legend_string_seeding)
 grid on
 xlabel('error (pix.)')
-title({'Effect of seeding, PDF', ['\Delta x_{ref}=' num2str(U_ref(grad_index,5), '%.2f') ' pix.']})
+title({'Effect of seeding, PDF', ['\Delta x_{ref}=' num2str(U_ref(grad_x_index,5), '%.2f') ' pix.']})
 
 subplot(2,1,2)
 hold on
@@ -587,7 +597,7 @@ end
 legend(legend_string_seeding)
 grid on
 xlabel('error (pix.)')
-title({'Effect of seeding, CDF', ['\Delta x_{ref}=' num2str(U_ref(grad_index,5), '%.2f') ' pix.']})
+title({'Effect of seeding, CDF', ['\Delta x_{ref}=' num2str(U_ref(grad_x_index,5), '%.2f') ' pix.']})
 
 % save results to file
 save_figure_to_file(gcf, figure_save_filepath, 'error-histogram-U-seeding');
@@ -622,6 +632,30 @@ title({'Effect of displacement, CDF', [num2str(seeding_density_array(seeding_den
 
 % save results to file
 save_figure_to_file(gcf, figure_save_filepath, 'error-histogram-U-displacement');
+
+%%% histogram of subpixel displacement %%%
+figure_ctr = figure_ctr+1;
+figure(figure_ctr);
+
+% effect of seeding
+grad_x_index = 5;
+figure_ctr = figure_ctr+1;
+figure(figure_ctr);
+subplot(2,1,1)
+hold on
+for i = 5:5:20
+    [val,edge] = histcounts(all_errors{grad_x_index,i}.U - floor(all_errors{grad_x_index,i}.U), 'numbins', num_bins, 'normalization', 'pdf');
+    center = 0.5 * (edge(1:end-1) + edge(2:end));
+    area(center, val, 'facecolor', colors(i/5), 'facealpha', 0.25, 'linewidth', 2.0, 'edgecolor', colors(i/5))
+end
+legend(legend_string_seeding)
+grid on
+xlabel('displacement (pix.)')
+title({'Histogram of sub pixel displacement', ['\Delta x_{ref}=' num2str(U_ref(grad_x_index,5), '%.2f') ' pix.']})
+
+% save results to file
+save_figure_to_file(gcf, figure_save_filepath, 'histogram-subpixel-displacement');
+
 
 %%% plot random error vs displacement %%%
 

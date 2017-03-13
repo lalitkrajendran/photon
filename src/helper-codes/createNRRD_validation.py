@@ -127,78 +127,49 @@ def calculate_density_gradient(delta_x, delta_y, data, rho_0, M, pixel_pitch, z_
 
     return grad_x, grad_y
 
-#script, first, second, third = argv
-
+# dictionary to store density field
 data = {}
 
 # number of points along the density gradient volume
-nx = 200
-ny = 200
-nz = 100
+nx = 10
+ny = 10
+nz = 10
 
-# distance of the dot pattern from the camera lens (microns)
-z_object = 2500e3 #823668.800556
-
-# distance between dot pattern and near end of density gradient volume (microns)
-z_1 = 200e3 # 0.5e3
-# distance between dot pattern and far end of density gradient volume (microns)
-z_2 = 400e3 # 30e3
-
-# z co-ordinate of the density grad volume nearest to the dot pattern (microns)
-Z_Max = z_object - z_1
-# z co-ordinate of the density grad volume nearest to the dot pattern (microns)
-Z_Min = z_object - z_2
-
-# expected field of view for the given setting (microns)
-field_of_view = 175e3
-
-data['x'] = np.linspace(-field_of_view/2,field_of_view/2,nx).astype('float32') # - X_Velocity/2
-data['y'] = np.linspace(-field_of_view/2,field_of_view/2,ny).astype('float32') # - Y_Velocity/2
-data['z'] = np.linspace(Z_Min, Z_Max, nz).astype('float32')
-
-# array of required displacements (pixels)
-displacement_array = np.linspace(start=0.1, stop=2.0, num=20, endpoint=True)
-print "displacement array", displacement_array
-
-# magnification
-M = 0.087
-
-# this is the width of a pixel on the camera sensor (m)
-pixel_pitch = 17e-6
+# generate array of z co-ordinates
+x = np.linspace(start=-1e3, stop=1e3, num=nx, endpoint=True).astype(np.float32)
+y = np.linspace(start=-1e3, stop=1e3, num=ny, endpoint=True).astype(np.float32)
+z = np.linspace(start=0, stop=5, num = nz, endpoint=True).astype(np.float32)
 
 # this is the density of the undisturbed medium (kg/m^3)
 rho_0 = 1.225
 
-for displacement_index in range(0,len(displacement_array)):
+# this is the gladstone-dale constant (m^3/kg)
+K = 0.225e-3
 
-    # generate array of co-ordinates
-    x = np.array(data['x'])
-    y = np.array(data['y'])
-    z = np.array(data['z'])
+# this is the refractive index of the undisturbed medium
+n_0 = K * rho_0 + 1
 
-    X,Y = np.meshgrid(x,y,indexing='ij')
+# gradient of the square of the refractive index
+alpha = 1e-1
 
-    # initialize array of densities
-    data['rho'] = rho_0*np.ones([nx,ny,nz])
+# array of refractive indices
+refractive_index_array = np.sqrt(n_0**2 + alpha * z)
 
-    # set pixel displacement values for the current volume
-    delta_x = displacement_array[displacement_index]
-    delta_y = displacement_array[displacement_index]
-    
-    # calculate the corresponding values of grad_x and grad_y
-    [grad_x, grad_y] = calculate_density_gradient(delta_x, delta_y, data, rho_0, M, pixel_pitch, z_1, z_2)
-    
-    for k in range(0,nz):
-        data['rho'][:,:,k] += grad_x * (X - x.min())/(X.max() - x.min()) + grad_y * (Y - y.min())/(Y.max() - y.min())
+# generate array of co-ordinates
+data['x'] = x
+data['y'] = y
+data['z'] = z
 
-        # # add noise to the density field
-        # data['rho'][:,:,k] += np.random.normal(0, scale=0.05*1.225, size=data['rho'][:,:,k].shape)
-        #
-        # data['rho'][:,:,k] += abs(data['rho'][:,:,k].min())
+X,Y = np.meshgrid(x,y,indexing='ij')
 
-    nrrd_filename = '/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/const_grad_BOS_no_noise_delta_x_%.2f_delta_y_%.2f_zmin_%02d_zmax_%02d_nz_%04d.nrrd' % (delta_x, delta_y, z_1/1e3, z_2/1e3, nz)
+# initialize array of densities
+data['rho'] = rho_0*np.ones([nx,ny,nz])
 
-    calculate_theoretical_deflection(data, grad_x, z_1, z_2)
-    save_nrrd(data,nrrd_filename)
+for k in range(0,nz):
+    data['rho'][:,:,k] = (refractive_index_array[k] - 1)/K
+
+nrrd_filename = '/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/n2linear_alpha%.2f_nz%d.nrrd' % (alpha, nz)
+
+save_nrrd(data,nrrd_filename)
 
 

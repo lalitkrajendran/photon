@@ -5,8 +5,8 @@ echo 'grad_x:' ${grad_x_array[*]}
 for grad_x in ${grad_x_array[*]}
 do
 	echo "grad_x", $grad_x
-	top_directory=/home/shannon/c/aether/Projects/BOS/error-analysis/analysis/data/images/focusing/grad_x=$grad_x
-
+	top_directory=/home/shannon/c/aether/Projects/BOS/error-analysis/analysis/data/images/focusing/stray-light-study/grad_x=$grad_x
+  echo 'top_directory' $top_directory
 	./create_sample_processing_directory_02.sh $top_directory
 
 	# find the names of the folders and store them in an array

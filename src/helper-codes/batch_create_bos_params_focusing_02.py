@@ -39,7 +39,8 @@ offset = 0
 seeding_density = 2.0
 
 # create array of image plane perturbations as a fraction (0.5 = 50% shift)
-image_plane_perturbation_array = np.linspace(0.000, 0.020, num=21, endpoint=True)
+# image_plane_perturbation_array = np.linspace(0.000, 0.020, num=21, endpoint=True)
+image_plane_perturbation_array = np.array([0.00])
 
 for image_plane_perturbation_index in range(0,len(image_plane_perturbation_array)):
     
@@ -88,8 +89,11 @@ for image_plane_perturbation_index in range(0,len(image_plane_perturbation_array
     piv_simulation_parameters['bos_pattern']['y_grid_point_number'] = ny
     print 'nx', ny
 
+    # number of light rays to be traced for each particle forming the grid point
+    piv_simulation_parameters['bos_pattern']['lightray_number_per_particle'] = 10e3
+
     # modify the f# of the lens
-    f_number = 2.8
+    f_number = 5.6
     piv_simulation_parameters['lens_design']['aperture_f_number'] = f_number
     
     # modify lens focal length
@@ -102,7 +106,7 @@ for image_plane_perturbation_index in range(0,len(image_plane_perturbation_array
     piv_simulation_parameters['lens_design']['perturbation'] = image_plane_perturbation
     
     # top_write_directory = '/home/shannon/a/lrajendr/Projects/camera_simulation/results/images/bos/error-analysis/seeding/'
-    top_write_directory = '/home/shannon/c/aether/Projects/BOS/error-analysis/analysis/data/images/focusing/'
+    top_write_directory = '/home/shannon/c/aether/Projects/BOS/error-analysis/analysis/data/images/focusing/stray-light-study/'
 
     # for each dot size, 40 image pairs will be created. so loop through all the cases, initialize a random number to
     # ensure a different dot pattern for each image pair and also set the final directory where the images for each case

@@ -26,9 +26,11 @@ mkdir -p $destination
 # create subfolders within the the new directory
 
 # create directory to store images
+rm -rf $destination/reordered-images
 mkdir -p $destination/reordered-images
 
 # create directory to store cropped images
+rm -rf $destination/cropped-images
 mkdir -p $destination/cropped-images
 
 # create directory to store plots

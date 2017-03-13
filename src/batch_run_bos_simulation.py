@@ -46,14 +46,14 @@ def _todict(matobj):
             dict[strg] = elem
     return dict
 
-# get the startin index, and the number of parameter files to read at a time
+#get the startin index, and the number of parameter files to read at a time
 script, filepath, starting_index, number_of_parameter_files = argv
 
 # convert string variables to integers
 starting_index = int(starting_index)
 number_of_parameter_files = int(number_of_parameter_files)
 
-# filepath = '/home/shannon/c/aether/Projects/BOS/error-analysis/analysis/data/parameters/validation/without-error/'
+# filepath = '/home/shannon/c/aether/Projects/BOS/error-analysis/analysis/data/parameters/focusing/'
 # starting_index = 1
 # number_of_parameter_files = 1
 

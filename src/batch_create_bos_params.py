@@ -1,137 +1,244 @@
-import create_bos_simulation_parameters as CBS
 import numpy as np
 import scipy.io as sio
-import os
-from sys import argv
 
-'''
-script, expected_displacement_pixels = argv
+def create_bos_simulation_parameters():
+    # % This function is designed to create a basic parameters structure for
+    # % controlling simulating PIV data using the thick lens camera simulation
+    # % code.
 
-# convert string to number
-expected_displacement_pixels = int(expected_displacement_pixels)
-'''
+    # % This initializes the simulation parameters structure
+    piv_simulation_parameters = {}
 
-# set filepath
-filepath = '/home/barracuda/a/lrajendr/Projects/camera_simulation/data/bos_parameters/dot-size/'
-# filepath = '/home/barracuda/a/lrajendr/Projects/camera_simulation/data/bos_parameters/blur/'
+    # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    # % Lens Design Parameters                                                  %
+    # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-# set base file name
-filename_base = 'bos_simulation_parameters_'
+    # % This initializes the lens design parameters structure
+    piv_simulation_parameters['lens_design'] = {}
+    # % This adds the lens focal length to the design structure (in microns)
+    piv_simulation_parameters['lens_design']['focal_length'] = 105e3
+    # % This adds the lens f/# to the design structure
+    piv_simulation_parameters['lens_design']['aperture_f_number'] = 8.0
+    # % This adds the object distance of the lens (ie the distance between the
+    # % lens front principal plane and the center of the focal plane) to the
+    # % design structure (in microns)
+    piv_simulation_parameters['lens_design']['object_distance'] = 700e3
 
-
-# create array of dot sizes in pixels
-# dot_size_pixels = np.array([0.1, 0.5, 1.0]) * expected_displacement_pixels
-dot_size_pixels = np.linspace(.1, .5, num=9, endpoint=True) * 10
-
-print dot_size_pixels
-# set scaling factor to convert from pixels to microns (from trial and error)
-pixels_to_microns = 1e2
-
-# calculate dot size in microns
-dot_size_microns = dot_size_pixels * pixels_to_microns
-
-# # this is the dot size in microns
-# dot_size_microns = 300
-
-# this is the first derivative of density gradient
-grad_x = 2.0
-
-# this is the range of second derivatives of the density gradient to be considered
-# grad_xx = np.array([15.0, 30.0, 50.0])
-
-# this is the number of image pairs that will be create for a single dot size. this is to ensure an adequate number of
-# vectors for error analysis
-number_of_image_pairs = 10
-
-# create an array of random numbers that will serve as the seed to the random number generator that in turn generates
-# positions of the dots in the pattern
-random_number_seed = np.random.randint(low=1, high=100000, size=(number_of_image_pairs,2))
-
-for i in range(0,dot_size_microns.size): #len(dot_size_microns)):
-    # call function to create params for each dot size
-    piv_simulation_parameters = CBS.create_bos_simulation_parameters()
-
-    # modify the dot size parameter
-    piv_simulation_parameters['bos_pattern']['grid_point_diameter'] = dot_size_microns[i]
-
-    # modify the number of dots along x
-    nx = 75
-    piv_simulation_parameters['bos_pattern']['x_grid_point_number'] = nx
-    
-    # modify the number of dots along y
-    ny = 75
-    piv_simulation_parameters['bos_pattern']['y_grid_point_number'] = ny
-
-    # modify the f# of the lens
-    f_number = 16
-    piv_simulation_parameters['lens_design']['aperture_f_number'] = f_number
-    
-    ## modify the object distance
-    #piv_simulation_parameters['lens_design']['object_distance'] = 680e3
-
-    # modify the minimum and and maximum X co-ordinates of the bos pattern
-    piv_simulation_parameters['bos_pattern']['X_Min'] = -2.5e4
-    piv_simulation_parameters['bos_pattern']['X_Max'] = +2.5e4
-
-    # modify the minimum and and maximum Y co-ordinates of the bos pattern
-    piv_simulation_parameters['bos_pattern']['Y_Min'] = -2.5e4
-    piv_simulation_parameters['bos_pattern']['Y_Max'] = +2.5e4
-
-    # modify the file containing the density gradient data
-    piv_simulation_parameters['density_gradients']['density_gradient_filename'] = '/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/const_grad_BOS_grad_x_%02d.nrrd' % grad_x
-    
-    '''
-    # modify the number of particle that will be used for each grid point (more particles for larger grid points)
-    # the multiplying constant is the number of particles for each micron and has been determined from experience. this
-    # could vary from one optical setup to the other
-    piv_simulation_parameters['bos_pattern']['particle_number_per_grid_point'] = int(3 * dot_size_microns[i])
-    
-    # set a max size of 100 to avoid memory errors
-    if(piv_simulation_parameters['bos_pattern']['particle_number_per_grid_point'] > 100):
-        piv_simulation_parameters['bos_pattern']['particle_number_per_grid_point'] = 100
-    '''
-    piv_simulation_parameters['bos_pattern']['particle_number_per_grid_point'] = 100.
-
-
-    # set the top directory which contain images of all dot sizes
-    top_write_directory = '/home/barracuda/a/lrajendr/Projects/camera_simulation/results/images/bos/error-analysis/' \
-                          'dot-size/%dx%d-f%d-grad_x%.1f/' % (nx,ny,f_number,grad_x)
-
-    # for each dot size, 40 image pairs will be created. so loop through all the cases, initialize a random number to
-    # ensure a different dot pattern for each image pair and also set the final directory where the images for each case
-    # will be stored
-    for image_pair_index in range(0,number_of_image_pairs):
-        # set the location where the rendered images will be saved
-        piv_simulation_parameters['output_data']['bos_pattern_image_directory'] = top_write_directory + '%d/%d/'\
-                                                                                % (dot_size_microns[i], image_pair_index+1)
-
-        # # if the write directory does not exist, create it
-        # if (not (os.path.exists(piv_simulation_parameters['output_data']['bos_pattern_image_directory']))):
-        #     os.makedirs(piv_simulation_parameters['output_data']['bos_pattern_image_directory'])
-
-        # set the random number controlling the position of dots in the dot pattern
-        piv_simulation_parameters['bos_pattern']['random_number_seed'] = random_number_seed[image_pair_index,:]
-
-        print "output directory", piv_simulation_parameters['output_data']['bos_pattern_image_directory']
-
-        filename_full = filename_base + '%02d' % (i*number_of_image_pairs+image_pair_index+1) + '.mat'
-
-        # save parameters to file
-        sio.savemat(filepath + filename_full, piv_simulation_parameters, appendmat=True, format='5', long_field_names=True)
-
-        # piv_simulation_parameters['output_data']['bos_pattern_image_directory'] = \
-    #     '/home/barracuda/a/lrajendr/Projects/camera_simulation/results/images/bos/error-analysis/blur/%dx%d-f%d-dotsize%d-grad_x%d/%d' % (nx,ny,f_number,dot_size_microns,grad_x,
-    #         grad_xx[i]) + '/'
-
-    # print "output directory", piv_simulation_parameters['output_data']['bos_pattern_image_directory']
-
-
-
-    # create the full filename where the parameters will be saved
-    # filename_full = filename_base + '%02d' % (i+1) + '.mat'
+    # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    # % Camera Design Parameters                                                %
+    # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     #
-    # # save parameters to file
-    # sio.savemat(filepath + filename_full, piv_simulation_parameters, appendmat=True, format='5', long_field_names=True)
-    #
-    #
+    # % This adds the camera design parameters structure
+    piv_simulation_parameters['camera_design'] = {}
+    # % This is the pixel pitch (in microns)
+    piv_simulation_parameters['camera_design']['pixel_pitch'] = 17
+    # % This is the number of pixels in the x-direction
+    piv_simulation_parameters['camera_design']['x_pixel_number'] = 1024
+    # % This is the number of pixels in the y-direction
+    piv_simulation_parameters['camera_design']['y_pixel_number'] = 1024
+    # % This is the bit depth of the camera sensor (which must be an integer
+    # % less then or equal to 16)
+    piv_simulation_parameters['camera_design']['pixel_bit_depth'] = 10
+    # % This is the gain of the sensor in decibels
+    piv_simulation_parameters['camera_design']['pixel_gain'] = []
+    # % This is the x angle of the camera to the particle volume
+    piv_simulation_parameters['camera_design']['x_camera_angle'] = -0.00 * np.pi / 180.0
+    # % This is the y angle of the camera to the particle volume
+    piv_simulation_parameters['camera_design']['y_camera_angle'] = -0.00 * np.pi / 180.0
 
+    # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    # % Particle Field Simulation Parameters                                    %
+    # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    #
+    # % This adds the particle field parameters structure
+    piv_simulation_parameters['particle_field'] = {}
+    # % This adds the Boolean value stating whether to generate the particle
+    # % field images to the structure
+    piv_simulation_parameters['particle_field']['generate_particle_field_images'] = False
+    # % This adds the directory containing the particle locations to the
+    # % parameters structure
+    # %piv_simulation_parameters['particle_field']data_directory='/mnt/current_storage/Projects2/Tomo_PIV/Camera_Simulation_GUI/Test_Particle_Data/';
+    piv_simulation_parameters['particle_field']['data_directory'] = ''
+    # % This adds the prefix of the particle data filenames to the parameters
+    # % structure
+    piv_simulation_parameters['particle_field']['data_filename_prefix'] = 'particle_data_frame'
+    # % This adds the vector giving the frames of particle positions to load to
+    # % the parameters structure (this indexes into the list generated by the
+    # % command 'dir([data_directory,data_filename_prefix,'*.mat'])')
+    # %piv_simulation_parameters['particle_field']frame_vector=4:4;
+    piv_simulation_parameters['particle_field']['frame_vector'] = range(1, 3)  # range goes up to stop-1
+    # % This is the number of particles to simulate out of the list of possible
+    # % particles (if this number is larger than the number of saved particles,
+    # % an error will be returned)
+    piv_simulation_parameters['particle_field']['particle_number'] = 5e5
+    # % This is the number of lightrays to simulate per particle (this is roughly
+    # % equivalent to the power of the laser)
+    piv_simulation_parameters['particle_field'][
+        'lightray_number_per_particle'] = 1e4  # % 1e4 is a good number of lightrays . . .
+    # % This is the number of lightrays to propogate per iteration (this is a
+    # % function of the RAM available on the computer)
+    piv_simulation_parameters['particle_field']['lightray_process_number'] = 1e6
+    # % This is the gain of the sensor in decibels to be used in the particle
+    # % field simulation
+    piv_simulation_parameters['particle_field']['pixel_gain'] = 30
+    # % This is the Full Width Half Maximum of the laser sheet Gaussian function
+    # % (in microns) which will produce an illuminated sheet on the XY plane
+    piv_simulation_parameters['particle_field']['gaussian_beam_fwhm'] = 0.73e3
+    # % This is a Boolean value stating whether to perform Mie scattering
+    # % simulation
+    piv_simulation_parameters['particle_field']['perform_mie_scattering'] = True
+    # % This is the refractive index of the medium in which the particles are
+    # % seeded (typically either water or air)
+    piv_simulation_parameters['particle_field']['medium_refractive_index'] = 1.3330
+    # % This is the refractive index of the seeding particles used in the
+    # % simulation
+    piv_simulation_parameters['particle_field']['particle_refractive_index'] = 1.5700
+    # % This is the mean diameter of the particles being used in the simulated
+    # % experiment (in microns) - the arithmetic mean of the particle diameters
+    # % will typically be slightly smaller than this value due to the use of a
+    # % log-normal distribution in the particle sizes
+    piv_simulation_parameters['particle_field']['particle_diameter_mean'] = 27
+    # % This is the standard deviation of the particle diameter used in the
+    # % simulated experiment (in microns) - the arithmetic standard deviation
+    # % will typically be slightly smaller than this value (this effect gets
+    # % larger the closer the standard deviation gets to the mean) due to the use
+    # % of a log-normal distribution in particle sizes
+    piv_simulation_parameters['particle_field']['particle_diameter_std'] = 5
+    # % This is the number of different particle sizes to model since the
+    # % particle diameters are taken in discrete intervals for computational
+    # % efficiency
+    piv_simulation_parameters['particle_field']['particle_diameter_number'] = 27
+    # % This is the cutoff threshhold of the log-normal cumulative density
+    # % function beyond which extrema particle diameters are not calculated (ie
+    # % if this is set to 0.01 then 1% of the possible particle diameters both
+    # % much smaller  and much larger than the mean diameter that would be found
+    # % on a continuous particle diameter range will not be included in the
+    # % simulation)
+    piv_simulation_parameters['particle_field']['particle_diameter_cdf_threshhold'] = 0.01
+    # % This is the number of angles to calculate the Mie scattering intensity
+    # % over (which is later interpolated to the precise angles for each paricle)
+    piv_simulation_parameters['particle_field']['mie_scattering_angle_number'] = 128
+    # % This is a direction vector (ie the magnitude doesn't matter) that points
+    # % in the direction of the laser beam propogation - this vector (at least
+    # % for now), is defined by a 1 x 3 array and lies in the XY plane (ie the # % last component must be zero)
+
+    piv_simulation_parameters['particle_field']['beam_propogation_vector'] = np.array([0.0, 1.0, 0.0])
+    # % This is the wavelength of the laser used for illumination of the
+    # % particles (in microns)
+    piv_simulation_parameters['particle_field']['beam_wavelength'] = 0.532
+
+    # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    # % Calibration Grid Parameters                                             %
+    # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    # % This creates the calibration grid parameters structure
+    piv_simulation_parameters['calibration_grid'] = {}
+    # % This adds the Boolean value stating whether to generate the calibration
+    # % images to the structure
+    piv_simulation_parameters['calibration_grid']['generate_calibration_grid_images'] = False
+    # % This adds the grid point diameter to the structure
+    piv_simulation_parameters['calibration_grid']['grid_point_diameter'] = 3.2e3
+    # % This adds the grid point spacing to the structure
+    piv_simulation_parameters['calibration_grid']['x_grid_point_spacing'] = 15e3
+    piv_simulation_parameters['calibration_grid']['y_grid_point_spacing'] = 15e3
+    # % This adds the grid point number to the calibration structure
+    piv_simulation_parameters['calibration_grid']['x_grid_point_number'] = 11
+    piv_simulation_parameters['calibration_grid']['y_grid_point_number'] = 11
+    # % This adds the calibration plane number to the structure
+    piv_simulation_parameters['calibration_grid']['calibration_plane_number'] = 7
+    # % This adds the calibration plane spacing to the structure
+    piv_simulation_parameters['calibration_grid']['calibration_plane_spacing'] = 1e3
+    # % This adds the number of 'particles' (ie lightray source points) per grid
+    # % point to the calibration structure
+    piv_simulation_parameters['calibration_grid']['particle_number_per_grid_point'] = 1e3
+    # % This is the number of lightrays to simulate per 'particle' (ie lightray
+    # % source point) in the calibration grid
+    piv_simulation_parameters['calibration_grid']['lightray_number_per_particle'] = 5e2
+    # % This is the number of lightrays to propogate per iteration (this is a
+    # % function of the RAM available on the computer)
+    piv_simulation_parameters['calibration_grid']['lightray_process_number'] = 1e6
+    # % This is the gain of the sensor in decibels to be used in the calibration
+    # % grid simulation
+    piv_simulation_parameters['calibration_grid']['pixel_gain'] = 25
+
+    # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    # % BOS pattern Parameters                                             %
+    # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    # % This creates the calibration grid parameters structure
+    piv_simulation_parameters['bos_pattern'] = {}
+    # % This adds the Boolean value stating whether to generate the calibration
+    # % images to the structure
+    piv_simulation_parameters['bos_pattern']['generate_bos_pattern_images'] = True
+    # % This adds the grid point diameter to the structure
+    piv_simulation_parameters['bos_pattern']['grid_point_diameter'] = 6.0e2
+    # % This adds the grid point number to the calibration structure
+    piv_simulation_parameters['bos_pattern']['x_grid_point_number'] = 150
+    piv_simulation_parameters['bos_pattern']['y_grid_point_number'] = 150
+    # % This adds the number of 'particles' (ie lightray source points) per grid
+    # % point to the calibration structure
+    piv_simulation_parameters['bos_pattern']['particle_number_per_grid_point'] = 100
+    # % This is the number of lightrays to simulate per 'particle' (ie lightray
+    # % source point) in the calibration grid
+    piv_simulation_parameters['bos_pattern']['lightray_number_per_particle'] = 5e2
+    # % This is the number of lightrays to propogate per iteration (this is a
+    # % function of the RAM available on the computer)
+    piv_simulation_parameters['bos_pattern']['lightray_process_number'] = 1e6
+    # % This is the gain of the sensor in decibels to be used in the calibration
+    # % grid simulation
+    piv_simulation_parameters['bos_pattern']['pixel_gain'] = 25
+    # This sets the minimum and maximum values of the X co-ordinate of the bos pattern target
+    piv_simulation_parameters['bos_pattern']['X_Min'] = -7.5e4
+    piv_simulation_parameters['bos_pattern']['X_Max'] = +7.5e4
+    # This sets the minimum and maximum values of the Y co-ordinate of the bos pattern target
+    piv_simulation_parameters['bos_pattern']['Y_Min'] = -7.5e4
+    piv_simulation_parameters['bos_pattern']['Y_Max'] = +7.5e4
+    # number of light ray positions and directions to save
+    piv_simulation_parameters['bos_pattern']['num_lightrays_save'] = 1e6
+
+    # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    # % Density Gradient Parameters
+    # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    piv_simulation_parameters['density_gradients'] = {}
+
+    piv_simulation_parameters['density_gradients']['simulate_density_gradients'] = False
+    # This specifies the path to the file containing the density gradient data
+    piv_simulation_parameters['density_gradients']['density_gradient_filename'] = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/const_grad_BOS_grad_x_10.nrrd"
+
+    # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    # % Image Writing Parameters                                                %
+    # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    # % This adds the output data parameters structure
+    piv_simulation_parameters['output_data'] = {}
+    # % This adds the directory to save the particle images to parameters
+    # % structure
+    # %piv_simulation_parameters.output_data.particle_image_directory='/mnt/current_storage/Projects2/Tomo_PIV/Camera_Simulation_GUI/camera_simulation_package_01/test_directory/particle_images/';
+    piv_simulation_parameters['output_data']['particle_image_directory'] = ''
+    # % This adds the directory to save the calibration grid images to
+    # % parameters structure
+    # %piv_simulation_parameters.output_data.calibration_grid_image_directory='/mnt/current_storage/Projects2/Tomo_PIV/Camera_Simulation_GUI/camera_simulation_package_01/test_directory/calibration_images/';
+    piv_simulation_parameters['output_data']['calibration_grid_image_directory'] = ''
+
+    # % This adds the directory to save the bos pattern images to
+    # % parameters structure
+    # %piv_simulation_parameters.output_data.calibration_grid_image_directory='/mnt/current_storage/Projects2/Tomo_PIV/Camera_Simulation_GUI/camera_simulation_package_01/test_directory/calibration_images/';
+    piv_simulation_parameters['output_data']['bos_pattern_image_directory'] = ''
+
+    return piv_simulation_parameters
+
+# define the parameter to be studied (name and range)
+simulation_parameter = 'seeding'
+simulation_parameter_range = np.array([4, 8, 12, 16, 20])
+
+# calculate number of parameter values
+num_params = simulation_parameter_range.size
+
+# define the displacement range to cover
+displacement_array = np.linspace(start=0.2, stop=2.0, num=10)
+
+for parameter_index in range(0, num_params):
+    for displacement_index in range(0, displacement_index):
+# modify the parameter set accordingly
+
+# save the parameter set

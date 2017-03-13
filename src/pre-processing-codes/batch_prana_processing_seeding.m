@@ -47,6 +47,10 @@ for grad_x_index = 1:length(grad_x_array)
         % change the number of files to process for this setting
         Data.imfend = num2str(length(tiff_files) - 1);
         
+        Data.PIV1.winres='32,32;32,32';
+        Data.PIV1.winsize='64,64';
+        Data.PIV1.gridres='32,32';
+        
 %         %%% change settings for saving peaks %%%
 %         % specify that validation is not required for the third pass
 %         Data.PIV3.val = '0';

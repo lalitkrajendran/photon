@@ -25,9 +25,14 @@ filename_base = 'bos_simulation_parameters_'
 # set dot size in microns
 dot_size_microns = 5e2
 
-# this is the first derivative of density gradient
-# grad_x_array = np.linspace(start=0.5, stop=5.0, num=10, endpoint=True)
-grad_x = 5.0
+# # this is the first derivative of density gradient
+# # grad_x_array = np.linspace(start=0.5, stop=5.0, num=10, endpoint=True)
+# grad_x = 5.0
+
+# pixel displacement
+displacement = 1.0
+delta_x = displacement
+delta_y = displacement
 
 # this is the number of image pairs that will be create for a single parameter value. this is to ensure an adequate number of
 # vectors for error analysis
@@ -45,8 +50,8 @@ image_plane_perturbation = 0.007
 f_number_array = np.array([2.8, 4, 5.6, 8, 11, 16, 22, 32])
 
 for f_number_index in range(0,len(f_number_array)):
-    
-    
+
+
     # call function to create params for each dot size
     piv_simulation_parameters = CBS.create_bos_simulation_parameters()
 
@@ -92,16 +97,19 @@ for f_number_index in range(0,len(f_number_array)):
     # modify the f# of the lens
     f_number = f_number_array[f_number_index]
     piv_simulation_parameters['lens_design']['aperture_f_number'] = f_number
-    
+
     # modify lens focal length
     piv_simulation_parameters['lens_design']['focal_length'] = 200e3 #105e3
 
     # modify the number of 'particles' (ie lightray source points) per grid point
-    piv_simulation_parameters['bos_pattern']['particle_number_per_grid_point'] = 10
+    piv_simulation_parameters['bos_pattern']['particle_number_per_grid_point'] = 100
+
+    # number of light rays to be traced for each particle forming the grid point
+    piv_simulation_parameters['bos_pattern']['lightray_number_per_particle'] = 5e3
 
     # add a perturbation to the image distance
     piv_simulation_parameters['lens_design']['perturbation'] = image_plane_perturbation
-    
+
     # top_write_directory = '/home/shannon/a/lrajendr/Projects/camera_simulation/results/images/bos/error-analysis/seeding/'
     top_write_directory = '/home/shannon/c/aether/Projects/BOS/error-analysis/analysis/data/images/dof/'
 
@@ -110,20 +118,20 @@ for f_number_index in range(0,len(f_number_array)):
     # will be stored
     for image_pair_index in range(0,number_of_image_pairs):
         # set the location where the rendered images will be saved
-        # piv_simulation_parameters['output_data']['bos_pattern_image_directory'] = top_write_directory + '%d/%d/'\
-        #                                                                         % (dot_size_microns[i], image_pair_index+1)
-        piv_simulation_parameters['output_data']['bos_pattern_image_directory'] = top_write_directory + 'grad_x=%.2f/f_number=%02d/%d/' % \
-                                                                                  (grad_x, f_number, offset + image_pair_index+1)
+        piv_simulation_parameters['output_data'][
+            'bos_pattern_image_directory'] = top_write_directory + 'delta_x=%.2f_delta_y=%.2f/f_number=%02d/%d/' % \
+                                                                    (delta_x, delta_y, f_number,
+                                                                     offset + image_pair_index+1)
 
-        print "output directory", piv_simulation_parameters['output_data']['bos_pattern_image_directory']
-
-        filename_full = filename_base + '%04d' % (f_number_index*number_of_image_pairs + image_pair_index+1) + '.mat'
-
+        # name of the file containing the density gradients
         piv_simulation_parameters['density_gradients'][
-            'density_gradient_filename'] = '/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/const_grad_BOS_grad_x_%.2f_zmin_200_zmax_400.nrrd' % grad_x
+            'density_gradient_filename'] = '/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/const_grad_BOS_delta_x_%.2f_delta_y_%.2f_zmin_200_zmax_400_nz_0100.nrrd' % (
+            delta_x, delta_y)
 
+        # name of the parameter file
+        filename_full = filename_base + '%04d' % (f_number_index*number_of_image_pairs + image_pair_index+1) + '.mat'
         print filename_full
-        
+
         # save parameters to file
         sio.savemat(filepath + filename_full, piv_simulation_parameters, appendmat=True, format='5', long_field_names=True)
 

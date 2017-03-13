@@ -1630,7 +1630,8 @@ def prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, sc
                                      lightray_number_per_particle, beam_wavelength,aperture_f_number,
                                  element_data, element_center,
                                  element_plane_parameters, element_system_index,camera_design,I,density_grad_filename,
-                                 simulate_density_gradients, lightray_positions_filepath, lightray_directions_filepath):
+                                 simulate_density_gradients, lightray_positions_filepath, lightray_directions_filepath,
+                                 num_lightrays_save):
     #-------------------------------------------------------------------------------------------------------------------
     # convert variables to appropriate ctypes formats
     # -------------------------------------------------------------------------------------------------------------------
@@ -1879,7 +1880,8 @@ def prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, sc
                                        ctypes.c_float, ctypes.c_float, ctypes.c_int,
                                        _double3p, ctypes.POINTER(element_data_struct),
                                        _double4p, _intp, ctypes.POINTER(camera_design_struct), _floatp,
-                                            ctypes.c_bool, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
+                                            ctypes.c_bool, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p,
+                                            ctypes.c_int]
 
 
     #  define return type
@@ -1893,7 +1895,7 @@ def prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, sc
                            element_plane_parameters,
                            np.asarray(element_system_index).astype('int32'), camera_design_ctypes_struct,
                                 I2,simulate_density_gradients,density_grad_filename,lightray_positions_filepath,
-                                lightray_directions_filepath)
+                                lightray_directions_filepath, num_lightrays_save)
 
     print "done ray tracing"
 
@@ -2060,12 +2062,15 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     lightray_positions_filepath = piv_simulation_parameters['output_data']['lightray_positions_filepath']
     lightray_directions_filepath = piv_simulation_parameters['output_data']['lightray_directions_filepath']
 
+    # number of light rays to save positions and directions for
+    num_lightrays_save = int(piv_simulation_parameters['bos_pattern']['num_lightrays_save'])
+
     # convert the data to ctypes compatible format and call the CUDA function
     I = prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, scattering_type,
                            lightfield_source, lightray_number_per_particle, beam_wavelength,aperture_f_number, element_data, element_center,
                            element_plane_parameters, element_system_index,piv_simulation_parameters['camera_design'],
                                               I,density_grad_filename,simulate_density_gradients, lightray_positions_filepath
-                                     , lightray_directions_filepath)
+                                     , lightray_directions_filepath, num_lightrays_save)
 
 
     # this is the raw verion of the original image
@@ -2087,13 +2092,15 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     ## make a copy of the image array with non-zero elements made 1 so the image noise function doesn't crash
     #I_temp = np.where(I, I, 1)
 
-    # this generates random numbers from a normal distribution to add to the image array
-    image_noise = (np.random.normal(0.0, scale = 0.03 * I.max(), size=I.shape))
-    # image_noise = np.random.normal(0.0, scale=0.03 * I.max(), size=I.shape)
+    if(piv_simulation_parameters['camera_design']['image_noise'] > 0.0):
 
-    # this adds the image noise only to elements of I that are non-zero
-    #I = np.where(I, I+image_noise, I)
-    I += image_noise
+        # this generates random numbers from a normal distribution to add to the image array
+        image_noise = np.random.normal(0.0, scale=piv_simulation_parameters['camera_design']['image_noise'] * I.max(),
+                                       size=I.shape)
+
+        # this adds the image noise only to elements of I that are non-zero
+        # I = np.where(I, I+image_noise, I)
+        I += image_noise
     
     # this ensures that the intensity array remains positive
     I = abs(I)
