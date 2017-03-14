@@ -2038,18 +2038,21 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     # % This initializes the sensor image
     I = np.zeros([x_pixel_number, y_pixel_number]).astype('float32')
 
+    # path to the directory containing the cuda codes
+    cuda_codes_filepath = '../cuda_codes'
+
     # generate a set of random numbers using MT 19937
     # % This creates random radial coordinates for the lightrays to intersect
     # % on the lens
     # np.random.seed(1105)
     r_temp = np.random.rand(1, lightray_number_per_particle).astype('float32')
-    r_temp.tofile('../data/random1.bin')
+    r_temp.tofile(cuda_codes_filepath + '/data/random1.bin')
 
     # % This creates random angular coordinates for the lightrays to
     # % intersect on the lens
     # np.random.seed(4092)
     psi_temp = np.random.rand(1, lightray_number_per_particle).astype('float32')
-    psi_temp.tofile('../data/random2.bin')
+    psi_temp.tofile(cuda_codes_filepath + '/data/random2.bin')
 
     # this is the name of the file which contains the density dataset for the volume
     simulate_density_gradients = piv_simulation_parameters['density_gradients']['simulate_density_gradients']
@@ -2079,18 +2082,6 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # % Adding image noise                                                      %
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-    # this sets the seed for the image noise
-    # np.random.seed(2891)
-
-    # for r in range(0,I.shape[0]):
-    #     for c in range(0,I.shape[0]):
-    #         if(I[r,c] > 0.0)
-    #             image_noise = np.random.normal(0.0, scale=0.03 * I[r,c], size=I.shape)
-    #
-
-    ## make a copy of the image array with non-zero elements made 1 so the image noise function doesn't crash
-    #I_temp = np.where(I, I, 1)
 
     if(piv_simulation_parameters['camera_design']['image_noise'] > 0.0):
 
