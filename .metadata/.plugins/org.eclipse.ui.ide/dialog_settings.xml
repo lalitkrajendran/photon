@@ -22,6 +22,10 @@
 		<item value="org.python.pydev.feature.source:4.5.5.201603221110"/>
 		<item value="org.python.pydev.feature:4.5.5.201603221110"/>
 	</list>
+	<section name="ExternalProjectImportWizard">
+		<item value="false" key="WizardProjectsImportPage.STORE_ARCHIVE_SELECTED"/>
+		<item value="false" key="WizardProjectsImportPage.STORE_COPY_PROJECT_ID"/>
+	</section>
 	<section name="NewWizardAction">
 	</section>
 </section>
