@@ -1,6 +1,11 @@
 #.mat files
 **.mat
 
+# pycharm files
+python_codes/.idea
+
+python_codes/build
+
 # pickle files
 **.p
 
