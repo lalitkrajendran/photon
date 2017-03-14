@@ -2,9 +2,9 @@
 **.mat
 
 # pycharm files
-python_codes/.idea
+python_codes/.idea/*
 
-python_codes/build
+python_codes/build/*
 
 # pickle files
 **.p
