@@ -2597,7 +2597,7 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	char num2str[10];
 
 	// number of points to be simulated in one call
-	int num_points_per_call;
+//	int num_points_per_call;
 
 	// counter for light rays
 	int light_ray_index;

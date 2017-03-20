@@ -173,6 +173,46 @@ __device__ bool IntersectWithVolume(float3* ray_pos, float3 ray_dir, float3 p1, 
 	return true;
 }
 
+__device__ float3 calculate_lookup_index(float3 pos, density_grad_params_t params, float3 lookup_scale)
+{
+	// calculate distance between the ray location and the minimum corner of the volume
+	float3 offset = pos - params.min_bound;
+
+	float3 lookupfn;
+
+	// calculate the normalized lookup index corresponding to the current ray position
+	lookupfn.x = lookup_scale.x*offset.x;
+	lookupfn.y = lookup_scale.y*offset.y;
+	lookupfn.z = lookup_scale.z*offset.z;
+
+	// calculate the lookup index
+	float3 lookup = {static_cast<float>(lookupfn.x*params.data_width), static_cast<float>(lookupfn.y*params.data_height), static_cast<float>(lookupfn.z*params.data_depth)};
+
+	return lookup;
+}
+
+__device__ bool ray_inside_box(float3 pos, density_grad_params_t params,
+		float3 lookup)
+{
+	/*
+	 * check if light ray is inside the density gradient volume.
+	 * returns true if it is or false otherwise
+	 */
+
+
+	// if the lookup index lies outside the volume, exit the loop
+	if(pos.x <= params.min_bound.x || pos.y <= params.min_bound.y || pos.z <= params.min_bound.z ||
+			pos.x >= params.max_bound.x || pos.y >= params.max_bound.y || pos.z >= params.max_bound.z )
+		return false;
+
+	if(lookup.x <= 0 || lookup.y <= 0 || lookup.z <= 0 ||
+			lookup.x >= params.data_width-1 || lookup.y >= params.data_height-1 || lookup.z >= params.data_depth-1 )
+		return false;
+
+	return true;
+
+}
+
 __device__ light_ray_data_t trace_rays_through_density_gradients(light_ray_data_t light_ray_data, density_grad_params_t params)
 {
 
@@ -181,6 +221,7 @@ __device__ light_ray_data_t trace_rays_through_density_gradients(light_ray_data_
 
 	// this is the corner of the volume containing the maximum coordinates
 	float3 max_bound = params.max_bound;
+
 
 	// this is the scaling factor to covert the coordinates to integer index locations
 	float3 lookup_scale = {1.0f/(max_bound.x-min_bound.x), 1.0f/(max_bound.y - min_bound.y), 1.0f/(max_bound.z-min_bound.z)};
@@ -214,9 +255,13 @@ __device__ light_ray_data_t trace_rays_through_density_gradients(light_ray_data_
 
  	int i = 0;
  	int insideBox = 1;
- 	float3 lookupfn;
- 	float3 normal;
- 	float refractive_index=1;
+ 	float refractive_index = 1.000277;
+ 	float3 lookup;
+ 	float4 val;
+
+ 	float3 A, B, C, D;
+ 	float3 R_n, T_n;
+ 	float delta_t;
  	//--------------------------------------------------------------------------------------
  	// trace light ray through the variable density medium
  	//--------------------------------------------------------------------------------------
@@ -225,48 +270,103 @@ __device__ light_ray_data_t trace_rays_through_density_gradients(light_ray_data_
  		// update loop index
  		i = i+1;
 
- 		// update light ray position
-	    pos = pos + dir*params.step_size/refractive_index;
+ 		/************ Update ray position using RK4 method *********/
+		/*
+ 		 * This function updates the position and direction of a light ray in a refractive index gradient
+ 		 * field by using a discretized version of fermat's equation using an RK4 method.
+ 		 * Taken from: Sharma et. al., Applied Optics (1982). Variables are identical to those in the paper.
+ 		 *
+ 		 * light_ray_data - structure containing the light ray properties
+ 		 * params - structure containing the density gradient properties
+ 		 * lookup_scale - used to calculate the array index in the density gradient texture from the
+ 		 * 			 absolute position of the light ray
+ 		 *
+ 		 *
+ 		 */
 
- 		// calculate distance between the ray location and the minimum corner of the volume
- 		float3 offset = pos-min_bound;
+ 		pos = light_ray_data.ray_source_coordinates;
+ 		dir = light_ray_data.ray_propagation_direction;
+ 		if(i==1)
+ 			pos = pos + dir * params.step_size/refractive_index;
 
- 		// calculate the normalized lookup index corresponding to the current ray position
- 		lookupfn.x = lookup_scale.x*offset.x;
- 		lookupfn.y = lookup_scale.y*offset.y;
- 		lookupfn.z = lookup_scale.z*offset.z;
+ 		// calculate lookup index to access refractive index gradient value
+		lookup = calculate_lookup_index(pos, params, lookup_scale);
+		// check if ray is inside volume
+		if(!ray_inside_box(pos, params, lookup))
+			return light_ray_data;
+		// extract refractive index gradients as well as the local refractive index
+		val = tex3D(tex_data, lookup.x, lookup.y, lookup.z);
 
- 		// calculate the lookup index
- 		float3 lookup = {static_cast<float>(lookupfn.x*params.data_width), static_cast<float>(lookupfn.y*params.data_height), static_cast<float>(lookupfn.z*params.data_depth)};
+		// get light ray position
+ 		R_n = pos;
+ 		// step size used in the RK4 integration (val.w is the refractive index)
+ 		delta_t = params.step_size/val.w;
+ 		// calculate optical ray direction vector
+ 		T_n = val.w * light_ray_data.ray_propagation_direction;
 
- 		// if the lookup index lies outside the volume, exit the loop
- 		if(pos.x <= min_bound.x || pos.y <= min_bound.y || pos.z <= min_bound.z ||
- 				pos.x >= max_bound.x || pos.y >= max_bound.y || pos.z >= max_bound.z )
- 			break;
+ 		// calculate coefficients
+ 		D = make_float3(val.w * val.x, val.w * val.y, val.w * val.z);
+ 		A = delta_t * D;
 
- 		// retrieve the refractive index gradient at the given location
- 		float4 val = tex3D(tex_data, round(lookup.x), round(lookup.y), round(lookup.z)); //*params.dataScalar;
+ 		pos = R_n + delta_t/2.0 * T_n + 1/8.0 * delta_t * A;
+ 		lookup = calculate_lookup_index(pos, params, lookup_scale);
+ 		// check if ray is inside volume
+		if(!ray_inside_box(pos, params, lookup))
+			return light_ray_data;
 
- 		// calculate the change in ray direction
- 		normal = make_float3(-val.x,-val.y,val.z);
+		val = tex3D(tex_data, lookup.x, lookup.y, lookup.z);
+ 		D = make_float3(val.w * val.x, val.w * val.y, val.w * val.z);
+ 		B = delta_t * D;
+
+ 		pos = R_n + delta_t * T_n + 1/2.0 * delta_t * B;
+ 		lookup = calculate_lookup_index(pos, params, lookup_scale);
+ 		// check if ray is inside volume
+		if(!ray_inside_box(pos, params, lookup))
+			return light_ray_data;
+ 		val = tex3D(tex_data, lookup.x, lookup.y, lookup.z);
+ 		D = make_float3(val.w * val.x, val.w * val.y, val.w * val.z);
+ 		C = delta_t * D;
+
+ 		// calculate new positions and directions
+ 		R_n = R_n + delta_t * (T_n + 1/6.0 * (A + 2*B));
+// 		float3 T_n_increment = 1/6.
+ 		T_n = T_n + 1/6.0 * (A + 4*B + C);
+
+ 		// store the new position and direction in the light ray vector
+ 		light_ray_data.ray_source_coordinates = R_n;
+ 		light_ray_data.ray_propagation_direction = normalize(T_n/val.w);
+
+
+// 		// retrieve the refractive index gradient at the given location
+// 		val = tex3D(tex_data, round(lookup.x), round(lookup.y), round(lookup.z)); //*params.dataScalar;
+
+// 		// calculate the change in ray direction
+// 		normal = make_float3(-val.x,-val.y,val.z);
+// 		// update the ray direction
+// 		dir = dir + params.step_size*normal;
+
+ 		// find the change in the ray trajectory
+// 		val = eulerIntegrate(pos, params, lookup_scale);
+// 		val = rk4Integrate(pos, params, lookup_scale);
+//
+// 		// update the ray direction
+// 		dir = dir + make_float3(-val.x, -val.y, val.z);
 
 // 		// get the refractive index at the current location
- 		refractive_index = val.w;
-
- 		// update the ray direction
- 		dir = dir + params.step_size*normal;
- 		// normalize the direction to ensure that it is a unit vector
- 		dir = normalize(dir);
+// 		refractive_index = val.w;
+//
+// 		// normalize the direction to ensure that it is a unit vector
+// 		dir = normalize(dir);
  		// update the ray position
 //	    pos = pos + dir*params.step_size/refractive_index;
 //	    pos = pos + dir*params.step_size;
 
    }
-
- 	// this is the final location of the ray
- 	light_ray_data.ray_source_coordinates = pos;
- 	// this is the final direction of the ray
- 	light_ray_data.ray_propagation_direction = normalize(dir);
+//
+// 	// this is the final location of the ray
+// 	light_ray_data.ray_source_coordinates = pos;
+// 	// this is the final direction of the ray
+// 	light_ray_data.ray_propagation_direction = normalize(dir);
 
 // 	printf("refractive_index: %f\n", refractive_index);
 

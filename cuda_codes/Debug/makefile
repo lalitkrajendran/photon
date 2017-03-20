@@ -52,19 +52,19 @@ endif
 # Add inputs and outputs from these tool invocations to the build variables 
 
 # All Target
-all: libcuda_codes.so
+all: libparallel_ray_tracing.so
 
 # Tool invocations
-libcuda_codes.so: $(OBJS) $(USER_OBJS)
+libparallel_ray_tracing.so: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: NVCC Linker'
-	/opt/cuda/7.0/bin/nvcc --cudart static -L/usr/include/ -L/export/home/a/lrajendr/Software/misc/SchlierenRay/teem/teem-1.11.0-build/bin/ -L/usr/local/include/ -L/usr/lib64/ -shared -Xlinker -fPIC -Xlinker -lteem --relocatable-device-code=false -gencode arch=compute_20,code=compute_20 -gencode arch=compute_20,code=sm_20 -link -o  "libcuda_codes.so" $(OBJS) $(USER_OBJS) $(LIBS)
+	/opt/cuda/7.0/bin/nvcc --cudart static -L/usr/include/ -L/export/home/a/lrajendr/Software/misc/SchlierenRay/teem/teem-1.11.0-build/bin/ -L/usr/local/include/ -L/usr/lib64/ -shared -Xlinker -fPIC -Xlinker -lteem --relocatable-device-code=false -gencode arch=compute_20,code=compute_20 -gencode arch=compute_20,code=sm_20 -link -o  "libparallel_ray_tracing.so" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) $(CU_DEPS)$(OBJS)$(C++_DEPS)$(C_DEPS)$(CC_DEPS)$(LIBRARIES)$(CPP_DEPS)$(CXX_DEPS)$(C_UPPER_DEPS) libcuda_codes.so
+	-$(RM) $(CU_DEPS)$(OBJS)$(C++_DEPS)$(C_DEPS)$(CC_DEPS)$(LIBRARIES)$(CPP_DEPS)$(CXX_DEPS)$(C_UPPER_DEPS) libparallel_ray_tracing.so
 	-@echo ' '
 
 .PHONY: all clean dependents
