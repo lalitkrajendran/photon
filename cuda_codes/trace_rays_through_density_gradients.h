@@ -672,6 +672,98 @@ __device__ light_ray_data_t euler(light_ray_data_t light_ray_data, density_grad_
 
 	return light_ray_data;
 }
+
+
+__device__ light_ray_data_t rk4(light_ray_data_t light_ray_data, density_grad_params_t params, float3 lookup_scale)
+{
+		/************ Update ray position using RK4 method *********/
+		/*
+		 * This function updates the position and direction of a light ray in a refractive index gradient
+		 * field by using a discretized version of fermat's equation using an RK4 method.
+		 * Taken from: Sharma et. al., Applied Optics (1982). Variables are identical to those in the paper.
+		 *
+		 * light_ray_data - structure containing the light ray properties
+		 * params - structure containing the density gradient properties
+		 * lookup_scale - used to calculate the array index in the density gradient texture from the
+		 * 			 absolute position of the light ray
+		 *
+		 *
+		 */
+
+	bool inside_box = true;
+
+	// set initial values
+	float3 pos = light_ray_data.ray_source_coordinates;
+//	float3 dir = light_ray_data.ray_propagation_direction;
+
+	float3 lookup;
+	float4 val;
+
+	int loop_ctr = 0;
+	float3 R_n, T_n;
+	float3 A, B, C, D;
+	float delta_t;
+	while(inside_box)
+	{
+
+		loop_ctr += 1;
+		if(loop_ctr > 1e5)
+			break;
+//		if(i==1)
+//			pos = pos + dir * params.step_size/refractive_index;
+
+		// calculate lookup index to access refractive index gradient value
+		lookup = calculate_lookup_index(pos, params, lookup_scale);
+		// check if ray is inside volume
+		if(!ray_inside_box(pos, params, lookup))
+			break;
+		// extract refractive index gradients as well as the local refractive index
+		val = tex3D(tex_data, lookup.x, lookup.y, lookup.z);
+
+		// get light ray position
+		R_n = pos;
+		// step size used in the RK4 integration (val.w is the refractive index)
+		delta_t = params.step_size/val.w;
+		// calculate optical ray direction vector
+		T_n = val.w * light_ray_data.ray_propagation_direction;
+
+		// calculate coefficients
+		D = make_float3(val.w * val.x, val.w * val.y, val.w * val.z);
+		A = delta_t * D;
+
+		pos = R_n + delta_t/2.0 * T_n + 1/8.0 * delta_t * A;
+		lookup = calculate_lookup_index(pos, params, lookup_scale);
+		// check if ray is inside volume
+		if(!ray_inside_box(pos, params, lookup))
+			break;
+
+		val = tex3D(tex_data, lookup.x, lookup.y, lookup.z);
+		D = make_float3(val.w * val.x, val.w * val.y, val.w * val.z);
+		B = delta_t * D;
+
+		pos = R_n + delta_t * T_n + 1/2.0 * delta_t * B;
+		lookup = calculate_lookup_index(pos, params, lookup_scale);
+		// check if ray is inside volume
+		if(!ray_inside_box(pos, params, lookup))
+			break;
+		val = tex3D(tex_data, lookup.x, lookup.y, lookup.z);
+		D = make_float3(val.w * val.x, val.w * val.y, val.w * val.z);
+		C = delta_t * D;
+
+		// calculate new positions and directions
+		R_n = R_n + delta_t * (T_n + 1/6.0 * (A + 2*B));
+// 		float3 T_n_increment = 1/6.
+		T_n = T_n + 1/6.0 * (A + 4*B + C);
+
+		// store the new position and direction in the light ray vector
+		light_ray_data.ray_source_coordinates = R_n;
+		light_ray_data.ray_propagation_direction = normalize(T_n/val.w);
+
+	}
+	//***************** END OF RK4 ********************************//
+
+	return light_ray_data;
+}
 __device__ light_ray_data_t trace_rays_through_density_gradients(light_ray_data_t light_ray_data, density_grad_params_t params)
 {
 
@@ -712,114 +804,18 @@ __device__ light_ray_data_t trace_rays_through_density_gradients(light_ray_data_
  		}
  	}
 
- 	int i = 0;
- 	int insideBox = 1;
-// 	float refractive_index = 1.000277;
-// 	float3 lookup;
-// 	float4 val;
-//
-// 	float3 A, B, C, D;
-// 	float3 R_n, T_n;
-// 	float delta_t;
-// 	float3 normal, lookupfn;
- 	//--------------------------------------------------------------------------------------
+	//--------------------------------------------------------------------------------------
  	// trace light ray through the variable density medium
  	//--------------------------------------------------------------------------------------
-// 	pos = pos + dir*params.step_size/refractive_index;
- 	while(insideBox==1)
- 	{
 
- 		// update loop index
- 		i = i+1;
-// 		pos = pos + dir*params.step_size/refractive_index;
+ 	/************ Update ray position using RK4 method *********/
+	light_ray_data = rk4(light_ray_data, params, lookup_scale);
 
-// 		/************ Update ray position using RK4 method *********/
-//		/*
-// 		 * This function updates the position and direction of a light ray in a refractive index gradient
-// 		 * field by using a discretized version of fermat's equation using an RK4 method.
-// 		 * Taken from: Sharma et. al., Applied Optics (1982). Variables are identical to those in the paper.
-// 		 *
-// 		 * light_ray_data - structure containing the light ray properties
-// 		 * params - structure containing the density gradient properties
-// 		 * lookup_scale - used to calculate the array index in the density gradient texture from the
-// 		 * 			 absolute position of the light ray
-// 		 *
-// 		 *
-// 		 */
-//
-// 		pos = light_ray_data.ray_source_coordinates;
-// 		dir = light_ray_data.ray_propagation_direction;
-// 		if(i==1)
-// 			pos = pos + dir * params.step_size/refractive_index;
-//
-// 		// calculate lookup index to access refractive index gradient value
-//		lookup = calculate_lookup_index(pos, params, lookup_scale);
-//		// check if ray is inside volume
-//		if(!ray_inside_box(pos, params, lookup))
-//			return light_ray_data;
-//		// extract refractive index gradients as well as the local refractive index
-//		val = tex3D(tex_data, lookup.x, lookup.y, lookup.z);
-//
-//		// get light ray position
-// 		R_n = pos;
-// 		// step size used in the RK4 integration (val.w is the refractive index)
-// 		delta_t = params.step_size/val.w;
-// 		// calculate optical ray direction vector
-// 		T_n = val.w * light_ray_data.ray_propagation_direction;
-//
-// 		// calculate coefficients
-// 		D = make_float3(val.w * val.x, val.w * val.y, val.w * val.z);
-// 		A = delta_t * D;
-//
-// 		pos = R_n + delta_t/2.0 * T_n + 1/8.0 * delta_t * A;
-// 		lookup = calculate_lookup_index(pos, params, lookup_scale);
-// 		// check if ray is inside volume
-//		if(!ray_inside_box(pos, params, lookup))
-//			return light_ray_data;
-//
-//		val = tex3D(tex_data, lookup.x, lookup.y, lookup.z);
-// 		D = make_float3(val.w * val.x, val.w * val.y, val.w * val.z);
-// 		B = delta_t * D;
-//
-// 		pos = R_n + delta_t * T_n + 1/2.0 * delta_t * B;
-// 		lookup = calculate_lookup_index(pos, params, lookup_scale);
-// 		// check if ray is inside volume
-//		if(!ray_inside_box(pos, params, lookup))
-//			return light_ray_data;
-// 		val = tex3D(tex_data, lookup.x, lookup.y, lookup.z);
-// 		D = make_float3(val.w * val.x, val.w * val.y, val.w * val.z);
-// 		C = delta_t * D;
-//
-// 		// calculate new positions and directions
-// 		R_n = R_n + delta_t * (T_n + 1/6.0 * (A + 2*B));
-//// 		float3 T_n_increment = 1/6.
-// 		T_n = T_n + 1/6.0 * (A + 4*B + C);
-//
-// 		// store the new position and direction in the light ray vector
-// 		light_ray_data.ray_source_coordinates = R_n;
-// 		light_ray_data.ray_propagation_direction = normalize(T_n/val.w);
-//
-// 		//***************** END OF RK4 ********************************//
+	/************ Update ray position using EULER method *********/
+	light_ray_data = euler(light_ray_data, params, lookup_scale);
 
-//		/************ Update ray position using EULER method *********/
- 		light_ray_data = euler(light_ray_data, params, lookup_scale);
- 		insideBox = 0;
-//		//***************** END OF EULER ********************************//
-
- 		/************ Update ray position using RK45 method *********/
-//	    light_ray_data = rk45(light_ray_data, params, lookup_scale);
-//	    insideBox = 0;
-	    //***************** END OF RK 45 ********************************//
-
-
-   }
-//
-// 	// this is the final location of the ray
-// 	light_ray_data.ray_source_coordinates = pos;
-// 	// this is the final direction of the ray
-// 	light_ray_data.ray_propagation_direction = normalize(dir);
-//
-//// 	printf("refractive_index: %f\n", refractive_index);
+	/************ Update ray position using RK45 method *********/
+	light_ray_data = rk45(light_ray_data, params, lookup_scale);
 
  	return light_ray_data;
 }
