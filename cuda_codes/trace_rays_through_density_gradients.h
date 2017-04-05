@@ -703,14 +703,18 @@ __device__ light_ray_data_t rk4(light_ray_data_t light_ray_data, density_grad_pa
 	float3 R_n, T_n;
 	float3 A, B, C, D;
 	float delta_t;
+
 	while(inside_box)
 	{
 
 		loop_ctr += 1;
+
 		if(loop_ctr > 1e5)
 			break;
 //		if(i==1)
 //			pos = pos + dir * params.step_size/refractive_index;
+
+		pos = light_ray_data.ray_source_coordinates;
 
 		// calculate lookup index to access refractive index gradient value
 		lookup = calculate_lookup_index(pos, params, lookup_scale);
@@ -758,9 +762,141 @@ __device__ light_ray_data_t rk4(light_ray_data_t light_ray_data, density_grad_pa
 		// store the new position and direction in the light ray vector
 		light_ray_data.ray_source_coordinates = R_n;
 		light_ray_data.ray_propagation_direction = normalize(T_n/val.w);
-
 	}
 	//***************** END OF RK4 ********************************//
+
+	return light_ray_data;
+}
+
+__device__ light_ray_data_t adams_bashforth(light_ray_data_t light_ray_data, density_grad_params_t params, float3 lookup_scale)
+{
+
+	bool inside_box = true;
+
+	// set initial values
+	float3 pos = light_ray_data.ray_source_coordinates;
+//	float3 dir = light_ray_data.ray_propagation_direction;
+
+	float3 lookup;
+	float4 val;
+
+	int loop_ctr = 0;
+	float3 R_n, T_n;
+	float3 A, B, C, D;
+	float delta_t;
+
+	float3 D_n_prev[3];
+	float3 T_n_prev[3];
+
+
+	// INTIALIZE USING RK 4
+	while(loop_ctr <3)
+	{
+
+		loop_ctr += 1;
+
+//		if(i==1)
+//			pos = pos + dir * params.step_size/refractive_index;
+		pos = light_ray_data.ray_source_coordinates;
+
+		// calculate lookup index to access refractive index gradient value
+		lookup = calculate_lookup_index(pos, params, lookup_scale);
+		// check if ray is inside volume
+		if(!ray_inside_box(pos, params, lookup))
+			break;
+		// extract refractive index gradients as well as the local refractive index
+		val = tex3D(tex_data, lookup.x, lookup.y, lookup.z);
+
+		// get light ray position
+		R_n = pos;
+		// step size used in the RK4 integration (val.w is the refractive index)
+		delta_t = params.step_size/val.w;
+		// calculate optical ray direction vector
+		T_n = val.w * light_ray_data.ray_propagation_direction;
+
+		T_n_prev[loop_ctr - 1] = T_n;
+
+		// calculate coefficients
+		D = make_float3(val.w * val.x, val.w * val.y, val.w * val.z);
+		D_n_prev[loop_ctr - 1] = D;
+
+		A = delta_t * D;
+
+		pos = R_n + delta_t/2.0 * T_n + 1/8.0 * delta_t * A;
+		lookup = calculate_lookup_index(pos, params, lookup_scale);
+		// check if ray is inside volume
+		if(!ray_inside_box(pos, params, lookup))
+			break;
+
+		val = tex3D(tex_data, lookup.x, lookup.y, lookup.z);
+		D = make_float3(val.w * val.x, val.w * val.y, val.w * val.z);
+		B = delta_t * D;
+
+		pos = R_n + delta_t * T_n + 1/2.0 * delta_t * B;
+		lookup = calculate_lookup_index(pos, params, lookup_scale);
+		// check if ray is inside volume
+		if(!ray_inside_box(pos, params, lookup))
+			break;
+		val = tex3D(tex_data, lookup.x, lookup.y, lookup.z);
+		D = make_float3(val.w * val.x, val.w * val.y, val.w * val.z);
+		C = delta_t * D;
+
+		// calculate new positions and directions
+		R_n = R_n + delta_t * (T_n + 1/6.0 * (A + 2*B));
+// 		float3 T_n_increment = 1/6.
+		T_n = T_n + 1/6.0 * (A + 4*B + C);
+
+		// store the new position and direction in the light ray vector
+		light_ray_data.ray_source_coordinates = R_n;
+		light_ray_data.ray_propagation_direction = normalize(T_n/val.w);
+
+	}
+
+	// ADAMS BASHFORTH
+
+	loop_ctr = 0;
+	pos = light_ray_data.ray_source_coordinates;
+	float3 R_n_1, T_n_1;
+	while(inside_box)
+	{
+		loop_ctr += 1;
+		if(loop_ctr > 1e5)
+			break;
+
+		lookup = calculate_lookup_index(R_n, params, lookup_scale);
+		// check if ray is inside volume
+		if(!ray_inside_box(R_n, params, lookup))
+			break;
+		val = tex3D(tex_data, lookup.x, lookup.y, lookup.z);
+
+		// step size used in the RK4 integration (val.w is the refractive index)
+		delta_t = params.step_size/val.w;
+
+		D = make_float3(val.w * val.x, val.w * val.y, val.w * val.z);
+
+
+		R_n_1 = R_n + delta_t/24 * (55 * T_n - 59 * T_n_prev[2] + 37 * T_n_prev[1] - 9 * T_n_prev[0]);
+
+		T_n_1 = T_n + delta_t/24 * (55 * D - 59 * D_n_prev[2] + 37 * D_n_prev[1] - 9 * D_n_prev[0]);
+
+		T_n_prev[0] = T_n_prev[1];
+		D_n_prev[0] = D_n_prev[1];
+
+		T_n_prev[1] = T_n_prev[2];
+		D_n_prev[1] = D_n_prev[2];
+
+		T_n_prev[2] = T_n;
+		D_n_prev[2] = D;
+
+		R_n = R_n_1;
+		T_n = T_n_1;
+
+		// store the new position and direction in the light ray vector
+		light_ray_data.ray_source_coordinates = R_n;
+		light_ray_data.ray_propagation_direction = normalize(T_n/val.w);
+
+	}
+
 
 	return light_ray_data;
 }
@@ -772,7 +908,6 @@ __device__ light_ray_data_t trace_rays_through_density_gradients(light_ray_data_
 
 	// this is the corner of the volume containing the maximum coordinates
 	float3 max_bound = params.max_bound;
-
 
 	// this is the scaling factor to covert the coordinates to integer index locations
 	float3 lookup_scale = {1.0f/(max_bound.x-min_bound.x), 1.0f/(max_bound.y - min_bound.y), 1.0f/(max_bound.z-min_bound.z)};
@@ -808,14 +943,17 @@ __device__ light_ray_data_t trace_rays_through_density_gradients(light_ray_data_
  	// trace light ray through the variable density medium
  	//--------------------------------------------------------------------------------------
 
- 	/************ Update ray position using RK4 method *********/
-	light_ray_data = rk4(light_ray_data, params, lookup_scale);
+// 	/************ Update ray position using RK4 method *********/
+//	light_ray_data = rk4(light_ray_data, params, lookup_scale);
 
-	/************ Update ray position using EULER method *********/
-	light_ray_data = euler(light_ray_data, params, lookup_scale);
+//	/************ Update ray position using EULER method *********/
+//	light_ray_data = euler(light_ray_data, params, lookup_scale);
+//
+//	/************ Update ray position using RK45 method *********/
+//	light_ray_data = rk45(light_ray_data, params, lookup_scale);
 
-	/************ Update ray position using RK45 method *********/
-	light_ray_data = rk45(light_ray_data, params, lookup_scale);
+	/************ Update ray position using Adams-Bashforth method *********/
+	light_ray_data = adams_bashforth(light_ray_data, params, lookup_scale);
 
  	return light_ray_data;
 }
