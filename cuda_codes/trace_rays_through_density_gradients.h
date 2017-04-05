@@ -620,6 +620,58 @@ __device__ light_ray_data_t rk45(light_ray_data_t light_ray_data, density_grad_p
     return light_ray_data;
 }
 
+
+__device__ light_ray_data_t euler(light_ray_data_t light_ray_data, density_grad_params_t params, float3 lookup_scale)
+{
+	/************ Update ray position using EULER method *********/
+
+	bool inside_box = true;
+	float3 normal;
+	float refractive_index = 1.000277;
+
+	// set initial values
+	float3 pos = light_ray_data.ray_source_coordinates;
+	float3 dir = light_ray_data.ray_propagation_direction;
+
+	float3 lookup;
+	float4 val;
+
+	int loop_ctr = 0;
+	while(inside_box)
+	{
+		loop_ctr += 1;
+		if(loop_ctr > 1e5)
+			break;
+
+		lookup = calculate_lookup_index(pos, params, lookup_scale);
+		// check if ray is inside volume
+		if(!ray_inside_box(pos, params, lookup))
+			break;
+
+		// retrieve the refractive index gradient at the given location
+		val = tex3D(tex_data, round(lookup.x), round(lookup.y), round(lookup.z)); //*params.dataScalar;
+
+		// calculate the change in ray direction
+		normal = make_float3(-val.x,-val.y,val.z);
+		// update the ray direction
+		dir = dir + params.step_size*normal;
+		// normalize the direction to ensure that it is a unit vector
+		dir = normalize(dir);
+
+		// get the refractive index at the current location
+		refractive_index = val.w;
+
+		// update the ray position
+		pos = pos + dir*params.step_size/refractive_index;
+
+		light_ray_data.ray_source_coordinates = pos;
+		light_ray_data.ray_propagation_direction = dir;
+	}
+		//***************** END OF EULER ********************************//
+
+
+	return light_ray_data;
+}
 __device__ light_ray_data_t trace_rays_through_density_gradients(light_ray_data_t light_ray_data, density_grad_params_t params)
 {
 
@@ -749,36 +801,14 @@ __device__ light_ray_data_t trace_rays_through_density_gradients(light_ray_data_
 //
 // 		//***************** END OF RK4 ********************************//
 
-// 		/************ Update ray position using EULER method *********/
-//
-// 		lookup = calculate_lookup_index(pos, params, lookup_scale);
-//		// check if ray is inside volume
-//		if(!ray_inside_box(pos, params, lookup))
-//			return light_ray_data;
-//
-// 		// retrieve the refractive index gradient at the given location
-// 		val = tex3D(tex_data, round(lookup.x), round(lookup.y), round(lookup.z)); //*params.dataScalar;
-//
-// 		// calculate the change in ray direction
-// 		normal = make_float3(-val.x,-val.y,val.z);
-// 		// update the ray direction
-// 		dir = dir + params.step_size*normal;
-//
-// 		// get the refractive index at the current location
-// 		refractive_index = val.w;
-//
-// 		// normalize the direction to ensure that it is a unit vector
-// 		dir = normalize(dir);
-// 		// update the ray position
-//	    pos = pos + dir*params.step_size/refractive_index;
-//
-//	    light_ray_data.ray_source_coordinates = pos;
-//	    light_ray_data.ray_propagation_direction = dir;
-// 		//***************** END OF EULER ********************************//
+//		/************ Update ray position using EULER method *********/
+ 		light_ray_data = euler(light_ray_data, params, lookup_scale);
+ 		insideBox = 0;
+//		//***************** END OF EULER ********************************//
 
  		/************ Update ray position using RK45 method *********/
-	    light_ray_data = rk45(light_ray_data, params, lookup_scale);
-	    insideBox = 0;
+//	    light_ray_data = rk45(light_ray_data, params, lookup_scale);
+//	    insideBox = 0;
 	    //***************** END OF RK 45 ********************************//
 
 
