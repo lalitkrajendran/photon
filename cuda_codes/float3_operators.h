@@ -78,6 +78,11 @@ __device__ float dot(const float3&a, const float3&b) {
     return (a.x*b.x + a.y*b.y + a.z*b.z);
 }
 
+__device__ float3 fabs(const float3&a)
+{
+	return make_float3(fabs(a.x), fabs(a.y), fabs(a.z));
+}
+
 __device__ float angleBetween(const float3& v1, const float3& v2)
 {
   // returns angle between two vectors in degrees
