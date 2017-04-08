@@ -943,17 +943,21 @@ __device__ light_ray_data_t trace_rays_through_density_gradients(light_ray_data_
  	// trace light ray through the variable density medium
  	//--------------------------------------------------------------------------------------
 
-// 	/************ Update ray position using RK4 method *********/
-//	light_ray_data = rk4(light_ray_data, params, lookup_scale);
+	float refractive_index = 1.000277;
+ 	pos = pos + dir * 1 * params.step_size/refractive_index;
+ 	light_ray_data.ray_source_coordinates = pos;
 
-//	/************ Update ray position using EULER method *********/
+// 	/************ Update ray position using RK4 method *********/
+	light_ray_data = rk4(light_ray_data, params, lookup_scale);
+
+	/************ Update ray position using EULER method *********/
 //	light_ray_data = euler(light_ray_data, params, lookup_scale);
-//
+
 //	/************ Update ray position using RK45 method *********/
 //	light_ray_data = rk45(light_ray_data, params, lookup_scale);
 
 	/************ Update ray position using Adams-Bashforth method *********/
-	light_ray_data = adams_bashforth(light_ray_data, params, lookup_scale);
+//	light_ray_data = adams_bashforth(light_ray_data, params, lookup_scale);
 
  	return light_ray_data;
 }

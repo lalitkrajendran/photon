@@ -2523,8 +2523,8 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 		Host_Init(&params,d_params_p);
 
 		// check if the trace density gradients function works correctly
-		check_density_gradients(params);
-		exit(0);
+//		check_density_gradients(params);
+//		exit(0);
 
 	}
 
