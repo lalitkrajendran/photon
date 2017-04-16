@@ -217,6 +217,10 @@ struct density_grad_params_t
 	// this is the array containing the refractive index gradient information inside
 	// the volume
 	float4* data;
+	// this is the algorithm used to integrate the fermat's equation to calculate the light
+	// ray trajectory. 1 - euler, 2 - rk4, 3 - rk45, 4 - adams-bashforth
+	int integration_algorithm;
+
 };
 
 //--------------------------------------------------------------------------------------

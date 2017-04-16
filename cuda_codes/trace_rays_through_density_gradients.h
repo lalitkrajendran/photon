@@ -947,17 +947,28 @@ __device__ light_ray_data_t trace_rays_through_density_gradients(light_ray_data_
  	pos = pos + dir * 1 * params.step_size/refractive_index;
  	light_ray_data.ray_source_coordinates = pos;
 
-// 	/************ Update ray position using RK4 method *********/
-	light_ray_data = rk4(light_ray_data, params, lookup_scale);
+ 	switch(params.integration_algorithm)
+ 	{
+ 		case 1:
+ 			/************ Update ray position using EULER method *********/
+ 			light_ray_data = euler(light_ray_data, params, lookup_scale);
+ 			break;
+ 		case 2:
+ 		 	/************ Update ray position using RK4 method *********/
+ 			light_ray_data = rk4(light_ray_data, params, lookup_scale);
+ 			break;
+ 		case 3:
+ 			/************ Update ray position using RK45 method *********/
+ 			light_ray_data = rk45(light_ray_data, params, lookup_scale);
+ 			break;
+ 		case 4:
+			/************ Update ray position using Adams-Bashforth method *********/
+			light_ray_data = adams_bashforth(light_ray_data, params, lookup_scale);
+			break;
+ 		default:
+ 			break;
 
-	/************ Update ray position using EULER method *********/
-//	light_ray_data = euler(light_ray_data, params, lookup_scale);
-
-//	/************ Update ray position using RK45 method *********/
-//	light_ray_data = rk45(light_ray_data, params, lookup_scale);
-
-	/************ Update ray position using Adams-Bashforth method *********/
-//	light_ray_data = adams_bashforth(light_ray_data, params, lookup_scale);
+ 	}
 
  	return light_ray_data;
 }
