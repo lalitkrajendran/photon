@@ -190,7 +190,7 @@ struct pixel_data_t
 	double cos_4_alpha;
 	// this is the (x,y) coordinates of the light ray at the end of the ray tracing
 	// process, once it has intersected the camera sensor
-	float2 final_pos;
+	float3 final_pos;
 };
 
 // this structure contains the parameters for simulating ray deflection caused by density
@@ -217,6 +217,13 @@ struct density_grad_params_t
 	// this is the array containing the refractive index gradient information inside
 	// the volume
 	float4* data;
+	// this is the grid spacing along x, y and z
+	float3 grid_spacing;
+	// this is the minimum step size
+	float min_step_size;
+	// this is the maximum step size
+	float max_step_size;
+
 	// this is the algorithm used to integrate the fermat's equation to calculate the light
 	// ray trajectory. 1 - euler, 2 - rk4, 3 - rk45, 4 - adams-bashforth
 	int integration_algorithm;
@@ -265,7 +272,7 @@ extern "C"
 void save_to_file(float , float ,scattering_data_t* , char* ,lightfield_source_t* ,
 		int ,float, float,int , double (*element_center)[3],element_data_t* ,
 		double (*element_plane_parameters)[4], int* ,camera_design_t* , float*,
-		bool, char* );
+		bool, char* , char*, char*, int, int);
 
 void read_from_file();
 
@@ -274,7 +281,7 @@ int add(int a, int b);
 void start_ray_tracing(float , float ,scattering_data_t* , char* ,lightfield_source_t* ,
 		int ,float, float, int , double (*element_center)[3],element_data_t*,
 		double (*element_plane_parameters)[4], int* ,camera_design_t* , float*,
-		bool, char* , char* , char*, int);
+		bool, char* , char* , char*, int, int);
 
 }
 
