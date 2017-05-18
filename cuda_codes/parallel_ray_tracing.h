@@ -214,6 +214,7 @@ struct density_grad_params_t
 	float data_min;
 	// this is the highest value of refractive index in the volume
 	float data_max;
+
 	// this is the array containing the refractive index gradient information inside
 	// the volume
 	float4* data;
