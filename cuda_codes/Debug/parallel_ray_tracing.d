@@ -230,4 +230,24 @@
     ../parallel_ray_tracing.h \
     ../helper_cuda.h \
     ../helper_string.h \
-    /usr/include/strings.h
+    /usr/include/strings.h \
+    /home/barracuda/a/lrajendr/Projects/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/code/memcpy.cu \
+    /home/barracuda/a/lrajendr/Projects/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/examples/cuda5_fix/cutil.h \
+    /opt/cuda/7.0/bin/..//include/cuda_gl_interop.h \
+    /usr/include/GL/gl.h \
+    /usr/include/GL/glext.h \
+    /usr/include/inttypes.h \
+    /home/barracuda/a/lrajendr/Projects/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/examples/cuda5_fix/helper_timer.h \
+    /home/barracuda/a/lrajendr/Projects/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/examples/cuda5_fix/exception.h \
+    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/stdexcept \
+    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/ctime \
+    /usr/include/sys/time.h \
+    /home/barracuda/a/lrajendr/Projects/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/code/internal/math_func.cu \
+    /home/barracuda/a/lrajendr/Projects/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/code/internal/version.cu \
+    /home/barracuda/a/lrajendr/Projects/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/code/cubicTex3D.cu \
+    /home/barracuda/a/lrajendr/Projects/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/code/internal/bspline_kernel.cu \
+    /home/barracuda/a/lrajendr/Projects/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/code/internal/cutil_math_bugfixes.h \
+    /home/barracuda/a/lrajendr/Projects/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/code/internal/cubicTex3D_kernel.cu \
+    /home/barracuda/a/lrajendr/Projects/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/code/cubicPrefilter3D.cu \
+    /home/barracuda/a/lrajendr/Projects/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/code/internal/cubicPrefilter_kernel.cu \
+    ../cubic_interpolation_functions.h

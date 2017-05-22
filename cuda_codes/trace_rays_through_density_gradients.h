@@ -60,14 +60,23 @@
 #include "parallel_ray_tracing.h"
 #include "helper_cuda.h"
 
+#include "memcpy.cu"
+#include "cubicTex3D.cu"
+#include "cubicPrefilter3D.cu"
+#include "cubic_interpolation_functions.h"
+
 #define CUDART_NAN_F            __int_as_float(0x7fffffff)
 #define CUDART_NAN              __longlong_as_double(0xfff8000000000000ULL)
 
-cudaArray* data_array = 0;
-
 using namespace std;
+
 // this is a texture that will contain the refractive index gradient data
 texture<float4, 3> tex_data;
+cudaArray* data_array = 0;
+
+texture<float4, 3, cudaReadModeElementType> coeffs3D;  //3D texture
+cudaArray* coeffArray3D = 0;
+
 
 typedef struct {
 
@@ -663,48 +672,114 @@ __device__ light_ray_data_t euler(light_ray_data_t light_ray_data, density_grad_
 	float4 val;
 
 	int loop_ctr = 0;
-	while(inside_box)
+
+	if(params.interpolation_scheme == 1)
 	{
-		loop_ctr += 1;
-//		if(loop_ctr > 1e5)
-//			break;
-		pos = light_ray_data.ray_source_coordinates;
-		dir = light_ray_data.ray_propagation_direction;
-
-		lookup = calculate_lookup_index(pos, params, lookup_scale);
-		// check if ray is inside volume
-		if(!ray_inside_box(pos, params, lookup))
-			break;
-
-		// retrieve the refractive index gradient at the given location
-		val = tex3D(tex_data, round(lookup.x), round(lookup.y), round(lookup.z)); //*params.dataScalar;
-
-		// if refractive index is 0 or less than 1, then propagate the ray further into the volume
-		// before accessing the density gradient data
-		if(val.w < params.data_min)
+		while(inside_box)
 		{
-			pos = pos + params.max_step_size/params.data_min * dir;
+
+			if(loop_ctr > 1e5)
+				break;
+
+			pos = light_ray_data.ray_source_coordinates;
+			dir = light_ray_data.ray_propagation_direction;
+
+			lookup = calculate_lookup_index(pos, params, lookup_scale);
+			// check if ray is inside volume
+			if(!ray_inside_box(pos, params, lookup) && loop_ctr!=0)
+				break;
+
+			// check if light ray is sufficiently inside the volume to get a non-zero refractive index.
+			// if not, propagate the ray further.
+			if(!access_refractive_index(pos, params, lookup))
+			{
+//				pos = pos + params.max_step_size/params.data_min * dir;
+				pos = pos + params.step_size/params.data_min * dir;
+				light_ray_data.ray_source_coordinates = pos;
+				continue;
+			}
+
+			// extract refractive index gradients as well as the local refractive index
+			val = tex3D(tex_data, lookup.x, lookup.y, lookup.z);
+
+			// if refractive index is 0 or less than 1, then propagate the ray further into the volume
+			// before accessing the density gradient data
+			if(val.w < params.data_min)
+			{
+//				pos = pos + params.max_step_size/params.data_min * dir;
+				pos = pos + params.step_size/params.data_min * dir;
+
+				light_ray_data.ray_source_coordinates = pos;
+				continue;
+			}
+			loop_ctr += 1;
+			// calculate the change in ray direction
+			normal = make_float3(val.x,val.y,val.z);
+			// update the ray direction
+			dir = dir + params.step_size*normal;
+			// normalize the direction to ensure that it is a unit vector
+			dir = normalize(dir);
+
+			// get the refractive index at the current location
+			refractive_index = val.w;
+
+			// update the ray position
+			pos = pos + dir*params.step_size/refractive_index;
+
 			light_ray_data.ray_source_coordinates = pos;
-			continue;
+			light_ray_data.ray_propagation_direction = dir;
+		}
+	}
+
+	else
+	{
+		while(inside_box)
+		{
+			if(loop_ctr > 1e5)
+				break;
+			pos = light_ray_data.ray_source_coordinates;
+			dir = light_ray_data.ray_propagation_direction;
+
+			lookup = calculate_lookup_index(pos, params, lookup_scale);
+			// check if ray is inside volume
+			if(!ray_inside_box(pos, params, lookup) && loop_ctr!=0)
+				break;
+
+			// retrieve the refractive index gradient at the given location
+			val = cubicTex3D(coeffs3D, lookup); //*params.dataScalar;
+
+			// if refractive index is 0 or less than 1, then propagate the ray further into the volume
+			// before accessing the density gradient data
+			if(val.w < params.data_min)
+			{
+//				pos = pos + params.max_step_size/params.data_min * dir;
+				pos = pos + params.step_size/params.data_min * dir;
+
+				light_ray_data.ray_source_coordinates = pos;
+				continue;
+			}
+			loop_ctr += 1;
+
+			// calculate the change in ray direction
+			normal = make_float3(val.x,val.y,val.z);
+			// update the ray direction
+			dir = dir + params.step_size*normal;
+			// normalize the direction to ensure that it is a unit vector
+			dir = normalize(dir);
+
+			// get the refractive index at the current location
+			refractive_index = val.w;
+
+			// update the ray position
+			pos = pos + dir*params.step_size/refractive_index;
+
+			light_ray_data.ray_source_coordinates = pos;
+			light_ray_data.ray_propagation_direction = dir;
 		}
 
-		// calculate the change in ray direction
-		normal = make_float3(val.x,val.y,val.z);
-		// update the ray direction
-		dir = dir + params.step_size*normal;
-		// normalize the direction to ensure that it is a unit vector
-		dir = normalize(dir);
-
-		// get the refractive index at the current location
-		refractive_index = val.w;
-
-		// update the ray position
-		pos = pos + dir*params.step_size/refractive_index;
-
-		light_ray_data.ray_source_coordinates = pos;
-		light_ray_data.ray_propagation_direction = dir;
 	}
-		//***************** END OF EULER ********************************//
+
+	//***************** END OF EULER ********************************//
 
 
 	return light_ray_data;
@@ -713,19 +788,19 @@ __device__ light_ray_data_t euler(light_ray_data_t light_ray_data, density_grad_
 
 __device__ light_ray_data_t rk4(light_ray_data_t light_ray_data, density_grad_params_t params, float3 lookup_scale)
 {
-		/************ Update ray position using RK4 method *********/
-		/*
-		 * This function updates the position and direction of a light ray in a refractive index gradient
-		 * field by using a discretized version of fermat's equation using an RK4 method.
-		 * Taken from: Sharma et. al., Applied Optics (1982). Variables are identical to those in the paper.
-		 *
-		 * light_ray_data - structure containing the light ray properties
-		 * params - structure containing the density gradient properties
-		 * lookup_scale - used to calculate the array index in the density gradient texture from the
-		 * 			 absolute position of the light ray
-		 *
-		 *
-		 */
+	/************ Update ray position using RK4 method *********/
+	/*
+	 * This function updates the position and direction of a light ray in a refractive index gradient
+	 * field by using a discretized version of fermat's equation using an RK4 method.
+	 * Taken from: Sharma et. al., Applied Optics (1982). Variables are identical to those in the paper.
+	 *
+	 * light_ray_data - structure containing the light ray properties
+	 * params - structure containing the density gradient properties
+	 * lookup_scale - used to calculate the array index in the density gradient texture from the
+	 * 			 absolute position of the light ray
+	 *
+	 *
+	 */
 
 	bool inside_box = true;
 
@@ -742,84 +817,175 @@ __device__ light_ray_data_t rk4(light_ray_data_t light_ray_data, density_grad_pa
 	float3 A, B, C, D;
 	float delta_t;
 
-	while(inside_box)
+	if(params.interpolation_scheme == 1)
 	{
-
-		loop_ctr += 1;
-
-		if(loop_ctr > loop_ctr_max)
-			break;
-//		if(i==1)
-//			pos = pos + dir * params.step_size/refractive_index;
-
-		pos = light_ray_data.ray_source_coordinates;
-		dir = light_ray_data.ray_propagation_direction;
-		// calculate lookup index to access refractive index gradient value
-		lookup = calculate_lookup_index(pos, params, lookup_scale);
-		// check if ray is inside volume
-		if(!ray_inside_box(pos, params, lookup))
-			break;
-
-		// check if light ray is sufficiently inside the volume to get a non-zero refractive index.
-		// if not, propagate the ray further.
-		if(!access_refractive_index(pos, params, lookup))
+		while(inside_box)
 		{
-			pos = pos + params.max_step_size/params.data_min * dir;
-			light_ray_data.ray_source_coordinates = pos;
-			continue;
+
+			if(loop_ctr > loop_ctr_max)
+				break;
+	//		if(i==1)
+	//			pos = pos + dir * params.step_size/refractive_index;
+
+			pos = light_ray_data.ray_source_coordinates;
+			dir = light_ray_data.ray_propagation_direction;
+			// calculate lookup index to access refractive index gradient value
+			lookup = calculate_lookup_index(pos, params, lookup_scale);
+			// check if ray is inside volume
+			if(!ray_inside_box(pos, params, lookup) && loop_ctr!=0)
+				break;
+
+			// check if light ray is sufficiently inside the volume to get a non-zero refractive index.
+			// if not, propagate the ray further.
+			if(!access_refractive_index(pos, params, lookup))
+			{
+//				pos = pos + params.max_step_size/params.data_min * dir;
+				pos = pos + params.step_size/params.data_min * dir;
+				light_ray_data.ray_source_coordinates = pos;
+				continue;
+			}
+
+			// extract refractive index gradients as well as the local refractive index
+			val = tex3D(tex_data, lookup.x, lookup.y, lookup.z);
+
+			// if refractive index is 0 or less than 1, then propagate the ray further into the volume
+			// before accessing the density gradient data
+			if(val.w < params.data_min)
+			{
+//				pos = pos + params.max_step_size/params.data_min * dir;
+				pos = pos + params.step_size/params.data_min * dir;
+				light_ray_data.ray_source_coordinates = pos;
+				continue;
+			}
+
+			loop_ctr += 1;
+			// get light ray position
+			R_n = pos;
+			// step size used in the RK4 integration (val.w is the refractive index)
+			delta_t = params.step_size/val.w;
+			// calculate optical ray direction vector
+			T_n = val.w * light_ray_data.ray_propagation_direction;
+
+			// calculate coefficients
+			D = make_float3(val.w * val.x, val.w * val.y, val.w * val.z);
+			A = delta_t * D;
+
+			pos = R_n + delta_t/2.0 * T_n + 1/8.0 * delta_t * A;
+			lookup = calculate_lookup_index(pos, params, lookup_scale);
+			// check if ray is inside volume
+			if(!ray_inside_box(pos, params, lookup))
+				break;
+
+			val = tex3D(tex_data, lookup.x, lookup.y, lookup.z);
+			D = make_float3(val.w * val.x, val.w * val.y, val.w * val.z);
+			B = delta_t * D;
+
+			pos = R_n + delta_t * T_n + 1/2.0 * delta_t * B;
+			lookup = calculate_lookup_index(pos, params, lookup_scale);
+			// check if ray is inside volume
+			if(!ray_inside_box(pos, params, lookup))
+				break;
+			val = tex3D(tex_data, lookup.x, lookup.y, lookup.z);
+			D = make_float3(val.w * val.x, val.w * val.y, val.w * val.z);
+			C = delta_t * D;
+
+			// calculate new positions and directions
+			R_n = R_n + delta_t * (T_n + 1/6.0 * (A + 2*B));
+	// 		float3 T_n_increment = 1/6.
+			T_n = T_n + 1/6.0 * (A + 4*B + C);
+
+			// store the new position and direction in the light ray vector
+			light_ray_data.ray_source_coordinates = R_n;
+			light_ray_data.ray_propagation_direction = normalize(T_n/val.w);
 		}
-
-		// extract refractive index gradients as well as the local refractive index
-		val = tex3D(tex_data, lookup.x, lookup.y, lookup.z);
-
-		// if refractive index is 0 or less than 1, then propagate the ray further into the volume
-		// before accessing the density gradient data
-		if(val.w < params.data_min)
-		{
-			pos = pos + params.max_step_size/params.data_min * dir;
-			light_ray_data.ray_source_coordinates = pos;
-			continue;
-		}
-
-		// get light ray position
-		R_n = pos;
-		// step size used in the RK4 integration (val.w is the refractive index)
-		delta_t = params.step_size/val.w;
-		// calculate optical ray direction vector
-		T_n = val.w * light_ray_data.ray_propagation_direction;
-
-		// calculate coefficients
-		D = make_float3(val.w * val.x, val.w * val.y, val.w * val.z);
-		A = delta_t * D;
-
-		pos = R_n + delta_t/2.0 * T_n + 1/8.0 * delta_t * A;
-		lookup = calculate_lookup_index(pos, params, lookup_scale);
-		// check if ray is inside volume
-		if(!ray_inside_box(pos, params, lookup))
-			break;
-
-		val = tex3D(tex_data, lookup.x, lookup.y, lookup.z);
-		D = make_float3(val.w * val.x, val.w * val.y, val.w * val.z);
-		B = delta_t * D;
-
-		pos = R_n + delta_t * T_n + 1/2.0 * delta_t * B;
-		lookup = calculate_lookup_index(pos, params, lookup_scale);
-		// check if ray is inside volume
-		if(!ray_inside_box(pos, params, lookup))
-			break;
-		val = tex3D(tex_data, lookup.x, lookup.y, lookup.z);
-		D = make_float3(val.w * val.x, val.w * val.y, val.w * val.z);
-		C = delta_t * D;
-
-		// calculate new positions and directions
-		R_n = R_n + delta_t * (T_n + 1/6.0 * (A + 2*B));
-// 		float3 T_n_increment = 1/6.
-		T_n = T_n + 1/6.0 * (A + 4*B + C);
-
-		// store the new position and direction in the light ray vector
-		light_ray_data.ray_source_coordinates = R_n;
-		light_ray_data.ray_propagation_direction = normalize(T_n/val.w);
 	}
+
+	else
+	{
+		while(inside_box)
+		{
+
+			if(loop_ctr > loop_ctr_max)
+				break;
+	//		if(i==1)
+	//			pos = pos + dir * params.step_size/refractive_index;
+
+			pos = light_ray_data.ray_source_coordinates;
+			dir = light_ray_data.ray_propagation_direction;
+			// calculate lookup index to access refractive index gradient value
+			lookup = calculate_lookup_index(pos, params, lookup_scale);
+			// check if ray is inside volume
+			if(!ray_inside_box(pos, params, lookup) && loop_ctr != 0)
+				break;
+
+			// check if light ray is sufficiently inside the volume to get a non-zero refractive index.
+			// if not, propagate the ray further.
+			if(!access_refractive_index(pos, params, lookup))
+			{
+//				pos = pos + params.max_step_size/params.data_min * dir;
+				pos = pos + params.step_size/params.data_min * dir;
+
+				light_ray_data.ray_source_coordinates = pos;
+				continue;
+			}
+
+			// extract refractive index gradients as well as the local refractive index
+			val = cubicTex3D(coeffs3D, lookup);
+
+			// if refractive index is 0 or less than 1, then propagate the ray further into the volume
+			// before accessing the density gradient data
+			if(val.w < params.data_min)
+			{
+//				pos = pos + params.max_step_size/params.data_min * dir;
+				pos = pos + params.step_size/params.data_min * dir;
+
+				light_ray_data.ray_source_coordinates = pos;
+				continue;
+			}
+			loop_ctr += 1;
+
+			// get light ray position
+			R_n = pos;
+			// step size used in the RK4 integration (val.w is the refractive index)
+			delta_t = params.step_size/val.w;
+			// calculate optical ray direction vector
+			T_n = val.w * light_ray_data.ray_propagation_direction;
+
+			// calculate coefficients
+			D = make_float3(val.w * val.x, val.w * val.y, val.w * val.z);
+			A = delta_t * D;
+
+			pos = R_n + delta_t/2.0 * T_n + 1/8.0 * delta_t * A;
+			lookup = calculate_lookup_index(pos, params, lookup_scale);
+			// check if ray is inside volume
+			if(!ray_inside_box(pos, params, lookup))
+				break;
+
+			val = cubicTex3D(coeffs3D, lookup);
+			D = make_float3(val.w * val.x, val.w * val.y, val.w * val.z);
+			B = delta_t * D;
+
+			pos = R_n + delta_t * T_n + 1/2.0 * delta_t * B;
+			lookup = calculate_lookup_index(pos, params, lookup_scale);
+			// check if ray is inside volume
+			if(!ray_inside_box(pos, params, lookup))
+				break;
+			val = cubicTex3D(coeffs3D, lookup);
+			D = make_float3(val.w * val.x, val.w * val.y, val.w * val.z);
+			C = delta_t * D;
+
+			// calculate new positions and directions
+			R_n = R_n + delta_t * (T_n + 1/6.0 * (A + 2*B));
+	// 		float3 T_n_increment = 1/6.
+			T_n = T_n + 1/6.0 * (A + 4*B + C);
+
+			// store the new position and direction in the light ray vector
+			light_ray_data.ray_source_coordinates = R_n;
+			light_ray_data.ray_propagation_direction = normalize(T_n/val.w);
+		}
+
+	}
+
 	//***************** END OF RK4 ********************************//
 
 	return light_ray_data;
@@ -1020,7 +1186,7 @@ __device__ light_ray_data_t trace_rays_through_density_gradients(light_ray_data_
 	float refractive_index = 1.000277;
 
 	// increment ray position by a small amount so it is inside the volume.
-	pos = pos + dir * 1 * params.max_step_size/refractive_index;
+	pos = pos + dir * 1 * params.step_size/refractive_index;
  	light_ray_data.ray_source_coordinates = pos;
 
  	switch(params.integration_algorithm)
@@ -1059,25 +1225,45 @@ void Host_Init(density_grad_params_t* paramsp, density_grad_params_t* dparams)
 	 */
 
 	printf("Setting up data texture\n");
-
-	//setup data texture
-	tex_data.addressMode[0] = cudaAddressModeClamp;
-	tex_data.addressMode[1] = cudaAddressModeClamp;
-	tex_data.filterMode = cudaFilterModeLinear;
-	tex_data.normalized = false;
-
 	cudaChannelFormatDesc channelDesc = cudaCreateChannelDesc<float4>();
 	cudaExtent extent = make_cudaExtent(paramsp->data_width, paramsp->data_height, paramsp->data_depth);
-	checkCudaErrors( cudaMalloc3DArray(&data_array, &channelDesc, extent) );
-	cudaMemcpy3DParms copyParams = {0};
-	copyParams.srcPtr = make_cudaPitchedPtr((void*)paramsp->data, extent.width*sizeof(float4), extent.width, extent.height);
-	copyParams.dstArray = data_array;
-	copyParams.extent = extent;
-	copyParams.kind = cudaMemcpyHostToDevice;
-	checkCudaErrors(  cudaMemcpy3D(&copyParams) );
 
-	checkCudaErrors(cudaBindTextureToArray(tex_data, data_array, channelDesc));
+	if(paramsp->interpolation_scheme == 1)
+	{
+		printf("interpolation scheme: linear\n");
 
+		//setup data texture
+		tex_data.addressMode[0] = cudaAddressModeClamp;
+		tex_data.addressMode[1] = cudaAddressModeClamp;
+		tex_data.filterMode = cudaFilterModeLinear;
+		tex_data.normalized = false;
+
+		checkCudaErrors( cudaMalloc3DArray(&data_array, &channelDesc, extent) );
+
+		cudaMemcpy3DParms copyParams = {0};
+		copyParams.srcPtr = make_cudaPitchedPtr((void*)paramsp->data, extent.width*sizeof(float4), extent.width, extent.height);
+		copyParams.dstArray = data_array;
+		copyParams.extent = extent;
+		copyParams.kind = cudaMemcpyHostToDevice;
+		checkCudaErrors(  cudaMemcpy3D(&copyParams) );
+
+		checkCudaErrors(cudaBindTextureToArray(tex_data, data_array, channelDesc));
+
+	}
+
+	//setup data texture for cubic interpolation
+	if(paramsp->interpolation_scheme == 2)
+	{
+		printf("interpolation scheme: cubic\n");
+
+		// calculate the b-spline coefficients
+		cudaPitchedPtr bsplineCoeffs3D = CopyVolumeHostToDevice(paramsp->data, paramsp->data_width, paramsp->data_height, paramsp->data_depth);
+		CubicBSplinePrefilter3DTimer((float*)bsplineCoeffs3D.ptr, (uint)bsplineCoeffs3D.pitch, paramsp->data_width, paramsp->data_height, paramsp->data_depth);
+		// create the b-spline coefficients texture
+		cudaExtent volumeExtent = make_cudaExtent(paramsp->data_width, paramsp->data_height, paramsp->data_depth);
+		CreateTextureFromVolume(&coeffs3D, &coeffArray3D, bsplineCoeffs3D, volumeExtent, true);
+		CUDA_SAFE_CALL(cudaFree(bsplineCoeffs3D.ptr));  //they are now in the coeffs texture, we do not need this anymore
+	}
 }
 
 void loadNRRD(DataFile* datafile, int data_min, int data_max)
@@ -1374,9 +1560,6 @@ density_grad_params_t readDatafromFile(char* filename)
     _params.grid_spacing.y = dataFiles[0]->del_y;
     _params.grid_spacing.z = dataFiles[0]->del_z;
 
-
-
-
     return _params;
 
 }
@@ -1389,8 +1572,10 @@ __global__ void check_trace_rays_through_density_gradients(light_ray_data_t* lig
 	 * to the z axis
 	 */
 
-	int id = blockIdx.x*blockDim.x + threadIdx.x;
+	int id;
 
+//	id = blockIdx.x*blockDim.x + threadIdx.x;
+	id = threadIdx.x;
 	light_ray_data[id] = trace_rays_through_density_gradients(light_ray_data[id],params);
 
 }

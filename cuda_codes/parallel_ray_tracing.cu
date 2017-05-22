@@ -2888,6 +2888,9 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 		checkCudaErrors(cudaFreeArray(data_array));
 		checkCudaErrors(cudaUnbindTexture(tex_data));
 		checkCudaErrors(cudaFree(d_params_p));
+
+		checkCudaErrors(cudaFreeArray(coeffArray3D));
+		checkCudaErrors(cudaUnbindTexture(coeffs3D));
 	}
 
 	printf("exiting cuda code\n");

@@ -33,6 +33,8 @@
 								<option id="nvcc.compiler.pic.7668004" name="Position Independent Code (-fPIC)" superClass="nvcc.compiler.pic" value="true" valueType="boolean"/>
 								<option id="nvcc.compiler.include.paths.1077436147" name="Include paths (-I)" superClass="nvcc.compiler.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="/usr/include"/>
+									<listOptionValue builtIn="false" value="/home/barracuda/a/lrajendr/Projects/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/examples/cuda5_fix"/>
+									<listOptionValue builtIn="false" value="/home/barracuda/a/lrajendr/Projects/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/code"/>
 									<listOptionValue builtIn="false" value="/usr/lib64"/>
 									<listOptionValue builtIn="false" value="/usr/local/lib"/>
 									<listOptionValue builtIn="false" value="../"/>
