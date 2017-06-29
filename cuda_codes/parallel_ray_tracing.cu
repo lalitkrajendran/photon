@@ -103,10 +103,11 @@ __device__ light_ray_data_t generate_lightfield_angular_data(float lens_pitch, f
 	//--------------------------------------------------------------------------------------
 	// compute direction of propagation of light ray
 	//--------------------------------------------------------------------------------------
+	float lens_pitch_scaling_factor = 1e-4;
 
 	// generate random points on the lens where the rays should intersect
-	float x_lens = 0.5*lens_pitch*sqrt(random_number_1)*cos(2*M_PI*random_number_2);
-	float y_lens = 0.5*lens_pitch*sqrt(random_number_1)*sin(2*M_PI*random_number_2);
+	float x_lens = 0.5*lens_pitch_scaling_factor*lens_pitch*sqrt(random_number_1)*cos(2*M_PI*random_number_2);
+	float y_lens = 0.5*lens_pitch_scaling_factor*lens_pitch*sqrt(random_number_1)*sin(2*M_PI*random_number_2);
 
 	// calculate the x angles for the light rays
 	float theta_temp = -(x_lens - x_current) / (image_distance - z_current);
@@ -1406,7 +1407,7 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 		 float3* element_center, float4* element_plane_parameters,
 		int* element_system_index,int num_elements,
 		camera_design_t* camera_design_p, float* image_array,
-		bool simulate_density_gradients, density_grad_params_t* density_grad_params_p,
+		bool simulate_density_gradients, density_grad_params_t params, //density_grad_params_t* density_grad_params_p,
 		float3* final_pos, float3* final_dir, int num_lightrays_save, bool save_lightrays)
 
 {
@@ -1416,7 +1417,7 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 	 * a number of functions that are visible only on the device to perform various parts
 	 * of the ray tracing process.
 	 */
-
+//	check_texture_lookup();
 	//--------------------------------------------------------------------------------------
 	// compute indices to access in lightfield_source and lightfield_data
 	//--------------------------------------------------------------------------------------
@@ -1458,6 +1459,7 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 	// in the block can access it
 	__syncthreads();
 
+
 	// set the final position of light rays that are going to be saved as NAN.
 	if(global_ray_id < num_lightrays_save && save_lightrays)
 	{
@@ -1471,20 +1473,28 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 
 	}
 
-	float theta_max = 1e-4;
+	float theta_max = 1e-2;
 	light_ray_data_t light_ray_data;
 	// initialize position
 //	light_ray_data.ray_source_coordinates = make_float3(lightfield_source_shared.x, lightfield_source_shared.y, lightfield_source_shared.z);
 	light_ray_data.ray_source_coordinates = make_float3(0.0, 0.0, lightfield_source_shared.z);
-
-
-	float theta_x = (0.5 - rand_array_1[local_ray_id])*theta_max/180.0 * M_PI;
-	float theta_y = (0.5 - rand_array_2[local_ray_id])*theta_max/180.0 * M_PI;
+//
+//
+//	float theta_x = (0.5 - rand_array_1[local_ray_id])*theta_max/180.0 * M_PI;
+//	float theta_y = (0.5 - rand_array_2[local_ray_id])*theta_max/180.0 * M_PI;
+	float theta_x = 0.0f;
+	float theta_y = 0.0f;
 
 	// initialize direction
-	light_ray_data.ray_propagation_direction = make_float3(sin(theta_x), sin(theta_y), -sqrt(1-sin(theta_x)*sin(theta_y)));
+	light_ray_data.ray_propagation_direction = make_float3(sin(theta_x), sin(theta_y), -sqrt(1-sin(theta_x)*sin(theta_x) - sin(theta_y)*sin(theta_y)));
 
-
+//	float4 val;
+//	float3 lookup;
+//	// extract refractive index gradients as well as the local refractive index
+//	lookup.x = 100;
+//	lookup.y = 100;
+//	lookup.z = 50;
+//	val = tex3D(tex_data, lookup.x, lookup.y, lookup.z);
 
 //	// generate light rays
 //	light_ray_data_t light_ray_data = generate_lightfield_angular_data(lens_pitch, image_distance,scattering_data,
@@ -1495,8 +1505,8 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 	// trace the light ray through a medium containing density gradients
 	if(simulate_density_gradients)
 	{
-		density_grad_params_t params = *density_grad_params_p;
-		light_ray_data = trace_rays_through_density_gradients(light_ray_data,params);
+//		density_grad_params_t params = *density_grad_params_p;
+		light_ray_data = trace_rays_through_density_gradients(light_ray_data,params, global_ray_id);
 
 		// ignore rays that did not pass through the density gradients
 		if(isnan(light_ray_data.ray_propagation_direction.x) || isnan(light_ray_data.ray_propagation_direction.y)
@@ -1505,6 +1515,14 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 					|| isnan(light_ray_data.ray_source_coordinates.z))
 			return;
 	}
+
+	if(global_ray_id < num_lightrays_save && save_lightrays)
+	{
+		final_dir[global_ray_id] = light_ray_data.ray_propagation_direction;
+//		final_pos[global_ray_id] = light_ray_data.ray_source_coordinates;
+//		return;
+	}
+
 
 	// trace rays through the optical train
 	light_ray_data = propagate_rays_through_optical_system(element_data, element_center,
@@ -1518,13 +1536,6 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 				|| isnan(light_ray_data.ray_source_coordinates.z))
 		return;
 
-//	if(global_ray_id < num_lightrays_save && save_lightrays)
-//	{
-//		final_pos[global_ray_id] = light_ray_data.ray_source_coordinates;
-//		final_dir[global_ray_id] = light_ray_data.ray_propagation_direction;
-//	}
-
-
 	// this structure contains the camera design information
 	camera_design_t camera_design = *camera_design_p;
 
@@ -1535,54 +1546,69 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 	// ignore rays that did not intersect within the sensor pitch
 	if(isnan(pixel_data.final_pos.x) || isnan(pixel_data.final_pos.y))
 		return;
-//
-//	//# % This is the number of pixels in the x-direction
-//	int x_pixel_number = camera_design.x_pixel_number;
-//	//# % This is the number of pixels in the y-direction
-//	int y_pixel_number = camera_design.y_pixel_number;
-//
-//	int image_index, k;
-//	double pixel_increment;
-//
-//	// convert the pixel row index vector type to an array for easy indexing
-//	int ii_indices[4] = {pixel_data.ii_indices.x,pixel_data.ii_indices.y,pixel_data.ii_indices.z,pixel_data.ii_indices.w};
-//	// convert the pixel column index vector type to an array for easy indexing
-//	int jj_indices[4] = {pixel_data.jj_indices.x,pixel_data.jj_indices.y,pixel_data.jj_indices.z,pixel_data.jj_indices.w};
-//	// convert the pixel intensity weight vector type to an array for easy indexing
-//	double pixel_weights[4] = {pixel_data.pixel_weights.x,pixel_data.pixel_weights.y,pixel_data.pixel_weights.z,pixel_data.pixel_weights.w};
-//	// this is the fraction of the ray radiance that will be added to the pixel
-//	double cos_4_alpha = pixel_data.cos_4_alpha;
-//
-//	// loop over the four neighboring pixels on the camera sensor and increment their intensity
-//	for(k = 0; k < 4; k++)
-//	{
-//		// initialize the pixel increment
-//		pixel_increment = 0.0;
-//
-//		// if the indices refer to locations outside the camera sensor, ignore them
-//		if(ii_indices[k]<0 || ii_indices[k]>=y_pixel_number || jj_indices[k]<0 || jj_indices[k]>=x_pixel_number)
-//			continue;
-//
-//		// this is the index of the image array corresponding to the pixel
-//		// where the intensity will be incremented
-//		image_index = (ii_indices[k]-1)*x_pixel_number + jj_indices[k]-1;
-//		// this is the amount by which the pixel's intensity will be updated
-//		pixel_increment = pixel_weights[k]*light_ray_data.ray_radiance*cos_4_alpha;
-//		// this performs the addition but in a way that avoids a race condition where
-//		// multiple threads try to write to the same memory location
-//		atomicAdd(&image_array[image_index],(float)pixel_increment);
-//	}
+
+	//# % This is the number of pixels in the x-direction
+	int x_pixel_number = camera_design.x_pixel_number;
+	//# % This is the number of pixels in the y-direction
+	int y_pixel_number = camera_design.y_pixel_number;
+
+	int image_index, k;
+	double pixel_increment;
+
+	// convert the pixel row index vector type to an array for easy indexing
+	int ii_indices[4] = {pixel_data.ii_indices.x,pixel_data.ii_indices.y,pixel_data.ii_indices.z,pixel_data.ii_indices.w};
+	// convert the pixel column index vector type to an array for easy indexing
+	int jj_indices[4] = {pixel_data.jj_indices.x,pixel_data.jj_indices.y,pixel_data.jj_indices.z,pixel_data.jj_indices.w};
+	// convert the pixel intensity weight vector type to an array for easy indexing
+	double pixel_weights[4] = {pixel_data.pixel_weights.x,pixel_data.pixel_weights.y,pixel_data.pixel_weights.z,pixel_data.pixel_weights.w};
+	// this is the fraction of the ray radiance that will be added to the pixel
+	double cos_4_alpha = pixel_data.cos_4_alpha;
+
+	// loop over the four neighboring pixels on the camera sensor and increment their intensity
+	for(k = 0; k < 4; k++)
+	{
+		// initialize the pixel increment
+		pixel_increment = 0.0;
+
+		// if the indices refer to locations outside the camera sensor, ignore them
+		if(ii_indices[k]<0 || ii_indices[k]>=y_pixel_number || jj_indices[k]<0 || jj_indices[k]>=x_pixel_number)
+			continue;
+
+		// this is the index of the image array corresponding to the pixel
+		// where the intensity will be incremented
+		image_index = (ii_indices[k]-1)*x_pixel_number + jj_indices[k]-1;
+		// this is the amount by which the pixel's intensity will be updated
+		pixel_increment = pixel_weights[k]*light_ray_data.ray_radiance*cos_4_alpha;
+		// this performs the addition but in a way that avoids a race condition where
+		// multiple threads try to write to the same memory location
+		atomicAdd(&image_array[image_index],(float)pixel_increment);
+	}
 
 	if(global_ray_id < num_lightrays_save && save_lightrays)
 	{
 		final_pos[global_ray_id] = pixel_data.final_pos;
-		final_dir[global_ray_id] = light_ray_data.ray_propagation_direction;
+//		final_dir[global_ray_id] = light_ray_data.ray_propagation_direction;
 	}
 
 
 
 }
+__global__ void check_trace_rays_through_density_gradients_02(int a, int b)
+{
+	/*
+	 * This function is used to check the ray deflection produced by the
+	 * trace_rays_through_density_gradients routine for a set of rays that are parallel
+	 * to the z axis
+	 */
+	int c;
+	int id = threadIdx.x;
 
+	c = a + b;
+
+//	x[id] = c;
+
+	check_texture_lookup();
+}
 extern "C"{
 
 void read_from_file()
@@ -1898,12 +1924,8 @@ void read_from_file()
 //	bool simulate_density_gradients = false;
 
 	// specify name of the file containing density gradient data
-//	char density_grad_filename[] = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/const_grad_BOS_no_noise_delta_x_1.00_delta_y_1.00_zmin_200_zmax_1200_nz_0200.nrrd";
-	char density_grad_filename[] = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/const_grad_BOS_no_noise_delta_x_0.10_delta_y_0.10_zmin_200_zmax_1200_nz_0100.nrrd";
+	char density_grad_filename[] = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/const_grad_BOS_no_noise_delta_x_0.10_delta_y_0.10_zobj_2500_zmin_200_zmax_1200_nx_0250_ny_0250_nz_0250.nrrd";
 
-	//	char density_grad_filename[] = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/const_grad_BOS_grad_x_10.nrrd";
-//	char density_grad_filename[] = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/const_grad_BOS.nrrd";
-	//	char density_grad_filename[] = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/test.nrrd";
 	char lightray_position_save_path[] ="/home/barracuda/a/lrajendr/temp/";
 	char lightray_direction_save_path[] ="/home/barracuda/a/lrajendr/temp/";
 
@@ -2236,6 +2258,51 @@ void save_to_file(float lens_pitch, float image_distance,
 
 }
 
+__global__ void saxpy(int n, float a, float *x, float *y)
+{
+  int i = blockIdx.x*blockDim.x + threadIdx.x;
+  if (i < n) y[i] = a*x[i] + y[i];
+}
+
+
+void saxpy_check()
+{
+	  int N = 1<<20;
+	  float *x, *y, *d_x, *d_y;
+	  x = (float*)malloc(N*sizeof(float));
+	  y = (float*)malloc(N*sizeof(float));
+
+	  cudaMalloc(&d_x, N*sizeof(float));
+	  cudaDeviceSynchronize();
+	  cudaMalloc(&d_y, N*sizeof(float));
+	  cudaDeviceSynchronize();
+
+	  for (int i = 0; i < N; i++) {
+	    x[i] = 1.0f;
+	    y[i] = 2.0f;
+	  }
+
+	  cudaMemcpy(d_x, x, N*sizeof(float), cudaMemcpyHostToDevice);
+	  cudaDeviceSynchronize();
+	  cudaMemcpy(d_y, y, N*sizeof(float), cudaMemcpyHostToDevice);
+	  cudaDeviceSynchronize();
+
+	  // Perform SAXPY on 1M elements
+	  saxpy<<<(N+255)/256, 256>>>(N, 2.0f, d_x, d_y);
+	  cudaDeviceSynchronize();
+	  cudaMemcpy(y, d_y, N*sizeof(float), cudaMemcpyDeviceToHost);
+	  cudaDeviceSynchronize();
+	  float maxError = 0.0f;
+	  for (int i = 0; i < N; i++)
+	    maxError = max(maxError, abs(y[i]-4.0f));
+	  printf("Max error: %f\n", maxError);
+
+	  cudaFree(d_x);
+	  cudaFree(d_y);
+	  free(x);
+	  free(y);
+}
+
 void check_density_gradients(density_grad_params_t params)
 {
 	/*
@@ -2334,6 +2401,48 @@ void check_density_gradients(density_grad_params_t params)
 
 }
 
+//__global__ void check_trace_rays_through_density_gradients_02(int a, int b)
+//{
+//	/*
+//	 * This function is used to check the ray deflection produced by the
+//	 * trace_rays_through_density_gradients routine for a set of rays that are parallel
+//	 * to the z axis
+//	 */
+//	int c;
+//	int id = threadIdx.x;
+//
+//	c = a + b;
+//
+////	x[id] = c;
+//
+//	check_texture_lookup();
+//}
+
+void temp_check()
+{
+	check_trace_rays_through_density_gradients_02<<<1,5>>>(1, 1);
+}
+
+//void check_density_gradients_02(density_grad_params_t params)
+//{
+//
+//	int a = 1, b = 1;
+//	int N = 10;
+//
+//	int x[10];
+//
+//	int* d_x;
+//
+//	cudaMalloc((void**)&d_x, sizeof(int)*N);
+//
+//	check_trace_rays_through_density_gradients_02<<<1,N>>>(a, b, x);
+//	cudaDeviceSynchronize();
+//
+//	cudaMemcpy(x, d_x, sizeof(int)*N, cudaMemcpyDeviceToHost);
+//
+//	cudaFree(d_x);
+//
+//}
 
 void start_ray_tracing(float lens_pitch, float image_distance,
 		scattering_data_t* scattering_data_p, char* scattering_type_str,
@@ -2378,8 +2487,6 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	 * density_grad_filename - name of the nrrd file that contains the density data
 	 * num_lightrays_save - number of light ray positions and directions to save to file
 	 */
-
-
 
 	// this structure holds the scattering information
 	scattering_data_t scattering_data = *scattering_data_p;
@@ -2568,14 +2675,15 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 
 	// pointer to the structure containing the density gradient info
 	density_grad_params_t* d_params_p = 0;
-
+	density_grad_params_t params;
 	if(simulate_density_gradients)
 	{
 		// read the density data from file
-		density_grad_params_t params = readDatafromFile(density_grad_filename);
+		params = readDatafromFile(density_grad_filename);
 
 		// set the ray trajectory integration algorithm
 		params.integration_algorithm = ray_tracing_algorithm;
+		params.interpolation_scheme = 1;
 
 		string algorithm;
 		switch (ray_tracing_algorithm)
@@ -2603,9 +2711,13 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 		cudaMemcpy(d_params_p, &params, sizeof(density_grad_params_t),cudaMemcpyHostToDevice);
 		// setup the array containing the density gradient data separately as a texture
 		Host_Init(&params,d_params_p);
+//		check_trace_rays_through_density_gradients_02<<<1,1>>>(1,1);
+//		cudaDeviceSynchronize();
 
 		// check if the trace density gradients function works correctly
 //		check_density_gradients(params);
+//		saxpy_check();
+//		check_density_gradients_02(params);
 //		exit(0);
 
 	}
@@ -2647,6 +2759,7 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	// allocate number of blocks per grid
 	dim3 grid(grid_x,source_point_number);
 	printf("grid: %d, %d\n",grid_x,source_point_number);
+
 
 	//------------------------------------------------------------------------------------------
 	// perform ray tracing
@@ -2703,9 +2816,10 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 //			file_image_array.write((char*)&image_array[k],sizeof(float));
 //	// close the file
 //	file_image_array.close();
+
 	bool save_lightrays = false;
 
-	for(k = 0; k < 1; k++)
+	for(k = 0; k < KMAX; k++)
 	{
 		save_lightrays = false;
 		// display progress to the user
@@ -2721,7 +2835,7 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 			// allocate memory to store final light ray positions and directions
 			cudaMalloc((void **)&d_final_pos, sizeof(float3)*num_lightrays_save);
 			cudaMalloc((void **)&d_final_dir, sizeof(float3)*num_lightrays_save);
-			cudaDeviceSynchronize();
+//			cudaDeviceSynchronize();
 			save_lightrays = true;
 
 		}
@@ -2731,7 +2845,7 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 			beam_wavelength,aperture_f_number,num_rays,d_rand1,d_rand2,
 			d_element_data, d_element_center,d_element_plane_parameters,
 			d_element_system_index,num_elements,
-			d_camera_design, d_image_array,simulate_density_gradients, d_params_p,
+			d_camera_design, d_image_array,simulate_density_gradients, params,
 			d_final_pos, d_final_dir, num_lightrays_save, save_lightrays);
 
 		cudaDeviceSynchronize();
@@ -2739,6 +2853,7 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 
 		if(k == 0)
 		{
+			printf("arc length: %f\n", params.arc_length);
 			//--------------------------------------------------------------------------------------
 			// save final light ray positions to file (for debugging purposes)
 			//--------------------------------------------------------------------------------------
@@ -2885,12 +3000,18 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 
 	if(simulate_density_gradients)
 	{
-		checkCudaErrors(cudaFreeArray(data_array));
-		checkCudaErrors(cudaUnbindTexture(tex_data));
-		checkCudaErrors(cudaFree(d_params_p));
+		if(params.interpolation_scheme == 1)
+		{
+			checkCudaErrors(cudaFreeArray(data_array));
+			checkCudaErrors(cudaUnbindTexture(tex_data));
+			checkCudaErrors(cudaFree(d_params_p));
+		}
 
-		checkCudaErrors(cudaFreeArray(coeffArray3D));
-		checkCudaErrors(cudaUnbindTexture(coeffs3D));
+		else
+		{
+			checkCudaErrors(cudaFreeArray(coeffArray3D));
+			checkCudaErrors(cudaUnbindTexture(coeffs3D));
+		}
 	}
 
 	printf("exiting cuda code\n");

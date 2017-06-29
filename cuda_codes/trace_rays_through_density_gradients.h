@@ -182,6 +182,13 @@ __device__ bool IntersectWithVolume(float3* ray_pos, float3 ray_dir, float3 p1, 
 	return true;
 }
 
+__device__ void set_lightray_to_NAN(light_ray_data_t* light_ray_data_p)
+{
+	light_ray_data_p->ray_source_coordinates = make_float3(CUDART_NAN_F, CUDART_NAN_F, CUDART_NAN_F);
+	light_ray_data_p->ray_propagation_direction = make_float3(CUDART_NAN_F, CUDART_NAN_F, CUDART_NAN_F);
+
+}
+
 __device__ float3 calculate_lookup_index(float3 pos, density_grad_params_t params, float3 lookup_scale)
 {
 	// calculate distance between the ray location and the minimum corner of the volume
@@ -215,7 +222,7 @@ __device__ bool ray_inside_box(float3 pos, density_grad_params_t params,
 		return false;
 
 	if(lookup.x <= 0 || lookup.y <= 0 || lookup.z <= 0 ||
-			lookup.x >= params.data_width-1 || lookup.y >= params.data_height-1 || lookup.z >= params.data_depth-1 )
+			lookup.x >= params.data_width-1 || lookup.y >= params.data_height-1 || lookup.z >= params.data_depth)
 		return false;
 
 	return true;
@@ -239,6 +246,32 @@ __device__ bool access_refractive_index(float3 pos, density_grad_params_t params
 	return true;
 
 }
+
+__device__ void calculate_derivatives(float4* val_p, float3 lookup)
+{
+	/*
+	 * This function calculates the gradient of the refractive index by using the derivative
+	 * function in the Cubic Interpolation package. It queries each derivative (x, y and z)
+	 * at a time to form the gradient operator.
+	 */
+
+	float4 val_temp;
+
+	// x derivative
+	val_temp = cubicTex3D_1st_derivative_x(coeffs3D, lookup);
+	val_p->x = val_temp.w;
+
+	// y derivative
+	val_temp = cubicTex3D_1st_derivative_y(coeffs3D, lookup);
+	val_p->y = val_temp.w;
+
+	// z derivative
+	val_temp = cubicTex3D_1st_derivative_z(coeffs3D, lookup);
+	val_p->z = val_temp.w;
+
+}
+
+
 __device__ light_ray_data_t rk45(light_ray_data_t light_ray_data, density_grad_params_t params, float3 lookup_scale)
 {
 	/*
@@ -655,8 +688,13 @@ __device__ light_ray_data_t rk45(light_ray_data_t light_ray_data, density_grad_p
     return light_ray_data;
 }
 
+__device__ void increment_arc_length(density_grad_params_t* paramsp, int thread_id)
+{
+	if(thread_id == 0)
+		paramsp->arc_length += paramsp->step_size;
+}
 
-__device__ light_ray_data_t euler(light_ray_data_t light_ray_data, density_grad_params_t params, float3 lookup_scale)
+__device__ light_ray_data_t euler(light_ray_data_t light_ray_data, density_grad_params_t params, float3 lookup_scale, int thread_id)
 {
 	/************ Update ray position using EULER method *********/
 
@@ -672,13 +710,13 @@ __device__ light_ray_data_t euler(light_ray_data_t light_ray_data, density_grad_
 	float4 val;
 
 	int loop_ctr = 0;
-
+	float current_refractive_index;
 	if(params.interpolation_scheme == 1)
 	{
 		while(inside_box)
 		{
 
-			if(loop_ctr > 1e5)
+			if(loop_ctr > 1e7)
 				break;
 
 			pos = light_ray_data.ray_source_coordinates;
@@ -693,9 +731,10 @@ __device__ light_ray_data_t euler(light_ray_data_t light_ray_data, density_grad_
 			// if not, propagate the ray further.
 			if(!access_refractive_index(pos, params, lookup))
 			{
-//				pos = pos + params.max_step_size/params.data_min * dir;
-				pos = pos + params.step_size/params.data_min * dir;
+				pos = pos + params.step_size * dir;
+//				pos = pos + params.step_size/params.data_min * dir;
 				light_ray_data.ray_source_coordinates = pos;
+				increment_arc_length(&params, thread_id);
 				continue;
 			}
 
@@ -706,36 +745,47 @@ __device__ light_ray_data_t euler(light_ray_data_t light_ray_data, density_grad_
 			// before accessing the density gradient data
 			if(val.w < params.data_min)
 			{
-//				pos = pos + params.max_step_size/params.data_min * dir;
-				pos = pos + params.step_size/params.data_min * dir;
+				pos = pos + params.step_size * dir;
+//				pos = pos + params.step_size/params.data_min * dir;
 
 				light_ray_data.ray_source_coordinates = pos;
+				increment_arc_length(&params, thread_id);
 				continue;
+//				break;
 			}
+
 			loop_ctr += 1;
+			current_refractive_index = 1 + val.w;
 			// calculate the change in ray direction
 			normal = make_float3(val.x,val.y,val.z);
 			// update the ray direction
-			dir = dir + params.step_size*normal;
+			dir = dir + params.step_size*normal/current_refractive_index;
 			// normalize the direction to ensure that it is a unit vector
 			dir = normalize(dir);
 
 			// get the refractive index at the current location
-			refractive_index = val.w;
+			refractive_index = 1 + val.w;
 
 			// update the ray position
-			pos = pos + dir*params.step_size/refractive_index;
+			pos = pos + dir*params.step_size;
+			increment_arc_length(&params, thread_id);
 
 			light_ray_data.ray_source_coordinates = pos;
 			light_ray_data.ray_propagation_direction = dir;
 		}
+	}
+//	params.arc_length = 0;
+	if(thread_id == 0)
+	{
+//		params.arc_length = loop_ctr * params.step_size;
+		printf("arc_length: %f\n", params.arc_length);
 	}
 
 	else
 	{
 		while(inside_box)
 		{
-			if(loop_ctr > 1e5)
+			if(loop_ctr > 1e7)
 				break;
 			pos = light_ray_data.ray_source_coordinates;
 			dir = light_ray_data.ray_propagation_direction;
@@ -753,12 +803,14 @@ __device__ light_ray_data_t euler(light_ray_data_t light_ray_data, density_grad_
 			if(val.w < params.data_min)
 			{
 //				pos = pos + params.max_step_size/params.data_min * dir;
-				pos = pos + params.step_size/params.data_min * dir;
+				pos = pos + params.step_size/(1 + params.data_min) * dir;
 
 				light_ray_data.ray_source_coordinates = pos;
 				continue;
 			}
 			loop_ctr += 1;
+
+//			calculate_derivatives(&val, lookup);
 
 			// calculate the change in ray direction
 			normal = make_float3(val.x,val.y,val.z);
@@ -768,7 +820,7 @@ __device__ light_ray_data_t euler(light_ray_data_t light_ray_data, density_grad_
 			dir = normalize(dir);
 
 			// get the refractive index at the current location
-			refractive_index = val.w;
+			refractive_index = 1 + val.w;
 
 			// update the ray position
 			pos = pos + dir*params.step_size/refractive_index;
@@ -780,7 +832,6 @@ __device__ light_ray_data_t euler(light_ray_data_t light_ray_data, density_grad_
 	}
 
 	//***************** END OF EULER ********************************//
-
 
 	return light_ray_data;
 }
@@ -816,6 +867,7 @@ __device__ light_ray_data_t rk4(light_ray_data_t light_ray_data, density_grad_pa
 	float3 R_n, T_n;
 	float3 A, B, C, D;
 	float delta_t;
+	float current_refractive_index;
 
 	if(params.interpolation_scheme == 1)
 	{
@@ -840,12 +892,15 @@ __device__ light_ray_data_t rk4(light_ray_data_t light_ray_data, density_grad_pa
 			if(!access_refractive_index(pos, params, lookup))
 			{
 //				pos = pos + params.max_step_size/params.data_min * dir;
-				pos = pos + params.step_size/params.data_min * dir;
+				pos = pos + params.step_size/(1 + params.data_min) * dir;
 				light_ray_data.ray_source_coordinates = pos;
 				continue;
 			}
 
 			// extract refractive index gradients as well as the local refractive index
+//			lookup.x = 100;
+//			lookup.y = 100;
+//			lookup.z = 50;
 			val = tex3D(tex_data, lookup.x, lookup.y, lookup.z);
 
 			// if refractive index is 0 or less than 1, then propagate the ray further into the volume
@@ -853,12 +908,14 @@ __device__ light_ray_data_t rk4(light_ray_data_t light_ray_data, density_grad_pa
 			if(val.w < params.data_min)
 			{
 //				pos = pos + params.max_step_size/params.data_min * dir;
-				pos = pos + params.step_size/params.data_min * dir;
+				pos = pos + params.step_size/(1 + params.data_min) * dir;
 				light_ray_data.ray_source_coordinates = pos;
 				continue;
 			}
-
 			loop_ctr += 1;
+			val.w += 1;
+			current_refractive_index = val.w;
+
 			// get light ray position
 			R_n = pos;
 			// step size used in the RK4 integration (val.w is the refractive index)
@@ -877,6 +934,8 @@ __device__ light_ray_data_t rk4(light_ray_data_t light_ray_data, density_grad_pa
 				break;
 
 			val = tex3D(tex_data, lookup.x, lookup.y, lookup.z);
+			val.w += 1;
+
 			D = make_float3(val.w * val.x, val.w * val.y, val.w * val.z);
 			B = delta_t * D;
 
@@ -886,6 +945,8 @@ __device__ light_ray_data_t rk4(light_ray_data_t light_ray_data, density_grad_pa
 			if(!ray_inside_box(pos, params, lookup))
 				break;
 			val = tex3D(tex_data, lookup.x, lookup.y, lookup.z);
+			val.w += 1;
+
 			D = make_float3(val.w * val.x, val.w * val.y, val.w * val.z);
 			C = delta_t * D;
 
@@ -896,7 +957,11 @@ __device__ light_ray_data_t rk4(light_ray_data_t light_ray_data, density_grad_pa
 
 			// store the new position and direction in the light ray vector
 			light_ray_data.ray_source_coordinates = R_n;
-			light_ray_data.ray_propagation_direction = normalize(T_n/val.w);
+			light_ray_data.ray_propagation_direction = normalize(T_n/current_refractive_index);
+
+//			if(loop_ctr > 100)
+//				break;
+
 		}
 	}
 
@@ -923,7 +988,7 @@ __device__ light_ray_data_t rk4(light_ray_data_t light_ray_data, density_grad_pa
 			if(!access_refractive_index(pos, params, lookup))
 			{
 //				pos = pos + params.max_step_size/params.data_min * dir;
-				pos = pos + params.step_size/params.data_min * dir;
+				pos = pos + params.step_size/(1 + params.data_min) * dir;
 
 				light_ray_data.ray_source_coordinates = pos;
 				continue;
@@ -937,19 +1002,21 @@ __device__ light_ray_data_t rk4(light_ray_data_t light_ray_data, density_grad_pa
 			if(val.w < params.data_min)
 			{
 //				pos = pos + params.max_step_size/params.data_min * dir;
-				pos = pos + params.step_size/params.data_min * dir;
+				pos = pos + params.step_size/(1 + params.data_min) * dir;
 
 				light_ray_data.ray_source_coordinates = pos;
 				continue;
 			}
 			loop_ctr += 1;
-
+			val.w += 1;
 			// get light ray position
 			R_n = pos;
 			// step size used in the RK4 integration (val.w is the refractive index)
 			delta_t = params.step_size/val.w;
 			// calculate optical ray direction vector
 			T_n = val.w * light_ray_data.ray_propagation_direction;
+
+//			calculate_derivatives(&val, lookup);
 
 			// calculate coefficients
 			D = make_float3(val.w * val.x, val.w * val.y, val.w * val.z);
@@ -962,6 +1029,9 @@ __device__ light_ray_data_t rk4(light_ray_data_t light_ray_data, density_grad_pa
 				break;
 
 			val = cubicTex3D(coeffs3D, lookup);
+			val.w += 1;
+//			calculate_derivatives(&val, lookup);
+
 			D = make_float3(val.w * val.x, val.w * val.y, val.w * val.z);
 			B = delta_t * D;
 
@@ -970,7 +1040,11 @@ __device__ light_ray_data_t rk4(light_ray_data_t light_ray_data, density_grad_pa
 			// check if ray is inside volume
 			if(!ray_inside_box(pos, params, lookup))
 				break;
+
 			val = cubicTex3D(coeffs3D, lookup);
+			val.w += 1;
+//			calculate_derivatives(&val, lookup);
+
 			D = make_float3(val.w * val.x, val.w * val.y, val.w * val.z);
 			C = delta_t * D;
 
@@ -988,6 +1062,11 @@ __device__ light_ray_data_t rk4(light_ray_data_t light_ray_data, density_grad_pa
 
 	//***************** END OF RK4 ********************************//
 
+//	// if the light ray did not propagate through the whole volume, then set it to NAN
+//	float threshold = 0.1;
+//	if(fabs(light_ray_data.ray_source_coordinates.z - params.min_bound.z) > threshold*params.min_bound.z)
+//		set_lightray_to_NAN(&light_ray_data);
+//	printf("loop_ctr: %d\n", loop_ctr);
 	return light_ray_data;
 }
 
@@ -1013,17 +1092,29 @@ __device__ light_ray_data_t adams_bashforth(light_ray_data_t light_ray_data, den
 
 
 	// INTIALIZE USING RK 4
-	while(loop_ctr <3)
+	while(loop_ctr < 3)
 	{
 //		if(i==1)
 //			pos = pos + dir * params.step_size/refractive_index;
 		pos = light_ray_data.ray_source_coordinates;
+		dir = light_ray_data.ray_propagation_direction;
 
 		// calculate lookup index to access refractive index gradient value
 		lookup = calculate_lookup_index(pos, params, lookup_scale);
 		// check if ray is inside volume
 		if(!ray_inside_box(pos, params, lookup))
 			break;
+
+		// check if light ray is sufficiently inside the volume to get a non-zero refractive index.
+		// if not, propagate the ray further.
+		if(!access_refractive_index(pos, params, lookup))
+		{
+//				pos = pos + params.max_step_size/params.data_min * dir;
+			pos = pos + params.step_size/params.data_min * dir;
+			light_ray_data.ray_source_coordinates = pos;
+			continue;
+		}
+
 		// extract refractive index gradients as well as the local refractive index
 		val = tex3D(tex_data, lookup.x, lookup.y, lookup.z);
 
@@ -1036,7 +1127,7 @@ __device__ light_ray_data_t adams_bashforth(light_ray_data_t light_ray_data, den
 			continue;
 		}
 
-		loop_ctr += 1;
+
 		// get light ray position
 		R_n = pos;
 		// step size used in the RK4 integration (val.w is the refractive index)
@@ -1044,12 +1135,9 @@ __device__ light_ray_data_t adams_bashforth(light_ray_data_t light_ray_data, den
 		// calculate optical ray direction vector
 		T_n = val.w * light_ray_data.ray_propagation_direction;
 
-		T_n_prev[loop_ctr - 1] = T_n;
 
 		// calculate coefficients
 		D = make_float3(val.w * val.x, val.w * val.y, val.w * val.z);
-		D_n_prev[loop_ctr - 1] = D;
-
 		A = delta_t * D;
 
 		pos = R_n + delta_t/2.0 * T_n + 1/8.0 * delta_t * A;
@@ -1080,6 +1168,10 @@ __device__ light_ray_data_t adams_bashforth(light_ray_data_t light_ray_data, den
 		light_ray_data.ray_source_coordinates = R_n;
 		light_ray_data.ray_propagation_direction = normalize(T_n/val.w);
 
+		T_n_prev[loop_ctr] = T_n;
+		D_n_prev[loop_ctr] = D;
+
+		loop_ctr += 1;
 	}
 
 	// ADAMS BASHFORTH
@@ -1140,7 +1232,7 @@ __device__ light_ray_data_t adams_bashforth(light_ray_data_t light_ray_data, den
 
 	return light_ray_data;
 }
-__device__ light_ray_data_t trace_rays_through_density_gradients(light_ray_data_t light_ray_data, density_grad_params_t params)
+__device__ light_ray_data_t trace_rays_through_density_gradients(light_ray_data_t light_ray_data, density_grad_params_t params, int thread_id)
 {
 
 	// this is the corner of the volume containing the minimum coordinates
@@ -1193,7 +1285,7 @@ __device__ light_ray_data_t trace_rays_through_density_gradients(light_ray_data_
  	{
  		case 1:
  			/************ Update ray position using EULER method *********/
- 			light_ray_data = euler(light_ray_data, params, lookup_scale);
+ 			light_ray_data = euler(light_ray_data, params, lookup_scale, thread_id);
  			break;
  		case 2:
  		 	/************ Update ray position using RK4 method *********/
@@ -1215,6 +1307,65 @@ __device__ light_ray_data_t trace_rays_through_density_gradients(light_ray_data_
  	return light_ray_data;
 }
 
+__device__ void check_texture_lookup()
+{
+	/*
+	 * This function is used to check the ray deflection produced by the
+	 * trace_rays_through_density_gradients routine for a set of rays that are parallel
+	 * to the z axis
+	 */
+
+	float4 val;
+	float3 lookup;
+	int a;
+	// extract refractive index gradients as well as the local refractive index
+	lookup.x = 1;
+	lookup.y = 1;
+	lookup.z = 1;
+	val = tex3D(tex_data, lookup.x + 0.5, lookup.y + 0.5, lookup.z + 0.5);
+
+	if(val.w == 0)
+		a = 1;
+	else
+		a = 2;
+
+	printf("val.w: %f\n", val.w);
+
+}
+//__global__ void check_trace_rays_through_density_gradients_02(int a, int b)
+//{
+//	/*
+//	 * This function is used to check the ray deflection produced by the
+//	 * trace_rays_through_density_gradients routine for a set of rays that are parallel
+//	 * to the z axis
+//	 */
+//	int c;
+//	int id = threadIdx.x;
+//
+//	c = a + b;
+//
+////	x[id] = c;
+//
+//	check_texture_lookup();
+//}
+
+__global__ void check_trace_rays_through_density_gradients(light_ray_data_t* light_ray_data, density_grad_params_t params)
+{
+	/*
+	 * This function is used to check the ray deflection produced by the
+	 * trace_rays_through_density_gradients routine for a set of rays that are parallel
+	 * to the z axis
+	 */
+
+//	check_texture_lookup();
+
+	int id;
+
+//	id = blockIdx.x*blockDim.x + threadIdx.x;
+	id = threadIdx.x;
+
+	light_ray_data[id] = trace_rays_through_density_gradients(light_ray_data[id],params, 0);
+}
 extern "C"{
 
 void Host_Init(density_grad_params_t* paramsp, density_grad_params_t* dparams)
@@ -1249,6 +1400,8 @@ void Host_Init(density_grad_params_t* paramsp, density_grad_params_t* dparams)
 
 		checkCudaErrors(cudaBindTextureToArray(tex_data, data_array, channelDesc));
 
+//		check_trace_rays_through_density_gradients_02<<<1,1>>>(1,1);
+//		cudaDeviceSynchronize();
 	}
 
 	//setup data texture for cubic interpolation
@@ -1323,7 +1476,7 @@ void loadNRRD(DataFile* datafile, int data_min, int data_max)
 	if (sizez > (data_max-data_min))
 	sizez = data_max-data_min;
 
-	printf(" size: %f %f %f ", float(sizex), float(sizey), float(sizez));
+	printf(" size: %f %f %f\n", float(sizex), float(sizey), float(sizez));
 
 	// initialize data array and max and min variables
 	float* data = new float[sizex*sizey*sizez];
@@ -1333,8 +1486,10 @@ void loadNRRD(DataFile* datafile, int data_min, int data_max)
 	float* datai = data;
 	float data_fudge = 1.0;
 	// set GladStone Dale constant (cm^3/g) for refractive index calculation
-	float K = 0.226;
-
+	float K = 0.225e-3;
+	float temp, rho1, rho2, n1, n2;
+	double d_n1, d_n2, d_temp;
+	double a = 1.0;
 	for(int i = 0; i < sizex; i++)
 	{
 		for(int j = 0; j < sizey; j++)
@@ -1344,8 +1499,32 @@ void loadNRRD(DataFile* datafile, int data_min, int data_max)
 				// read density data from file
 				*datai = (*dataNrrd)*data_fudge;
 
+				temp = *datai;
 				// convert density to refractive index
-				*datai = 1.0 + K/1000.0*(*datai);
+//				*datai = a + K*(temp);
+				d_temp = K*(temp);
+				*datai = d_temp;
+
+				if(i == 0 && j == 0 && k == 5)
+				{
+					rho1 = temp;
+//					n1 = *datai;
+					n1 = d_temp;
+//					d_n1 = a + K*(temp);
+//					d_n1 = *datai;
+					d_n1 = d_temp;
+				}
+
+				if(i == 0 && j == 0 && k == 6)
+				{
+					rho2 = temp;
+//					n2 = *datai;
+					n2 = d_temp;
+//					d_n2 = a + K*(temp);
+//					d_n2 = *datai;
+					d_n2 = d_temp;
+				}
+//					printf("density: %G, refractive index: %G\n", temp, *datai);
 
 				// update max and min values
 				if (*datai > max)
@@ -1360,6 +1539,14 @@ void loadNRRD(DataFile* datafile, int data_min, int data_max)
 		}
 	}
 
+	float del_n = K*(rho2 - rho1);
+	float del_n_2 = K*rho2 - K*rho1;
+	float n3 = 1.000000000 + n1;
+//	printf("rho1: %.8f, rho2: %.8f, rho2-rho1: %.8G\n", rho1, rho2, rho2-rho1);
+//	printf("n1: %.9f, n2: %.9f, n2-n1: %.8G, del_n: %.8G, del_n_2: %.8G\n", n1, n2, n2-n1, del_n, del_n_2);
+//	printf("d_n1: %.9f, d_n2: %.9f, d_n2-d_n1: %.8G\n", d_n1, d_n2, d_n2-d_n1);
+//	printf("n3: %.9f\n", n3);
+//	exit(0);
 	// transfer data to pointer
 	datafile->data = data;
 	datafile->sizex = sizex;
@@ -1383,7 +1570,6 @@ void loadNRRD(DataFile* datafile, int data_min, int data_max)
 }
 }
 
-
 density_grad_params_t setData(float* data, density_grad_params_t _params)
 {
 
@@ -1402,15 +1588,22 @@ density_grad_params_t setData(float* data, density_grad_params_t _params)
 	// this is the array containing the refractive index gradients
 	_params.data = new float4[data_width*data_height*data_depth];
 
+	// save the refractive index gradient data to file.
+	std::string filename = "/home/shannon/c/aether/Projects/BOS/error-analysis/analysis/src/photon/cuda_codes/data/gradient.bin";
 
+	std::ofstream file;
+	file.open(filename.c_str(), ios::out | ios::binary);
+	float4 data_out;
 
 	// calculate grid spacings for gradient calculation
-	float grid_x = (_params.max_bound.x - _params.min_bound.x)/data_width;
-	float grid_y = (_params.max_bound.y - _params.min_bound.y)/data_height;
-	float grid_z = (_params.max_bound.z - _params.min_bound.z)/data_depth;
+	float grid_x = _params.grid_spacing.x;
+	float grid_y = _params.grid_spacing.y;
+	float grid_z = _params.grid_spacing.z;
 
 	printf("grid_x: %f, grid_y: %f, grid_z: %f\n", grid_x, grid_y, grid_z);
 
+	float3 sample1, sample2, normal, lookup;
+	int loop_ctr = 0;
 	// loop over all the grid points and compute the refractive index gradient
 	for(size_t z = 0; z < data_depth; z++)
 	{
@@ -1419,7 +1612,7 @@ density_grad_params_t setData(float* data, density_grad_params_t _params)
 		  for(size_t x = 0; x < data_width; x++)
 		  {
 			size_t DELTA = 1;
-			float3 lookup = {x,y,z};
+			lookup = make_float3(x,y,z);
 
 			// this is the array index where the refractive index gradient value will be stored
 			int data_loc = (z*data_width*data_height + y*data_width + x);
@@ -1434,7 +1627,7 @@ density_grad_params_t setData(float* data, density_grad_params_t _params)
 			// obtain refractive index values from points lying on either side of the current grid
 			// point along x, y and z
 
-			float3 sample1, sample2;
+
 			lookup = make_float3(x-1,y,z);
 			sample1.x = data[size_t(lookup.z*data_width*data_height + lookup.y*data_width + lookup.x)];
 			lookup = make_float3(x+1,y,z);
@@ -1451,7 +1644,7 @@ density_grad_params_t setData(float* data, density_grad_params_t _params)
 			sample2.z = data[size_t(lookup.z*data_width*data_height + lookup.y*data_width + lookup.x)];
 
 			// calculate the refractive index gradient
-			float3 normal;
+
 			normal.x = (sample2.x - sample1.x)/(2*grid_x);
 			normal.y = (sample2.y - sample1.y)/(2*grid_y);
 			normal.z = (sample2.z - sample1.z)/(2*grid_z);
@@ -1463,13 +1656,19 @@ density_grad_params_t setData(float* data, density_grad_params_t _params)
 			_params.data[data_loc].z = normal.z;
 			_params.data[data_loc].w = data[size_t(z*data_width*data_height + y*data_width + x)];
 
+			loop_ctr++;
+			data_out = make_float4(normal.x, normal.y, normal.z, data[data_loc]);
+			// write to file
+			file.write((char*)&data_out, sizeof(float4));
 			if(_params.data[data_loc].w == 0)
 				printf("_params.data[data_loc].w == 0 at data_loc: %d\n", data_loc);
 		  }
 		}
 	}
-
+	file.close();
 	printf("Minimum Refractive Index: %f\n", _params.data_min);
+	printf("loop ctr: %d\n", loop_ctr);
+
 	return _params;
 }
 
@@ -1516,12 +1715,13 @@ density_grad_params_t readDatafromFile(char* filename)
 	int data_min = 0;
 	int data_max = 1024;
 
-    for( int i = 0; i < files.size(); i++)
+    for( int i = 0; i < 1; i++)
     {
         cout << "file: " << files[i] << endl;
         input_files[i] = new char[files[i].length()];
         strcpy(input_files[i], files[i].c_str());
         strcpy(dataFiles[i]->filename, input_files[i]);
+        printf("copied filename");
         loadNRRD(dataFiles[i],data_min,data_max);
     }
 
@@ -1536,6 +1736,13 @@ density_grad_params_t readDatafromFile(char* filename)
     _params.data_width = dataFiles[0]->sizex;
     _params.data_height = dataFiles[0]->sizey;
     _params.data_depth = dataFiles[0]->sizez;
+
+    //    _params.step_size = dataFiles[0]->del_z;
+	_params.grid_spacing.x = dataFiles[0]->del_x;
+	_params.grid_spacing.y = dataFiles[0]->del_y;
+	_params.grid_spacing.z = dataFiles[0]->del_z;
+
+	printf("grid_spacing: %f, %f, %f\n", _params.grid_spacing.x, _params.grid_spacing.y, _params.grid_spacing.z);
 
     cout << "setting up renderer\n";
     _params = setData(data, _params);
@@ -1555,29 +1762,14 @@ density_grad_params_t readDatafromFile(char* filename)
     // set the step size as the min for now
     _params.step_size = _params.min_step_size;
 
-//    _params.step_size = dataFiles[0]->del_z;
-    _params.grid_spacing.x = dataFiles[0]->del_x;
-    _params.grid_spacing.y = dataFiles[0]->del_y;
-    _params.grid_spacing.z = dataFiles[0]->del_z;
-
     return _params;
 
 }
 
-__global__ void check_trace_rays_through_density_gradients(light_ray_data_t* light_ray_data, density_grad_params_t params)
-{
-	/*
-	 * This function is used to check the ray deflection produced by the
-	 * trace_rays_through_density_gradients routine for a set of rays that are parallel
-	 * to the z axis
-	 */
 
-	int id;
 
-//	id = blockIdx.x*blockDim.x + threadIdx.x;
-	id = threadIdx.x;
-	light_ray_data[id] = trace_rays_through_density_gradients(light_ray_data[id],params);
 
-}
+
+
 
 #endif /* TRACE_RAYS_THROUGH_DENSITY_GRADIENTS_H_ */

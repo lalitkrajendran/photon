@@ -232,39 +232,41 @@ struct density_grad_params_t
 	// 1 - linear, 2 - cubic
 	int interpolation_scheme;
 
+	float arc_length;
+
 };
 
 //--------------------------------------------------------------------------------------
 // GPU FUNCTIONS
 //--------------------------------------------------------------------------------------
 
-__global__ void parallel_ray_tracing(float , float , scattering_data_t* , int ,
-		lightfield_source_t* ,int , int , int , float , float , light_ray_data_t* , int ,
-		 float* ,float* ,element_data_t* , float3* , float4* , int* ,int , camera_design_t* ,
-		 float* , bool , density_grad_params_t*, int);
+__global__ void parallel_ray_tracing(float, float, scattering_data_t*, int,
+		lightfield_source_t*, int, int, int, float, float, light_ray_data_t*, int,
+		 float*, float*, element_data_t*, float3*, float4*, int*, int, camera_design_t*,
+		 float*, bool, density_grad_params_t, float3*, float3*, int, bool);
 
-__device__ light_ray_data_t generate_lightfield_angular_data(float , float ,scattering_data_t ,
-		int , lightfield_source_single_t, int, float, float, float, float);
+__device__ light_ray_data_t generate_lightfield_angular_data(float, float, scattering_data_t,
+		int, lightfield_source_single_t, int, float, float, float, float);
 
-__device__ light_ray_data_t propagate_rays_through_optical_system(element_data_t*, float3* , float4* ,
-		int* , int , int , int , light_ray_data_t);
+__device__ light_ray_data_t propagate_rays_through_optical_system(element_data_t*, float3*, float4* ,
+		int*, int, int, int, light_ray_data_t);
 
-__device__ pixel_data_t intersect_sensor(light_ray_data_t ,camera_design_t , int, int);
+__device__ pixel_data_t intersect_sensor(light_ray_data_t, camera_design_t, int, int);
 
 __device__ float random_single(unsigned int );
 
-__device__ light_ray_data_t propogate_rays_through_multiple_elements(element_data_t* , float3*,
-		float4* , int, light_ray_data_t );
+__device__ light_ray_data_t propogate_rays_through_multiple_elements(element_data_t*, float3*,
+		float4*, int, light_ray_data_t );
 
-__device__ light_ray_data_t propagate_rays_through_single_element(element_data_t , float3,
+__device__ light_ray_data_t propagate_rays_through_single_element(element_data_t, float3,
 		   float4, light_ray_data_t );
-__device__ float3 ray_sphere_intersection(float3 , float , float3 , float3 , char );
+__device__ float3 ray_sphere_intersection(float3, float, float3, float3, char );
 
-__device__ float measure_distance_to_optical_axis(float3 , float3 , float );
+__device__ float measure_distance_to_optical_axis(float3, float3, float );
 
-__device__ void argsort(float* , int , int*);
+__device__ void argsort(float*, int, int*);
 
-__device__ double atomicAdd(double* , double);
+__device__ double atomicAdd(double*, double);
 
 //--------------------------------------------------------------------------------------
 // CPU FUNCTIONS
@@ -273,22 +275,22 @@ __device__ double atomicAdd(double* , double);
 extern "C"
 {
 
-void save_to_file(float , float ,scattering_data_t* , char* ,lightfield_source_t* ,
-		int ,float, float,int , double (*element_center)[3],element_data_t* ,
-		double (*element_plane_parameters)[4], int* ,camera_design_t* , float*,
-		bool, char* , char*, char*, int, int);
+void save_to_file(float, float, scattering_data_t*, char*, lightfield_source_t*,
+		int, float, float, int, double (*element_center)[3], element_data_t*,
+		double (*element_plane_parameters)[4], int*, camera_design_t*, float*,
+		bool, char*, char*, char*, int, int);
 
 void read_from_file();
 
 int add(int a, int b);
 
-void start_ray_tracing(float , float ,scattering_data_t* , char* ,lightfield_source_t* ,
-		int ,float, float, int , double (*element_center)[3],element_data_t*,
-		double (*element_plane_parameters)[4], int* ,camera_design_t* , float*,
-		bool, char* , char* , char*, int, int);
+void start_ray_tracing(float, float, scattering_data_t*, char*, lightfield_source_t*,
+		int, float, float, int, double (*element_center)[3], element_data_t*,
+		double (*element_plane_parameters)[4], int*, camera_design_t*, float*,
+		bool, char*, char*, char*, int, int);
+
+void temp_check();
 
 }
-
-
 
 #endif /* PARALLEL_RAY_TRACING_H_ */
