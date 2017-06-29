@@ -1488,14 +1488,6 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 	// initialize direction
 	light_ray_data.ray_propagation_direction = make_float3(sin(theta_x), sin(theta_y), -sqrt(1-sin(theta_x)*sin(theta_x) - sin(theta_y)*sin(theta_y)));
 
-//	float4 val;
-//	float3 lookup;
-//	// extract refractive index gradients as well as the local refractive index
-//	lookup.x = 100;
-//	lookup.y = 100;
-//	lookup.z = 50;
-//	val = tex3D(tex_data, lookup.x, lookup.y, lookup.z);
-
 //	// generate light rays
 //	light_ray_data_t light_ray_data = generate_lightfield_angular_data(lens_pitch, image_distance,scattering_data,
 //				scattering_type, lightfield_source_shared,lightray_number_per_particle,
@@ -1529,6 +1521,12 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 			element_plane_parameters,element_system_index,num_elements,num_rays,
 			lightray_number_per_particle,light_ray_data);
 
+//	if(global_ray_id < num_lightrays_save && save_lightrays)
+//	{
+//		final_dir[global_ray_id] = light_ray_data.ray_propagation_direction;
+//		final_pos[global_ray_id] = light_ray_data.ray_source_coordinates;
+//		return;
+//	}
 	// ignore rays that did not pass through the optical train
 	if(isnan(light_ray_data.ray_propagation_direction.x) || isnan(light_ray_data.ray_propagation_direction.y)
 				|| isnan(light_ray_data.ray_propagation_direction.z)
@@ -1749,6 +1747,7 @@ void read_from_file()
 	for(k = 0; k < lightfield_source.num_particles; k++)
 		file_lightfield_source.read ((char*)&lightfield_source.z[k], sizeof(float));
 
+	lightfield_source.z_offset = 2.16220E05;
 	file_lightfield_source.close();
 
 
@@ -2495,7 +2494,8 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 
 	// counter variable for all the for loops in this function
 	int k;
-
+	float z_offset = lightfield_source.z_offset;
+	printf("z_offset: %f\n", z_offset);
 	//--------------------------------------------------------------------------------------
 	// allocate space on GPU for lightfield_source
 	//--------------------------------------------------------------------------------------
@@ -2679,7 +2679,7 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	if(simulate_density_gradients)
 	{
 		// read the density data from file
-		params = readDatafromFile(density_grad_filename);
+		params = readDatafromFile(density_grad_filename, z_offset);
 
 		// set the ray trajectory integration algorithm
 		params.integration_algorithm = ray_tracing_algorithm;

@@ -52,6 +52,8 @@ typedef struct lightfield_source_t
 	int num_rays;
 	// number of particles to simulate
 	int num_particles;
+	// offset along z
+	float z_offset;
 }lightfield_source_t;
 
 // this structure contains the light field data for all the particles

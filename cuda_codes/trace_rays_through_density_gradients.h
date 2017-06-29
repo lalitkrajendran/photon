@@ -1237,10 +1237,10 @@ __device__ light_ray_data_t trace_rays_through_density_gradients(light_ray_data_
 
 	// this is the corner of the volume containing the minimum coordinates
 	float3 min_bound = params.min_bound;
-
+//	printf("min bound: %f, %f, %f\n", min_bound.x, min_bound.y, min_bound.z);
 	// this is the corner of the volume containing the maximum coordinates
 	float3 max_bound = params.max_bound;
-
+//	printf("max bound: %f, %f, %f\n", max_bound.x, max_bound.y, max_bound.z);
 	// this is the scaling factor to covert the coordinates to integer index locations
 	float3 lookup_scale = {1.0f/(max_bound.x-min_bound.x), 1.0f/(max_bound.y - min_bound.y), 1.0f/(max_bound.z-min_bound.z)};
 
@@ -1280,6 +1280,10 @@ __device__ light_ray_data_t trace_rays_through_density_gradients(light_ray_data_
 	// increment ray position by a small amount so it is inside the volume.
 	pos = pos + dir * 1 * params.step_size/refractive_index;
  	light_ray_data.ray_source_coordinates = pos;
+
+// 	light_ray_data.ray_source_coordinates = pos;
+// 	light_ray_data.ray_propagation_direction = dir;
+// 	return light_ray_data;
 
  	switch(params.integration_algorithm)
  	{
@@ -1419,7 +1423,7 @@ void Host_Init(density_grad_params_t* paramsp, density_grad_params_t* dparams)
 	}
 }
 
-void loadNRRD(DataFile* datafile, int data_min, int data_max)
+void loadNRRD(DataFile* datafile, int data_min, int data_max, float z_offset)
 {
 
 	/*
@@ -1460,7 +1464,7 @@ void loadNRRD(DataFile* datafile, int data_min, int data_max)
 	del_y = nrrd->axis[1].spacing;
 	ymax = ymin + (sizey-1)*del_y;
 
-	zmin = nrrd->spaceOrigin[2];
+	zmin = nrrd->spaceOrigin[2] + z_offset;
 	del_z = nrrd->axis[2].spacing;
 	zmax = zmin + (sizez-1)*del_z;
 
@@ -1487,9 +1491,9 @@ void loadNRRD(DataFile* datafile, int data_min, int data_max)
 	float data_fudge = 1.0;
 	// set GladStone Dale constant (cm^3/g) for refractive index calculation
 	float K = 0.225e-3;
-	float temp, rho1, rho2, n1, n2;
-	double d_n1, d_n2, d_temp;
-	double a = 1.0;
+//	float temp, rho1, rho2, n1, n2;
+//	double d_n1, d_n2, d_temp;
+//	double a = 1.0;
 	for(int i = 0; i < sizex; i++)
 	{
 		for(int j = 0; j < sizey; j++)
@@ -1499,32 +1503,31 @@ void loadNRRD(DataFile* datafile, int data_min, int data_max)
 				// read density data from file
 				*datai = (*dataNrrd)*data_fudge;
 
-				temp = *datai;
 				// convert density to refractive index
 //				*datai = a + K*(temp);
-				d_temp = K*(temp);
-				*datai = d_temp;
+//				d_temp = K*(temp);
+				*datai = K*(*datai);
 
-				if(i == 0 && j == 0 && k == 5)
-				{
-					rho1 = temp;
-//					n1 = *datai;
-					n1 = d_temp;
-//					d_n1 = a + K*(temp);
-//					d_n1 = *datai;
-					d_n1 = d_temp;
-				}
-
-				if(i == 0 && j == 0 && k == 6)
-				{
-					rho2 = temp;
-//					n2 = *datai;
-					n2 = d_temp;
-//					d_n2 = a + K*(temp);
-//					d_n2 = *datai;
-					d_n2 = d_temp;
-				}
-//					printf("density: %G, refractive index: %G\n", temp, *datai);
+//				if(i == 0 && j == 0 && k == 5)
+//				{
+//					rho1 = temp;
+////					n1 = *datai;
+//					n1 = d_temp;
+////					d_n1 = a + K*(temp);
+////					d_n1 = *datai;
+//					d_n1 = d_temp;
+//				}
+//
+//				if(i == 0 && j == 0 && k == 6)
+//				{
+//					rho2 = temp;
+////					n2 = *datai;
+//					n2 = d_temp;
+////					d_n2 = a + K*(temp);
+////					d_n2 = *datai;
+//					d_n2 = d_temp;
+//				}
+////					printf("density: %G, refractive index: %G\n", temp, *datai);
 
 				// update max and min values
 				if (*datai > max)
@@ -1539,9 +1542,9 @@ void loadNRRD(DataFile* datafile, int data_min, int data_max)
 		}
 	}
 
-	float del_n = K*(rho2 - rho1);
-	float del_n_2 = K*rho2 - K*rho1;
-	float n3 = 1.000000000 + n1;
+//	float del_n = K*(rho2 - rho1);
+//	float del_n_2 = K*rho2 - K*rho1;
+//	float n3 = 1.000000000 + n1;
 //	printf("rho1: %.8f, rho2: %.8f, rho2-rho1: %.8G\n", rho1, rho2, rho2-rho1);
 //	printf("n1: %.9f, n2: %.9f, n2-n1: %.8G, del_n: %.8G, del_n_2: %.8G\n", n1, n2, n2-n1, del_n, del_n_2);
 //	printf("d_n1: %.9f, d_n2: %.9f, d_n2-d_n1: %.8G\n", d_n1, d_n2, d_n2-d_n1);
@@ -1672,7 +1675,7 @@ density_grad_params_t setData(float* data, density_grad_params_t _params)
 	return _params;
 }
 
-density_grad_params_t readDatafromFile(char* filename)
+density_grad_params_t readDatafromFile(char* filename, float z_offset)
 {
     /*
      * This function reads density data from the file and sets up the simulation parameters
@@ -1722,7 +1725,7 @@ density_grad_params_t readDatafromFile(char* filename)
         strcpy(input_files[i], files[i].c_str());
         strcpy(dataFiles[i]->filename, input_files[i]);
         printf("copied filename");
-        loadNRRD(dataFiles[i],data_min,data_max);
+        loadNRRD(dataFiles[i],data_min,data_max, z_offset);
     }
 
     // this is the address to the location where the density data are stored
@@ -1731,6 +1734,8 @@ density_grad_params_t readDatafromFile(char* filename)
     // get minimum and maximum coordinates along all three axes
     _params.min_bound = make_float3(dataFiles[0]->xmin, dataFiles[0]->ymin, dataFiles[0]->zmin);
     _params.max_bound = make_float3(dataFiles[0]->xmax, dataFiles[0]->ymax, dataFiles[0]->zmax);
+    printf("min bound: %f, %f, %f\n", _params.min_bound.x, _params.min_bound.y, _params.min_bound.z);
+    printf("max bound: %f, %f, %f\n", _params.max_bound.x, _params.max_bound.y, _params.max_bound.z);
 
     // get number of grid points along all three axes where density data are available
     _params.data_width = dataFiles[0]->sizex;
@@ -1741,7 +1746,6 @@ density_grad_params_t readDatafromFile(char* filename)
 	_params.grid_spacing.x = dataFiles[0]->del_x;
 	_params.grid_spacing.y = dataFiles[0]->del_y;
 	_params.grid_spacing.z = dataFiles[0]->del_z;
-
 	printf("grid_spacing: %f, %f, %f\n", _params.grid_spacing.x, _params.grid_spacing.y, _params.grid_spacing.z);
 
     cout << "setting up renderer\n";
