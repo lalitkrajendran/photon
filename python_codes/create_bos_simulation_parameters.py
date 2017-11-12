@@ -45,6 +45,8 @@ def create_bos_simulation_parameters():
     piv_simulation_parameters['camera_design']['x_camera_angle'] = -0.00 * np.pi / 180.0
     # % This is the y angle of the camera to the particle volume
     piv_simulation_parameters['camera_design']['y_camera_angle'] = -0.00 * np.pi / 180.0
+    # this is the image noise to add
+    piv_simulation_parameters['camera_design']['image_noise'] = 0.03
 
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # % Particle Field Simulation Parameters                                    %
@@ -173,8 +175,8 @@ def create_bos_simulation_parameters():
     # % This adds the grid point diameter to the structure
     piv_simulation_parameters['bos_pattern']['grid_point_diameter'] = 6.0e2
     # % This adds the grid point number to the calibration structure
-    piv_simulation_parameters['bos_pattern']['x_grid_point_number'] = 50
-    piv_simulation_parameters['bos_pattern']['y_grid_point_number'] = 50
+    piv_simulation_parameters['bos_pattern']['x_grid_point_number'] = 150
+    piv_simulation_parameters['bos_pattern']['y_grid_point_number'] = 150
     # % This adds the number of 'particles' (ie lightray source points) per grid
     # % point to the calibration structure
     piv_simulation_parameters['bos_pattern']['particle_number_per_grid_point'] = 100
@@ -193,6 +195,8 @@ def create_bos_simulation_parameters():
     # This sets the minimum and maximum values of the Y co-ordinate of the bos pattern target
     piv_simulation_parameters['bos_pattern']['Y_Min'] = -7.5e4
     piv_simulation_parameters['bos_pattern']['Y_Max'] = +7.5e4
+    # number of light ray positions and directions to save
+    piv_simulation_parameters['bos_pattern']['num_lightrays_save'] = 1e6
 
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # % Density Gradient Parameters

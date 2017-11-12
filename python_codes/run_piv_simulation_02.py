@@ -257,11 +257,11 @@ def create_camera_optical_system(piv_simulation_parameters):
     
     # This calculates the thickness of the lens based upon the defined
     # curvature and pitch
-    lens_thickness = (lens_radius_of_curvature - np.sqrt(np.power(lens_radius_of_curvature,2) - np.power(lens_pitch,2)))/2.0
+    # lens_thickness = (lens_radius_of_curvature - np.sqrt(np.power(lens_radius_of_curvature,2) - np.power(lens_pitch,2)))/2.0
 
-    # Added by lalit to account for out of focus effects - did not work
-    # lens_thickness = 2.0*(lens_radius_of_curvature - np.sqrt(
-    #     np.power(lens_radius_of_curvature, 2) - np.power(lens_pitch/2.0, 2)))
+    # Added by lalit
+    lens_thickness = 2.0*(lens_radius_of_curvature - np.sqrt(
+        np.power(lens_radius_of_curvature, 2) - np.power(lens_pitch/2.0, 2)))
 
     # This calculates the refractive index that would be required to produce a
     # lens with the specified parameters
@@ -1306,8 +1306,12 @@ def generate_bos_lightfield_data(piv_simulation_parameters,optical_system):
     # % This translates the Z coordinates of the paricles to the focal plane
     z = z + z_object
 
+    # this is the offset along the z direction added by moving the origin to the sensor plane
+    z_offset = z_object - object_distance
+
     # this moves the object evn farther away to make it out of focus
     if ('object_distance_buffer' in piv_simulation_parameters['lens_design'].keys()):
+        print 'moving object beyond focal plane'
         z += piv_simulation_parameters['lens_design']['object_distance_buffer']
 
     # % This adds in the particles to the lightfield source data
@@ -1316,7 +1320,7 @@ def generate_bos_lightfield_data(piv_simulation_parameters,optical_system):
     # This is the number of source points that will simulated in one call to the GPU. this is a function
 	# of the GPU memory, and threads-blocks-grids specifications
     lightfield_source['source_point_number'] = 10000
-
+    lightfield_source['z_offset'] = z_offset
     return lightfield_source
 
 

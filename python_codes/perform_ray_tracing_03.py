@@ -1631,7 +1631,7 @@ def prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, sc
                                  element_data, element_center,
                                  element_plane_parameters, element_system_index,camera_design,I,density_grad_filename,
                                  simulate_density_gradients, lightray_positions_filepath, lightray_directions_filepath,
-                                 num_lightrays_save):
+                                 num_lightrays_save, ray_tracing_algorithm, add_pos_noise, pos_noise_std):
     #-------------------------------------------------------------------------------------------------------------------
     # convert variables to appropriate ctypes formats
     # -------------------------------------------------------------------------------------------------------------------
@@ -1711,7 +1711,8 @@ def prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, sc
             ('y', _floatp),
             ('z', _floatp),
             ('num_rays', ctypes.c_int),
-            ('num_particles',ctypes.c_int)
+            ('num_particles',ctypes.c_int),
+            ('z_offset', ctypes.c_float)
 
         ]
 
@@ -1719,6 +1720,7 @@ def prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, sc
     lightfield_source['y'] = np.asarray(lightfield_source['y'].astype('float32'))
     lightfield_source['z'] = np.asarray(lightfield_source['z'].astype('float32'))
     lightfield_source['diameter_index'] = np.asarray(lightfield_source['diameter_index'].astype('int32'))
+    lightfield_source['z_offset'] = float(lightfield_source['z_offset'])
 
     # copy data to structure
     lightfield_source_ctypes = lightfield_source_struct()
@@ -1731,6 +1733,7 @@ def prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, sc
     lightfield_source_ctypes.z = lightfield_source['z'].__array_interface__['data'][0]
     lightfield_source_ctypes.num_rays = lightfield_source['x'].size
     lightfield_source_ctypes.num_particles = lightfield_source['diameter_index'].size
+    lightfield_source_ctypes.z_offset = float(lightfield_source['z_offset'])
 
     # -------------------------------------------------------------------------------------------------------------------
     # inputs for propagating light rays through the optical setup
@@ -1850,16 +1853,17 @@ def prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, sc
     # -------------------------------------------------------------------------------------------------------------------
 
     # import cuda code
-    cuda_func = ctypes.CDLL('/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/Debug/libparallel_ray_tracing.so')
+    cuda_func = ctypes.CDLL('../cuda_codes/Debug/libparallel_ray_tracing.so')
 
-    # specify the properties of the function that will save the input parameters to a file for debugging later
-    # these are the argument data types
+    # # specify the properties of the function that will save the input parameters to a file for debugging later
+    # # these are the argument data types
     # cuda_func.save_to_file.argtypes = [ctypes.c_float, ctypes.c_float, ctypes.POINTER(scattering_data_struct),
     #                                    ctypes.c_char_p, ctypes.POINTER(lightfield_source_struct), ctypes.c_int, \
     #                                     ctypes.c_float, ctypes.c_float, ctypes.c_int,
     #                                    _double3p,ctypes.POINTER(element_data_struct),
     #                                    _double4p,_intp,ctypes.POINTER(camera_design_struct),_floatp,
-    #                                         ctypes.c_bool, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
+    #                                         ctypes.c_bool, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p,
+    #                                    ctypes.c_int, ctypes.c_int]
     #
     # # # define return type
     # cuda_func.save_to_file.restype = None
@@ -1870,7 +1874,7 @@ def prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, sc
     #                        beam_wavelength, aperture_f_number,num_elements,element_center,element_data_ctypes_struct,element_plane_parameters,
     #                        np.asarray(element_system_index).astype('int32'),camera_design_ctypes_struct,
     #                           I2,simulate_density_gradients,density_grad_filename,lightray_positions_filepath,
-    #                             lightray_directions_filepath)
+    #                             lightray_directions_filepath, num_lightrays_save, ray_tracing_algorithm)
 
     # specify the properties of the function that will start the ray tracing process
 
@@ -1881,7 +1885,7 @@ def prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, sc
                                        _double3p, ctypes.POINTER(element_data_struct),
                                        _double4p, _intp, ctypes.POINTER(camera_design_struct), _floatp,
                                             ctypes.c_bool, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p,
-                                            ctypes.c_int]
+                                            ctypes.c_int, ctypes.c_int, ctypes.c_bool, ctypes.c_float]
 
 
     #  define return type
@@ -1895,7 +1899,8 @@ def prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, sc
                            element_plane_parameters,
                            np.asarray(element_system_index).astype('int32'), camera_design_ctypes_struct,
                                 I2,simulate_density_gradients,density_grad_filename,lightray_positions_filepath,
-                                lightray_directions_filepath, num_lightrays_save)
+                                lightray_directions_filepath, num_lightrays_save, ray_tracing_algorithm,
+                                add_pos_noise, pos_noise_std)
 
     print "done ray tracing"
 
@@ -2031,6 +2036,8 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     element_plane_parameters[:,3] = element_plane_parameters[:,3] - element_plane_parameters[:,2] * z_lens
     element_center[:,2] = element_center[:,2] + z_lens
 
+
+
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # % Begins raytracing operations                                            %
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2057,6 +2064,18 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     # this is the name of the file which contains the density dataset for the volume
     simulate_density_gradients = piv_simulation_parameters['density_gradients']['simulate_density_gradients']
     density_grad_filename = piv_simulation_parameters['density_gradients']['density_gradient_filename']
+    ray_tracing_algorithm = int(piv_simulation_parameters['density_gradients']['ray_tracing_algorithm'])
+
+    add_pos_noise = False
+    pos_noise_std = float(0.0)
+
+    if simulate_density_gradients:
+        # this moves the object evn farther away to make it out of focus
+        if ('add_pos_noise' in piv_simulation_parameters['density_gradients'].keys()):
+            print 'setting position noise'
+            add_pos_noise = piv_simulation_parameters['density_gradients']['add_pos_noise']
+            pos_noise_std = piv_simulation_parameters['density_gradients']['pos_noise_std']
+
 
     # simulate_density_gradients = True
     # density_grad_filename = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/const_grad_BOS_grad_x_20.nrrd"
@@ -2068,15 +2087,15 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     # number of light rays to save positions and directions for
     num_lightrays_save = int(piv_simulation_parameters['bos_pattern']['num_lightrays_save'])
 
+
     # convert the data to ctypes compatible format and call the CUDA function
     I = prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, scattering_type,
                            lightfield_source, lightray_number_per_particle, beam_wavelength,aperture_f_number, element_data, element_center,
                            element_plane_parameters, element_system_index,piv_simulation_parameters['camera_design'],
                                               I,density_grad_filename,simulate_density_gradients, lightray_positions_filepath
-                                     , lightray_directions_filepath, num_lightrays_save)
+                                     , lightray_directions_filepath, num_lightrays_save, ray_tracing_algorithm, add_pos_noise, pos_noise_std)
 
-
-    # this is the raw verion of the original image
+    # this is the raw version of the original image
     I_raw = I
 
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
