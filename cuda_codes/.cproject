@@ -174,7 +174,6 @@
 		</configuration>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
-	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
 	<storageModule moduleId="scannerConfiguration">
 		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		<scannerConfigBuildInfo instanceId="com.nvidia.cuda.ide.configuration.so.release.582358932;com.nvidia.cuda.ide.configuration.so.release.582358932.;nvcc.compiler.base.604876087;nvcc.compiler.input.cpp.203924285">
@@ -216,5 +215,17 @@
 		<scannerConfigBuildInfo instanceId="com.nvidia.cuda.ide.configuration.so.release.582358932;com.nvidia.cuda.ide.configuration.so.release.582358932.;nvcc.compiler.base.604876087;nvcc.compiler.input.cu.58295553">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="com.nvidia.cuda.ide.build.NVCCPerProjectProfile"/>
 		</scannerConfigBuildInfo>
+	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets">
+		<buildTargets>
+			<target name="parallel_ray_tracing.cu" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
+				<buildCommand>make</buildCommand>
+				<buildArguments/>
+				<buildTarget>parallel_ray_tracing.cu</buildTarget>
+				<stopOnError>true</stopOnError>
+				<useDefaultCommand>true</useDefaultCommand>
+				<runAllBuilders>true</runAllBuilders>
+			</target>
+		</buildTargets>
 	</storageModule>
 </cproject>

@@ -1259,7 +1259,9 @@ __device__ light_ray_data_t propagate_rays_through_optical_system(element_data_t
 
 
 __device__ pixel_data_t intersect_sensor(light_ray_data_t light_ray_data,camera_design_t camera_design,
-		int lightray_number_per_particle, int num_rays)
+		int lightray_number_per_particle, int num_rays, float noise_std, bool add_pos_noise,
+		curandState* states, int ray_id)
+
 {
 
 	// structure to hold the ray intersection point, pixel location etc.
@@ -1288,9 +1290,23 @@ __device__ pixel_data_t intersect_sensor(light_ray_data_t light_ray_data,camera_
 	//# % This calculates the intersection points
 	float3 pos_intersect = ray_source_coordinates + ray_propagation_direction * intersection_time;
 
+	// add noise to the final light ray position
+	float2 noise;
+	if(add_pos_noise)
+	{
+		// calculate the noise to be added from a standard normal distribution
+		noise = curand_normal2(&states[ray_id]);
+
+		// add the noise scaled by the required standard deviation
+		pos_intersect.x += noise.x * noise_std * camera_design.pixel_pitch;
+		pos_intersect.y += noise.y * noise_std * camera_design.pixel_pitch;
+
+	}
+
 	//# % This sets the new light ray origin to the intersection point with the
 	//# % sensor
 	ray_source_coordinates = pos_intersect;
+
 
 	//# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	//# % Add lightray radiance to sensor integration                         %
@@ -1399,6 +1415,32 @@ __device__ pixel_data_t intersect_sensor(light_ray_data_t light_ray_data,camera_
 
 }
 
+__global__ void initialize_states(curandState* states, int seed, int num_rays, int lightray_number_per_particle)
+{
+	//--------------------------------------------------------------------------------------
+	// compute indices to access in lightfield_source and lightfield_data
+	//--------------------------------------------------------------------------------------
+	// find global thread ID
+	int local_thread_id = threadIdx.x;
+
+	// get id of particle which is the source of light rays
+	int local_particle_id = blockIdx.y;
+
+	// get id of ray emitted by the particle
+	int local_ray_id = blockIdx.x * blockDim.x + local_thread_id;
+	int global_ray_id = local_ray_id + local_particle_id * lightray_number_per_particle;
+
+	// if the ray id is greater than the total number of rays to be simulated, exit.
+	if(local_ray_id >= lightray_number_per_particle || global_ray_id >= num_rays)
+		return;
+
+	int sequence_number = global_ray_id;
+	int offset = 0;
+
+	// set up the random states
+	curand_init(seed, sequence_number, offset, &states[global_ray_id]);
+}
+
 __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 		scattering_data_t scattering_data, int scattering_type, lightfield_source_t lightfield_source,
 		 int lightray_number_per_particle, int n_min, int n_max, float beam_wavelength,
@@ -1408,7 +1450,8 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 		int* element_system_index,int num_elements,
 		camera_design_t* camera_design_p, float* image_array,
 		bool simulate_density_gradients, density_grad_params_t params, //density_grad_params_t* density_grad_params_p,
-		float3* final_pos, float3* final_dir, int num_lightrays_save, bool save_lightrays)
+		float3* final_pos, float3* final_dir, int num_lightrays_save, bool save_lightrays,
+		bool add_pos_noise, float noise_std, curandState* states)
 
 {
 
@@ -1473,26 +1516,34 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 
 	}
 
-	float theta_max = 1e-2;
-	light_ray_data_t light_ray_data;
-	// initialize position
-//	light_ray_data.ray_source_coordinates = make_float3(lightfield_source_shared.x, lightfield_source_shared.y, lightfield_source_shared.z);
-	light_ray_data.ray_source_coordinates = make_float3(0.0, 0.0, lightfield_source_shared.z);
+//	float theta_max = 1e-2;
+//	float theta_x = theta_max;
+//	float theta_y = 0;
+//	light_ray_data_t light_ray_data;
+////	// initialize position
+//////	light_ray_data.ray_source_coordinates = make_float3(lightfield_source_shared.x, lightfield_source_shared.y, lightfield_source_shared.z);
+//	light_ray_data.ray_source_coordinates = make_float3(0.0, 0.0, lightfield_source_shared.z);
+//	light_ray_data.ray_propagation_direction = make_float3(0.0, 0.0, -1.0);
+
+	////
+////
+////	float theta_x = (0.5 - rand_array_1[local_ray_id])*theta_max/180.0 * M_PI;
+////	float theta_y = (0.5 - rand_array_2[local_ray_id])*theta_max/180.0 * M_PI;
+//	float theta_x = 0.0f;
+//	float theta_y = 0.0f;
 //
-//
-//	float theta_x = (0.5 - rand_array_1[local_ray_id])*theta_max/180.0 * M_PI;
-//	float theta_y = (0.5 - rand_array_2[local_ray_id])*theta_max/180.0 * M_PI;
-	float theta_x = 0.0f;
-	float theta_y = 0.0f;
+//	// initialize direction
+//	if (global_ray_id % 2 ==0)
+//		light_ray_data.ray_propagation_direction = make_float3(sin(theta_x), sin(theta_y), -sqrt(1-sin(theta_x)*sin(theta_x) - sin(theta_y)*sin(theta_y)));
+//	else
+//		light_ray_data.ray_propagation_direction = make_float3(-sin(theta_x), sin(theta_y), -sqrt(1-sin(theta_x)*sin(theta_x) - sin(theta_y)*sin(theta_y)));
 
-	// initialize direction
-	light_ray_data.ray_propagation_direction = make_float3(sin(theta_x), sin(theta_y), -sqrt(1-sin(theta_x)*sin(theta_x) - sin(theta_y)*sin(theta_y)));
+	// generate light rays
+	light_ray_data_t light_ray_data = generate_lightfield_angular_data(lens_pitch, image_distance,scattering_data,
+				scattering_type, lightfield_source_shared,lightray_number_per_particle,
+				beam_wavelength,aperture_f_number,rand_array_1[local_ray_id],rand_array_2[local_ray_id]);
 
-//	// generate light rays
-//	light_ray_data_t light_ray_data = generate_lightfield_angular_data(lens_pitch, image_distance,scattering_data,
-//				scattering_type, lightfield_source_shared,lightray_number_per_particle,
-//				beam_wavelength,aperture_f_number,rand_array_1[local_ray_id],rand_array_2[local_ray_id]);
-
+//	light_ray_data.ray_propagation_direction = make_float3(0.0, 0.0, -1.0);
 
 	// trace the light ray through a medium containing density gradients
 	if(simulate_density_gradients)
@@ -1539,7 +1590,7 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 
 	// perform ray intersection with the sensor and the pixel radiance integration
 	pixel_data_t pixel_data = intersect_sensor(light_ray_data,camera_design,
-			lightray_number_per_particle,num_rays);
+			lightray_number_per_particle,num_rays, add_pos_noise, noise_std, states, global_ray_id);
 
 	// ignore rays that did not intersect within the sensor pitch
 	if(isnan(pixel_data.final_pos.x) || isnan(pixel_data.final_pos.y))
@@ -1931,13 +1982,15 @@ void read_from_file()
 	// number of light ray positions to save
 	int num_lightrays_save = 1000;
 	int ray_tracing_algorithm = 2;
+	bool add_pos_noise = false;
+	float pos_noise_std = 0.0;
 
 	// call the ray tracing function
 	start_ray_tracing(lens_pitch, image_distance,&scattering_data, scattering_type_str,&lightfield_source,
 			lightray_number_per_particle,beam_wavelength,aperture_f_number,
 			num_elements, element_center_p,element_data,element_plane_parameters_p,element_system_index,&camera_design,image_array,
 			simulate_density_gradients, density_grad_filename, lightray_position_save_path, lightray_direction_save_path, num_lightrays_save,
-			ray_tracing_algorithm);
+			ray_tracing_algorithm, add_pos_noise, pos_noise_std);
 
 }
 
@@ -2452,7 +2505,8 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 				camera_design_t* camera_design_p, float* image_array,
 				bool simulate_density_gradients, char* density_grad_filename,
 				char* lightray_position_save_path, char* lightray_direction_save_path,
-				int num_lightrays_save, int ray_tracing_algorithm)
+				int num_lightrays_save, int ray_tracing_algorithm,
+				bool add_pos_noise, float pos_noise_std)
 {
 	/*
 	 * This function receives the ray tracing parameters from the python code, allocates
@@ -2485,6 +2539,11 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	 * 								density gradients will be simulated or not
 	 * density_grad_filename - name of the nrrd file that contains the density data
 	 * num_lightrays_save - number of light ray positions and directions to save to file
+	 * ray_tracing_algorithm - algorithm used to numerically solve fermat's equation
+	 * 							to trace the light ray through density gradients
+	 * add_pos_noise - boolean variable to specify if noise should be added to light ray position
+	 * pos_noise_std - standard deviation of the position noise (in fraction of pixel)
+	 *
 	 */
 
 	// this structure holds the scattering information
@@ -2760,6 +2819,27 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	dim3 grid(grid_x,source_point_number);
 	printf("grid: %d, %d\n",grid_x,source_point_number);
 
+	//------------------------------------------------------------------------------------------
+	// intialize random number generator for addition position noise if required
+	//------------------------------------------------------------------------------------------
+	curandState* states = 0;
+
+	if(add_pos_noise)
+	{
+		// allocate space for random state. 1 state for each thread/light ray for a single
+		// call
+		cudaMalloc((void**)&states, num_rays*sizeof(curandState));
+
+		// intialize the state
+		printf("Initializing random states....");
+		int seed = time(NULL);
+		initialize_states<<<grid,block>>>(states, seed, num_rays, lightray_number_per_particle);
+
+		cudaDeviceSynchronize();
+		printf("done.\n");
+
+	}
+
 
 	//------------------------------------------------------------------------------------------
 	// perform ray tracing
@@ -2846,7 +2926,8 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 			d_element_data, d_element_center,d_element_plane_parameters,
 			d_element_system_index,num_elements,
 			d_camera_design, d_image_array,simulate_density_gradients, params,
-			d_final_pos, d_final_dir, num_lightrays_save, save_lightrays);
+			d_final_pos, d_final_dir, num_lightrays_save, save_lightrays, add_pos_noise, pos_noise_std,
+			states);
 
 		cudaDeviceSynchronize();
 		printf("done.\n");
@@ -2997,6 +3078,9 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 
 	cudaFree(d_camera_design);
 	cudaFree(d_image_array);
+
+	if(add_pos_noise)
+		cudaFree(states);
 
 	if(simulate_density_gradients)
 	{
