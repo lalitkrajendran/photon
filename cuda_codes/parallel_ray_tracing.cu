@@ -1259,7 +1259,7 @@ __device__ light_ray_data_t propagate_rays_through_optical_system(element_data_t
 
 
 __device__ pixel_data_t intersect_sensor(light_ray_data_t light_ray_data,camera_design_t camera_design,
-		int lightray_number_per_particle, int num_rays, float noise_std, bool add_pos_noise,
+		int lightray_number_per_particle, int num_rays, bool add_pos_noise, float noise_std,
 		curandState* states, int ray_id)
 
 {
@@ -1294,6 +1294,7 @@ __device__ pixel_data_t intersect_sensor(light_ray_data_t light_ray_data,camera_
 	float2 noise;
 	if(add_pos_noise)
 	{
+//		noise_std = 0.10;
 		// calculate the noise to be added from a standard normal distribution
 		noise = curand_normal2(&states[ray_id]);
 
@@ -2831,6 +2832,7 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 		cudaMalloc((void**)&states, num_rays*sizeof(curandState));
 
 		// intialize the state
+		printf("Adding noise with standard deviation of %.2f pix.\n", pos_noise_std);
 		printf("Initializing random states....");
 		int seed = time(NULL);
 		initialize_states<<<grid,block>>>(states, seed, num_rays, lightray_number_per_particle);
@@ -2840,6 +2842,7 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 
 	}
 
+//	return;
 
 	//------------------------------------------------------------------------------------------
 	// perform ray tracing
