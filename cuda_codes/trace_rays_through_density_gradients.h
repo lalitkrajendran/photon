@@ -711,7 +711,9 @@ __device__ void increment_arc_length(density_grad_params_t* paramsp, int thread_
 		paramsp->arc_length += paramsp->step_size;
 }
 
-__device__ light_ray_data_t euler(light_ray_data_t light_ray_data, density_grad_params_t params, float3 lookup_scale, int thread_id)
+__device__ light_ray_data_t euler(light_ray_data_t light_ray_data,
+		density_grad_params_t params, float3 lookup_scale, int thread_id,
+		bool add_ngrad_noise, float ngrad_noise_std, curandState* states)
 {
 	/************ Update ray position using EULER method *********/
 
@@ -775,6 +777,23 @@ __device__ light_ray_data_t euler(light_ray_data_t light_ray_data, density_grad_
 
 			loop_ctr += 1;
 			current_refractive_index = 1 + val.w;
+
+			//---------------------------------------------------------
+			// add noise to the refractive index gradients
+			//---------------------------------------------------------
+			float2 noise;
+			if(add_ngrad_noise)
+			{
+		//		noise_std = 0.10;
+				// calculate the noise to be added from a standard normal distribution
+				noise = curand_normal2(&states[thread_id]);
+
+				// add the noise scaled by the required standard deviation
+				val.x += noise.x * ngrad_noise_std;
+				val.y += noise.y * ngrad_noise_std;
+
+			}
+
 			// calculate the change in ray direction
 			normal = make_float3(val.x,val.y,val.z);
 			// update the ray direction
@@ -1261,7 +1280,8 @@ __device__ light_ray_data_t adams_bashforth(light_ray_data_t light_ray_data, den
 
 	return light_ray_data;
 }
-__device__ light_ray_data_t trace_rays_through_density_gradients(light_ray_data_t light_ray_data, density_grad_params_t params, int thread_id)
+__device__ light_ray_data_t trace_rays_through_density_gradients(light_ray_data_t light_ray_data,
+		density_grad_params_t params, int thread_id, bool add_ngrad_noise, float ngrad_noise_std, curandState* states)
 {
 
 	// this is the corner of the volume containing the minimum coordinates
@@ -1320,7 +1340,7 @@ __device__ light_ray_data_t trace_rays_through_density_gradients(light_ray_data_
  	{
  		case 1:
  			/************ Update ray position using EULER method *********/
- 			light_ray_data = euler(light_ray_data, params, lookup_scale, thread_id);
+ 			light_ray_data = euler(light_ray_data, params, lookup_scale, thread_id, add_ngrad_noise, ngrad_noise_std, states);
  			break;
  		case 2:
  		 	/************ Update ray position using RK4 method *********/
@@ -1399,7 +1419,7 @@ __global__ void check_trace_rays_through_density_gradients(light_ray_data_t* lig
 //	id = blockIdx.x*blockDim.x + threadIdx.x;
 	id = threadIdx.x;
 
-	light_ray_data[id] = trace_rays_through_density_gradients(light_ray_data[id],params, 0);
+//	light_ray_data[id] = trace_rays_through_density_gradients(light_ray_data[id],params, 0, 0, 0.0);
 }
 extern "C"{
 

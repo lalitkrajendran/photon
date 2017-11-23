@@ -1452,7 +1452,7 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 		camera_design_t* camera_design_p, float* image_array,
 		bool simulate_density_gradients, density_grad_params_t params, //density_grad_params_t* density_grad_params_p,
 		float3* final_pos, float3* final_dir, int num_lightrays_save, bool save_lightrays,
-		bool add_pos_noise, float noise_std, curandState* states)
+		bool add_pos_noise, float noise_std, curandState* states, bool add_ngrad_noise, float ngrad_noise_std)
 
 {
 
@@ -1550,7 +1550,8 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 	if(simulate_density_gradients)
 	{
 //		density_grad_params_t params = *density_grad_params_p;
-		light_ray_data = trace_rays_through_density_gradients(light_ray_data,params, global_ray_id);
+		light_ray_data = trace_rays_through_density_gradients(light_ray_data,params,
+				global_ray_id, add_ngrad_noise, ngrad_noise_std, states);
 
 		// ignore rays that did not pass through the density gradients
 		if(isnan(light_ray_data.ray_propagation_direction.x) || isnan(light_ray_data.ray_propagation_direction.y)
@@ -1985,13 +1986,15 @@ void read_from_file()
 	int ray_tracing_algorithm = 2;
 	bool add_pos_noise = false;
 	float pos_noise_std = 0.0;
+	bool add_ngrad_noise = false;
+	float ngrad_noise_std = 0.0;
 
 	// call the ray tracing function
 	start_ray_tracing(lens_pitch, image_distance,&scattering_data, scattering_type_str,&lightfield_source,
 			lightray_number_per_particle,beam_wavelength,aperture_f_number,
 			num_elements, element_center_p,element_data,element_plane_parameters_p,element_system_index,&camera_design,image_array,
 			simulate_density_gradients, density_grad_filename, lightray_position_save_path, lightray_direction_save_path, num_lightrays_save,
-			ray_tracing_algorithm, add_pos_noise, pos_noise_std);
+			ray_tracing_algorithm, add_pos_noise, pos_noise_std, add_ngrad_noise, ngrad_noise_std);
 
 }
 
@@ -2507,7 +2510,7 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 				bool simulate_density_gradients, char* density_grad_filename,
 				char* lightray_position_save_path, char* lightray_direction_save_path,
 				int num_lightrays_save, int ray_tracing_algorithm,
-				bool add_pos_noise, float pos_noise_std)
+				bool add_pos_noise, float pos_noise_std, bool add_ngrad_noise, float ngrad_noise_std)
 {
 	/*
 	 * This function receives the ray tracing parameters from the python code, allocates
@@ -2545,6 +2548,8 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	 * add_pos_noise - boolean variable to specify if noise should be added to light ray position
 	 * pos_noise_std - standard deviation of the position noise (in fraction of pixel)
 	 *
+	 * add_ngrad_noise - boolean variable to specify if noise should be added to the refractive index gradients
+	 * ngrad_noise_std - standard deviation of the refractive index gradient noise (1/um)
 	 */
 
 	// this structure holds the scattering information
@@ -2842,7 +2847,29 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 
 	}
 
-//	return;
+	//------------------------------------------------------------------------------------------
+	// intialize random number generator for addition of refractive index gradient
+	// noise if required
+	//------------------------------------------------------------------------------------------
+
+
+	if(add_ngrad_noise)
+	{
+		// allocate space for random state. 1 state for each thread/light ray for a single
+		// call
+		cudaMalloc((void**)&states, num_rays*sizeof(curandState));
+
+		// intialize the state
+		printf("Adding noise with standard deviation of %.2f 1/m.\n", ngrad_noise_std);
+		printf("Initializing random states....");
+		int seed = time(NULL);
+		initialize_states<<<grid,block>>>(states, seed, num_rays, lightray_number_per_particle);
+
+		cudaDeviceSynchronize();
+		printf("done.\n");
+
+	}
+
 
 	//------------------------------------------------------------------------------------------
 	// perform ray tracing
@@ -2930,7 +2957,7 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 			d_element_system_index,num_elements,
 			d_camera_design, d_image_array,simulate_density_gradients, params,
 			d_final_pos, d_final_dir, num_lightrays_save, save_lightrays, add_pos_noise, pos_noise_std,
-			states);
+			states, add_ngrad_noise, ngrad_noise_std);
 
 		cudaDeviceSynchronize();
 		printf("done.\n");
