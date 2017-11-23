@@ -1631,7 +1631,8 @@ def prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, sc
                                  element_data, element_center,
                                  element_plane_parameters, element_system_index,camera_design,I,density_grad_filename,
                                  simulate_density_gradients, lightray_positions_filepath, lightray_directions_filepath,
-                                 num_lightrays_save, ray_tracing_algorithm, add_pos_noise, pos_noise_std):
+                                 num_lightrays_save, ray_tracing_algorithm, add_pos_noise, pos_noise_std,
+                                 add_ngrad_noise, ngrad_noise_std):
     #-------------------------------------------------------------------------------------------------------------------
     # convert variables to appropriate ctypes formats
     # -------------------------------------------------------------------------------------------------------------------
@@ -1885,7 +1886,8 @@ def prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, sc
                                        _double3p, ctypes.POINTER(element_data_struct),
                                        _double4p, _intp, ctypes.POINTER(camera_design_struct), _floatp,
                                             ctypes.c_bool, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p,
-                                            ctypes.c_int, ctypes.c_int, ctypes.c_bool, ctypes.c_float]
+                                            ctypes.c_int, ctypes.c_int, ctypes.c_bool, ctypes.c_float,
+                                            ctypes.c_bool, ctypes.c_float]
 
 
     #  define return type
@@ -1900,7 +1902,7 @@ def prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, sc
                            np.asarray(element_system_index).astype('int32'), camera_design_ctypes_struct,
                                 I2,simulate_density_gradients,density_grad_filename,lightray_positions_filepath,
                                 lightray_directions_filepath, num_lightrays_save, ray_tracing_algorithm,
-                                add_pos_noise, pos_noise_std)
+                                add_pos_noise, pos_noise_std, add_ngrad_noise, ngrad_noise_std)
 
     print "done ray tracing"
 
@@ -1908,6 +1910,7 @@ def prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, sc
     I = np.reshape(I2,(1024,1024))
 
     return I
+
 def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain, scattering_data, scattering_type,
                            lightfield_source, field_type):
     # % This function calculates the ray tracing of the input lightrays
@@ -2066,19 +2069,28 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     density_grad_filename = piv_simulation_parameters['density_gradients']['density_gradient_filename']
     ray_tracing_algorithm = int(piv_simulation_parameters['density_gradients']['ray_tracing_algorithm'])
 
+    # default settigns for adding noise to the final light ray positions
     add_pos_noise = False
     pos_noise_std = float(0.0)
 
     if simulate_density_gradients:
-        # this moves the object evn farther away to make it out of focus
+        # this checks if noise to be added to the final position of the light rays is specified.
         if ('add_pos_noise' in piv_simulation_parameters['density_gradients'].keys()):
             print 'setting position noise'
             add_pos_noise = piv_simulation_parameters['density_gradients']['add_pos_noise']
             pos_noise_std = piv_simulation_parameters['density_gradients']['pos_noise_std']
 
+    # default settigns for adding noise to the final light ray positions
+    add_ngrad_noise = False
+    ngrad_noise_std = float(0.0)
 
-    # simulate_density_gradients = True
-    # density_grad_filename = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/const_grad_BOS_grad_x_20.nrrd"
+    if simulate_density_gradients:
+        # this checks if noise to be added to the final position of the light rays is specified.
+        if ('add_ngrad_noise' in piv_simulation_parameters['density_gradients'].keys()):
+            print 'setting refractive index gradient noise'
+            add_ngrad_noise = piv_simulation_parameters['density_gradients']['add_ngrad_noise']
+            ngrad_noise_std = piv_simulation_parameters['density_gradients']['ngrad_noise_std']
+
 
     # filepaths to save final light ray positions and directions
     lightray_positions_filepath = piv_simulation_parameters['output_data']['lightray_positions_filepath']
@@ -2093,7 +2105,8 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
                            lightfield_source, lightray_number_per_particle, beam_wavelength,aperture_f_number, element_data, element_center,
                            element_plane_parameters, element_system_index,piv_simulation_parameters['camera_design'],
                                               I,density_grad_filename,simulate_density_gradients, lightray_positions_filepath
-                                     , lightray_directions_filepath, num_lightrays_save, ray_tracing_algorithm, add_pos_noise, pos_noise_std)
+                                     , lightray_directions_filepath, num_lightrays_save, ray_tracing_algorithm, add_pos_noise, pos_noise_std,
+                                     add_ngrad_noise, ngrad_noise_std)
 
     # this is the raw version of the original image
     I_raw = I
