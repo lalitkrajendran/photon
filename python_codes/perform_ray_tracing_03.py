@@ -2117,6 +2117,7 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
 
     if(piv_simulation_parameters['camera_design']['image_noise'] > 0.0):
 
+        print 'Adding image noise of', piv_simulation_parameters['camera_design']['image_noise']
         # this generates random numbers from a normal distribution to add to the image array
         image_noise = np.random.normal(0.0, scale=piv_simulation_parameters['camera_design']['image_noise'] * I.max(),
                                        size=I.shape)

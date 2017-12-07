@@ -826,7 +826,8 @@ __device__ light_ray_data_t euler(light_ray_data_t light_ray_data,
 	if(thread_id == 0)
 	{
 //		params.arc_length = loop_ctr * params.step_size;
-		printf("arc_length: %f\n", params.arc_length);
+//		printf("arc_length: %f\n", params.arc_length);
+		printf("loop_ctr: %d\n", loop_ctr);
 	}
 
 	else
@@ -1709,7 +1710,10 @@ density_grad_params_t setData(float* data, density_grad_params_t _params)
 			normal.x = (sample2.x - sample1.x)/(2*grid_x);
 			normal.y = (sample2.y - sample1.y)/(2*grid_y);
 			normal.z = (sample2.z - sample1.z)/(2*grid_z);
-
+//			if (x==0 && y==0 && z==0)
+//			{
+//				printf("normals: %.2f, %.2f, %.2f\n", normal.x, normal.y, normal.z);
+//			}
 
 			// assign refractive index gradient values to the array
 			_params.data[data_loc].x = normal.x;

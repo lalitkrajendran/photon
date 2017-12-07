@@ -2830,7 +2830,7 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	//------------------------------------------------------------------------------------------
 	curandState* states = 0;
 
-	if(add_pos_noise)
+	if(simulate_density_gradients && add_pos_noise)
 	{
 		// allocate space for random state. 1 state for each thread/light ray for a single
 		// call
@@ -2853,14 +2853,14 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	//------------------------------------------------------------------------------------------
 
 
-	if(add_ngrad_noise)
+	if(simulate_density_gradients && add_ngrad_noise)
 	{
 		// allocate space for random state. 1 state for each thread/light ray for a single
 		// call
 		cudaMalloc((void**)&states, num_rays*sizeof(curandState));
 
 		// intialize the state
-		printf("Adding noise with standard deviation of %.2f 1/m.\n", ngrad_noise_std);
+		printf("Adding noise with standard deviation of %.2G 1/um.\n", ngrad_noise_std);
 		printf("Initializing random states....");
 		int seed = time(NULL);
 		initialize_states<<<grid,block>>>(states, seed, num_rays, lightray_number_per_particle);
@@ -3109,8 +3109,9 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	cudaFree(d_camera_design);
 	cudaFree(d_image_array);
 
-	if(add_pos_noise)
+	if(add_pos_noise || add_ngrad_noise)
 		cudaFree(states);
+
 
 	if(simulate_density_gradients)
 	{
