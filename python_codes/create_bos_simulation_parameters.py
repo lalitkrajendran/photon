@@ -47,7 +47,7 @@ def create_bos_simulation_parameters():
     piv_simulation_parameters['camera_design']['y_camera_angle'] = -0.00 * np.pi / 180.0
     # this is the image noise to add
     piv_simulation_parameters['camera_design']['image_noise'] = 0.00
-
+    print 'image_noise = 0!'
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # % Particle Field Simulation Parameters                                    %
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
