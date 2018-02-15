@@ -1847,7 +1847,8 @@ def prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, sc
     camera_design_ctypes_struct.z_sensor = camera_design['z_sensor']
 
     # convert the 2D image array to a 1D array because they are easier to handle in CUDA
-    I2 = np.reshape(I,(1,1024*1024)).astype(np.float32)
+    # I2 = np.reshape(I,(1,1024*1024)).astype(np.float32)
+    I2 = np.reshape(I,(1,camera_design['x_pixel_number']*camera_design['y_pixel_number'])).astype(np.float32)
 
     # -------------------------------------------------------------------------------------------------------------------
     # call cuda code
@@ -1907,7 +1908,8 @@ def prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, sc
     print "done ray tracing"
 
     # reshape the image back into a 2D array
-    I = np.reshape(I2,(1024,1024))
+    # I = np.reshape(I2,(1024,1024))
+    I = np.reshape(I2,(camera_design['y_pixel_number'],camera_design['x_pixel_number']))
 
     return I
 
@@ -2048,21 +2050,21 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     # % This initializes the sensor image
     I = np.zeros([x_pixel_number, y_pixel_number]).astype('float32')
 
-    # path to the directory containing the cuda codes
-    cuda_codes_filepath = '../cuda_codes'
-
-    # generate a set of random numbers using MT 19937
-    # % This creates random radial coordinates for the lightrays to intersect
-    # % on the lens
-    # np.random.seed(1105)
-    r_temp = np.random.rand(1, lightray_number_per_particle).astype('float32')
-    r_temp.tofile(cuda_codes_filepath + '/data/random1.bin')
-
-    # % This creates random angular coordinates for the lightrays to
-    # % intersect on the lens
-    # np.random.seed(4092)
-    psi_temp = np.random.rand(1, lightray_number_per_particle).astype('float32')
-    psi_temp.tofile(cuda_codes_filepath + '/data/random2.bin')
+    # # path to the directory containing the cuda codes
+#     cuda_codes_filepath = '../cuda_codes'
+#
+#     # generate a set of random numbers using MT 19937
+#     # % This creates random radial coordinates for the lightrays to intersect
+#     # % on the lens
+#     # np.random.seed(1105)
+#     r_temp = np.random.rand(1, lightray_number_per_particle).astype('float32')
+#     r_temp.tofile(cuda_codes_filepath + '/data/random1.bin')
+#
+#     # % This creates random angular coordinates for the lightrays to
+#     # % intersect on the lens
+#     # np.random.seed(4092)
+#     psi_temp = np.random.rand(1, lightray_number_per_particle).astype('float32')
+#     psi_temp.tofile(cuda_codes_filepath + '/data/random2.bin')
 
     # this is the name of the file which contains the density dataset for the volume
     simulate_density_gradients = piv_simulation_parameters['density_gradients']['simulate_density_gradients']
@@ -2111,23 +2113,7 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     # this is the raw version of the original image
     I_raw = I
 
-    # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    # % Adding image noise                                                      %
-    # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-    if(piv_simulation_parameters['camera_design']['image_noise'] > 0.0):
-
-        print 'Adding image noise of', piv_simulation_parameters['camera_design']['image_noise']
-        # this generates random numbers from a normal distribution to add to the image array
-        image_noise = np.random.normal(0.0, scale=piv_simulation_parameters['camera_design']['image_noise'] * I.max(),
-                                       size=I.shape)
-
-        # this adds the image noise only to elements of I that are non-zero
-        # I = np.where(I, I+image_noise, I)
-        I += image_noise
-    
-    # this ensures that the intensity array remains positive
-    I = abs(I)
+   
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # % Rescales and resamples image for export                                 %
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2146,6 +2132,24 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     # % of information are now used)
     I *= (2 ** 16 - 1.0) / (2 ** pixel_bit_depth - 1.0)
 
+    # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    # % Adding image noise                                                      %
+    # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    if(piv_simulation_parameters['camera_design']['image_noise'] > 0.0):
+
+        print 'Adding image noise of', piv_simulation_parameters['camera_design']['image_noise']
+        # this generates random numbers from a normal distribution to add to the image array
+        image_noise = np.random.normal(0.0, scale=piv_simulation_parameters['camera_design']['image_noise'] * I.max(),
+                                       size=I.shape)
+
+        # this adds the image noise only to elements of I that are non-zero
+        # I = np.where(I, I+image_noise, I)
+        I += image_noise
+    
+    # this ensures that the intensity array remains positive
+    I = abs(I)
+    
     # % This converts the image from double precision to 16 bit precision
     I = np.uint16(I)
 

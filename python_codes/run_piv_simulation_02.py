@@ -1702,6 +1702,26 @@ def run_piv_simulation_02(piv_simulation_parameters):
         scattering_data = np.NAN
 
         ################################################################################################################
+        # generate random numbers for light ray intersection with lens
+        ################################################################################################################
+
+        # path to the directory containing the cuda codes
+        cuda_codes_filepath = '../cuda_codes'
+
+        # generate a set of random numbers using MT 19937
+        # % This creates random radial coordinates for the lightrays to intersect
+        # % on the lens
+        # np.random.seed(1105)
+        r_temp = np.random.rand(1, lightray_number_per_particle).astype('float32')
+        r_temp.tofile(cuda_codes_filepath + '/data/random1.bin')
+
+        # % This creates random angular coordinates for the lightrays to
+        # % intersect on the lens
+        # np.random.seed(4092)
+        psi_temp = np.random.rand(1, lightray_number_per_particle).astype('float32')
+        psi_temp.tofile(cuda_codes_filepath + '/data/random2.bin')
+        
+        ################################################################################################################
         # render the reference image without density gradients
         ################################################################################################################
 
