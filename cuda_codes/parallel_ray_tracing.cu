@@ -100,20 +100,31 @@ __device__ light_ray_data_t generate_lightfield_angular_data(float lens_pitch, f
 	float y_current = lightfield_source.y;
 	float z_current = lightfield_source.z;
 
+//	float x_current = 0.0;
+//	float y_current = 0.0;
+//	float x_current = 5.0e3; //0.0;
+//	float y_current = 5.0e3;
+
+
 	//--------------------------------------------------------------------------------------
 	// compute direction of propagation of light ray
 	//--------------------------------------------------------------------------------------
-	float lens_pitch_scaling_factor = 1e-4;
+	float lens_pitch_scaling_factor = 1e-4; //0.3; //1e-4;
 
 	// generate random points on the lens where the rays should intersect
 	float x_lens = 0.5*lens_pitch_scaling_factor*lens_pitch*sqrt(random_number_1)*cos(2*M_PI*random_number_2);
 	float y_lens = 0.5*lens_pitch_scaling_factor*lens_pitch*sqrt(random_number_1)*sin(2*M_PI*random_number_2);
+//	float x_lens = 0.0;
+//	float y_lens = 0.0;
+//	image_distance = 217514.0;
 
 	// calculate the x angles for the light rays
 	float theta_temp = -(x_lens - x_current) / (image_distance - z_current);
 	// calculate the y angles for the light rays
 	float phi_temp = -(y_lens - y_current) / (image_distance - z_current);
 
+//	float theta_temp = M_PI/180.0 * 1e-2;
+//	float phi_temp = M_PI/180.0 * 1e-2;
 	//--------------------------------------------------------------------------------------
 	// compute irradiance of the light ray
 	//--------------------------------------------------------------------------------------
@@ -237,7 +248,7 @@ __device__ float3 ray_sphere_intersection(float3 pos_c, float R, float3 dir_i, f
     // % argument.  If a particular ray does not intersection a particular sphere,
     // % then NaN values will be returned in the output arguments.
 
-    // % This defines the coefficients of the quadratic polynomial
+	// % This defines the coefficients of the quadratic polynomial
     float alpha = dot(dir_i,dir_i);
     float beta = 2 * dot(dir_i,(pos_i-pos_c));
     float gamma = dot(pos_i-pos_c,pos_i-pos_c) - R*R;
@@ -473,7 +484,7 @@ __device__ light_ray_data_t propagate_rays_through_single_element(element_data_t
 			return light_ray_data;
 		}
 
-//		// save current light ray position and exit
+		// save current light ray position and exit (front surface, before refraction)
 //		light_ray_data.ray_source_coordinates = pos_intersect;
 //		light_ray_data.ray_propagation_direction = ray_propagation_direction;
 //		return light_ray_data;
@@ -568,7 +579,7 @@ __device__ light_ray_data_t propagate_rays_through_single_element(element_data_t
 		//# % front surface of the lens
 		ray_source_coordinates = pos_intersect;
 
-//		// save current light ray position and exit
+//		// save current light ray position and exit (front surface, after refraction)
 //		light_ray_data.ray_source_coordinates = pos_intersect;
 //		light_ray_data.ray_propagation_direction = ray_propagation_direction;
 //		return light_ray_data;
@@ -624,8 +635,9 @@ __device__ light_ray_data_t propagate_rays_through_single_element(element_data_t
 			return light_ray_data;
 		}
 
-//		// save current light ray position and exit
+//		// save current light ray position and exit (back surface, before refraction)
 //		light_ray_data.ray_source_coordinates = pos_intersect;
+//		light_ray_data.ray_propagation_direction = ray_propagation_direction;
 //		return light_ray_data;
 
 		//# % This calculates the normal vectors of the lens at the intersection
@@ -733,7 +745,7 @@ __device__ light_ray_data_t propagate_rays_through_single_element(element_data_t
 		//# % front surface of the lens
 		ray_source_coordinates = pos_intersect;
 
-//		// save current light ray position and exit
+//		// save current light ray position and exit (back surface, after refraction)
 //		light_ray_data.ray_source_coordinates = pos_intersect;
 //		light_ray_data.ray_propagation_direction = ray_propagation_direction;
 //		return light_ray_data;
@@ -1276,6 +1288,10 @@ __device__ pixel_data_t intersect_sensor(light_ray_data_t light_ray_data,camera_
 	//# % This extracts the light ray source coordinates
 	float3 ray_source_coordinates = light_ray_data.ray_source_coordinates;
 
+	// flip angles
+//	ray_propagation_direction.x = - ray_propagation_direction.x;
+//	ray_propagation_direction.y = - ray_propagation_direction.y;
+
 	//# % This extracts the individual plane parameters for the sensor
 	float a = 0.0;
 	float b = 0.0;
@@ -1452,7 +1468,8 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 		camera_design_t* camera_design_p, float* image_array,
 		bool simulate_density_gradients, density_grad_params_t params, //density_grad_params_t* density_grad_params_p,
 		float3* final_pos, float3* final_dir, int num_lightrays_save, bool save_lightrays,
-		bool add_pos_noise, float noise_std, curandState* states, bool add_ngrad_noise, float ngrad_noise_std)
+		bool add_pos_noise, float noise_std, curandState* states, bool add_ngrad_noise, float ngrad_noise_std,
+		float3* intermediate_pos, float3* intermediate_dir)
 
 {
 
@@ -1470,7 +1487,8 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 
 	// get id of particle which is the source of light rays
 	int local_particle_id = blockIdx.y;
-
+//	if (local_particle_id > 0 || local_thread_id > 0)
+//		return;
 	// get id of ray emitted by the particle
 	int local_ray_id = blockIdx.x * blockDim.x + local_thread_id;
 	int global_ray_id = local_ray_id + local_particle_id * lightray_number_per_particle;
@@ -1517,41 +1535,24 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 
 	}
 
-//	float theta_max = 1e-2;
-//	float theta_x = theta_max;
-//	float theta_y = 0;
-//	light_ray_data_t light_ray_data;
-////	// initialize position
-//////	light_ray_data.ray_source_coordinates = make_float3(lightfield_source_shared.x, lightfield_source_shared.y, lightfield_source_shared.z);
-//	light_ray_data.ray_source_coordinates = make_float3(0.0, 0.0, lightfield_source_shared.z);
-//	light_ray_data.ray_propagation_direction = make_float3(0.0, 0.0, -1.0);
-
-	////
-////
-////	float theta_x = (0.5 - rand_array_1[local_ray_id])*theta_max/180.0 * M_PI;
-////	float theta_y = (0.5 - rand_array_2[local_ray_id])*theta_max/180.0 * M_PI;
-//	float theta_x = 0.0f;
-//	float theta_y = 0.0f;
-//
-//	// initialize direction
-//	if (global_ray_id % 2 ==0)
-//		light_ray_data.ray_propagation_direction = make_float3(sin(theta_x), sin(theta_y), -sqrt(1-sin(theta_x)*sin(theta_x) - sin(theta_y)*sin(theta_y)));
-//	else
-//		light_ray_data.ray_propagation_direction = make_float3(-sin(theta_x), sin(theta_y), -sqrt(1-sin(theta_x)*sin(theta_x) - sin(theta_y)*sin(theta_y)));
-
 	// generate light rays
 	light_ray_data_t light_ray_data = generate_lightfield_angular_data(lens_pitch, image_distance,scattering_data,
 				scattering_type, lightfield_source_shared,lightray_number_per_particle,
 				beam_wavelength,aperture_f_number,rand_array_1[local_ray_id],rand_array_2[local_ray_id]);
 
-//	light_ray_data.ray_propagation_direction = make_float3(0.0, 0.0, -1.0);
+//	if(global_ray_id < num_lightrays_save && save_lightrays)
+//	{
+//		final_dir[global_ray_id] = light_ray_data.ray_propagation_direction;
+//		final_pos[global_ray_id] = light_ray_data.ray_source_coordinates;
+//		return;
+//	}
 
 	// trace the light ray through a medium containing density gradients
 	if(simulate_density_gradients)
 	{
 //		density_grad_params_t params = *density_grad_params_p;
 		light_ray_data = trace_rays_through_density_gradients(light_ray_data,params,
-				global_ray_id, add_ngrad_noise, ngrad_noise_std, states);
+				global_ray_id, add_ngrad_noise, ngrad_noise_std, states, intermediate_pos, intermediate_dir);
 
 		// ignore rays that did not pass through the density gradients
 		if(isnan(light_ray_data.ray_propagation_direction.x) || isnan(light_ray_data.ray_propagation_direction.y)
@@ -2552,6 +2553,8 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	 * ngrad_noise_std - standard deviation of the refractive index gradient noise (1/um)
 	 */
 
+//	printf("image_distance: %f\n", image_distance);
+//	exit(0);
 	// this structure holds the scattering information
 	scattering_data_t scattering_data = *scattering_data_p;
 	// this structure holds the information about the lightfield source
@@ -2667,6 +2670,22 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	// copy data to device
 	cudaMemcpy(d_rand1,h_rand1,sizeof(float)*lightray_number_per_particle,cudaMemcpyHostToDevice);
 	cudaMemcpy(d_rand2,h_rand2,sizeof(float)*lightray_number_per_particle,cudaMemcpyHostToDevice);
+
+	//--------------------------------------------------------------------------------------
+	// allocate space on GPU for intermediate light ray positions
+	//--------------------------------------------------------------------------------------
+	int num_intermediate_save = 1000;
+	float3* d_intermediate_pos = 0;
+	cudaMalloc((void **)&d_intermediate_pos, sizeof(float3)*num_intermediate_save);
+
+	float3* d_intermediate_dir = 0;
+	cudaMalloc((void **)&d_intermediate_dir, sizeof(float3)*num_intermediate_save);
+
+	// pointer to store final position of light rays
+	float3* intermediate_pos = 0;
+
+	// pointer to store final location of light rays
+	float3* intermediate_dir = 0;
 
 	//--------------------------------------------------------------------------------------
 	// allocate space on GPU for the optical system data
@@ -2957,7 +2976,7 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 			d_element_system_index,num_elements,
 			d_camera_design, d_image_array,simulate_density_gradients, params,
 			d_final_pos, d_final_dir, num_lightrays_save, save_lightrays, add_pos_noise, pos_noise_std,
-			states, add_ngrad_noise, ngrad_noise_std);
+			states, add_ngrad_noise, ngrad_noise_std, d_intermediate_pos, d_intermediate_dir);
 
 		cudaDeviceSynchronize();
 		printf("done.\n");
@@ -3025,6 +3044,70 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 //			// final arrays
 //			free(final_dir);
 //			cudaFree(d_final_dir);
+
+
+			//--------------------------------------------------------------------------------------
+			// save intermediate light ray positions to file (for debugging purposes)
+			//--------------------------------------------------------------------------------------
+			printf("saving intermediate light ray positions to file\n");
+			intermediate_pos = (float3*) malloc(sizeof(float3)*num_intermediate_save);
+			cudaMemcpy(intermediate_pos, d_intermediate_pos, sizeof(float3)*num_intermediate_save, cudaMemcpyDeviceToHost);
+			cudaDeviceSynchronize();
+			// this is the file path
+	//		filename = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/results/final_pos.bin";
+			filepath = lightray_position_save_path;
+			filename_1 = "intermediate_pos_";
+
+			std::sprintf(num2str, "%04d.bin", k);
+
+			filename_2 = num2str;
+			full_filename = filepath + filename_1 + filename_2;
+			printf("full_filename: %s\n", full_filename);
+
+//			full_filename = "/home/shannon/c/aether/Projects/BOS/error-analysis/analysis/src/photon/cuda_codes/data/lightray_Pos.bin";
+			// open the file
+			std::ofstream file_intermediate_pos(full_filename.c_str(), ios::out | ios::binary);
+
+			// save all the pixel intensities to file
+			for(light_ray_index = 0; light_ray_index < num_intermediate_save; light_ray_index++)
+					file_intermediate_pos.write((char*)&intermediate_pos[light_ray_index],sizeof(float3));
+
+			// close the file
+			file_intermediate_pos.close();
+
+//			// free arrays
+//			free(final_pos);
+//			cudaFree(d_final_pos);
+
+			//--------------------------------------------------------------------------------------
+			// save intermediate light ray directions to file (for debugging purposes)
+			//--------------------------------------------------------------------------------------
+			printf("saving intermediate light ray directions to file\n");
+			intermediate_dir = (float3*) malloc(sizeof(float3)*num_intermediate_save);
+			cudaMemcpy(intermediate_dir, d_intermediate_dir, sizeof(float3)*num_intermediate_save, cudaMemcpyDeviceToHost);
+			cudaDeviceSynchronize();
+			// this is the file path
+			filepath = lightray_direction_save_path;
+			// this is the file name
+			filename_1 = "intermediate_dir_";
+
+			std::sprintf(num2str, "%04d.bin", k);
+
+			filename_2 = num2str;
+			full_filename = filepath + filename_1 + filename_2;
+//			full_filename = "/home/shannon/c/aether/Projects/BOS/error-analysis/analysis/src/photon/cuda_codes/data/lightray_Dir.bin";
+
+			// open the file
+			std::ofstream file_intermediate_dir(full_filename.c_str(),ios::out | ios::binary);
+			// save all the pixel intensities to file
+			for(light_ray_index = 0; light_ray_index < num_intermediate_save; light_ray_index++)
+					file_intermediate_dir.write((char*)&intermediate_dir[light_ray_index],sizeof(float3));
+
+			// close the file
+			file_intermediate_dir.close();
+
+//			// final arrays
+
 		}
 
 //		break;
@@ -3037,6 +3120,14 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	// final arrays
 	free(final_dir);
 	cudaFree(d_final_dir);
+
+	// free arrays
+	free(intermediate_pos);
+	cudaFree(d_intermediate_pos);
+
+	// final arrays
+	free(intermediate_dir);
+	cudaFree(d_intermediate_dir);
 
 	// copy image data to CPU
 	cudaMemcpy(image_array,d_image_array,sizeof(float)*camera_design_p->x_pixel_number*camera_design_p->y_pixel_number,cudaMemcpyDeviceToHost);

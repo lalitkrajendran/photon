@@ -27,7 +27,7 @@ def create_bos_simulation_parameters():
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # % Camera Design Parameters                                                %
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    #
+    
     # % This adds the camera design parameters structure
     piv_simulation_parameters['camera_design'] = {}
     # % This is the pixel pitch (in microns)
