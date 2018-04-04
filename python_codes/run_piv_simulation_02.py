@@ -253,7 +253,7 @@ def create_camera_optical_system(piv_simulation_parameters):
 
     # This arbitrarily defines the radius of curvature of the surfaces of the
     # lens to be equal to 100 mm (any value can be used here)
-    lens_radius_of_curvature = 50.0e3 #100000.0e3 #50e3 #100000.0e3 # changed by Lalit.
+    lens_radius_of_curvature = 100000.0e3 #50e3 #100000.0e3 # changed by Lalit.
     
     # This calculates the thickness of the lens based upon the defined
     # curvature and pitch
@@ -1212,12 +1212,17 @@ def generate_bos_lightfield_data(piv_simulation_parameters,optical_system):
     # # set the seed of the random number generator. this will be different for each simulation
     # if(piv_simulation_parameters['bos_pattern']['random_number_seed'][0]):
     #     np.random.seed(piv_simulation_parameters['bos_pattern']['random_number_seed'][0])
+    # np.random.seed(2445)
     x_grid_point_coordinate_vector = X_Min + (X_Max - X_Min) * np.random.rand(x_grid_point_number, y_grid_point_number)
+    # print 'first 10 x grid points', x_grid_point_coordinate_vector[0,0:10]
 
     # # set the seed of the random number generator. this will be different for each simulation
     # if(piv_simulation_parameters['bos_pattern']['random_number_seed'][1]):
     #     np.random.seed(piv_simulation_parameters['bos_pattern']['random_number_seed'][1])
+    # np.random.seed(4245)
     y_grid_point_coordinate_vector = Y_Min + (Y_Max - Y_Min) * np.random.rand(x_grid_point_number, y_grid_point_number)
+    # print 'first 10 y grid points', y_grid_point_coordinate_vector[0,0:10]
+
 
     # % This generates a series of points that fill the circle of the grid point
     # % uniformly
@@ -1302,7 +1307,7 @@ def generate_bos_lightfield_data(piv_simulation_parameters,optical_system):
     # % This initializes the Z coordinate vector
     z = current_z_world_coordinate * np.ones(x.shape)
     # % This initializes the radiance vector
-    radiance = np.ones(x.shape)*10
+    radiance = np.ones(x.shape)*10 #0.0
 
     # % This rotates the image coordinates by the specified angles
     [x,y,z] = rotate_coordinates(x,y,z,x_camera_angle,y_camera_angle,0.0,0.0,0.0,0.0)
@@ -1329,7 +1334,7 @@ def generate_bos_lightfield_data(piv_simulation_parameters,optical_system):
 	# of the GPU memory, and threads-blocks-grids specifications
     lightfield_source['source_point_number'] = 10000
     lightfield_source['z_offset'] = z_offset
-    return lightfield_source
+    return lightfield_source, x_grid_point_coordinate_vector, y_grid_point_coordinate_vector
 
 
 def generate_bos_image_lightfield_data(piv_simulation_parameters,optical_system):
@@ -1610,7 +1615,7 @@ def run_piv_simulation_02(piv_simulation_parameters):
     # % parameters structure
     bos_pattern_image_directory = piv_simulation_parameters['output_data']['bos_pattern_image_directory']
     calibration_grid_image_directory = bos_pattern_image_directory
-    generate_calibration_grid_images = True
+    # generate_calibration_grid_images = True
     # % This generates the calibration grid images if specified by the parameters
     # % structure
     if generate_calibration_grid_images:
@@ -1715,7 +1720,7 @@ def run_piv_simulation_02(piv_simulation_parameters):
 
         # % This creates the lightfield data for performing the raytracing operation
         # lightfield_source = generate_bos_image_lightfield_data(piv_simulation_parameters,optical_system)
-        lightfield_source = generate_bos_lightfield_data(piv_simulation_parameters, optical_system)
+        lightfield_source, x_grid_point_coordinate_vector, y_grid_point_coordinate_vector = generate_bos_lightfield_data(piv_simulation_parameters, optical_system)
 
         # % This adds the number of lightrays per particle to the
         # % 'lightfield_source' data
@@ -1740,13 +1745,14 @@ def run_piv_simulation_02(piv_simulation_parameters):
         # np.random.seed(1105)
         r_temp = np.random.rand(1, lightray_number_per_particle).astype('float32')
         r_temp.tofile(cuda_codes_filepath + '/data/random1.bin')
+        # print 'first ten numbers for r_temp', r_temp[0, 0:10]
 
         # % This creates random angular coordinates for the lightrays to
         # % intersect on the lens
         # np.random.seed(4092)
         psi_temp = np.random.rand(1, lightray_number_per_particle).astype('float32')
         psi_temp.tofile(cuda_codes_filepath + '/data/random2.bin')
-        
+        # print 'first ten numbers for psi_temp', psi_temp[0, 0:10]
         ################################################################################################################
         # render the reference image without density gradients
         ################################################################################################################
@@ -1813,5 +1819,12 @@ def run_piv_simulation_02(piv_simulation_parameters):
         # save parameters to file
         # save parameters to file
         sio.savemat(bos_pattern_image_directory+'parameters.mat', piv_simulation_parameters, appendmat=True, format='5',
+                    long_field_names=True)
+
+        # save grid point positions to file
+        positions = dict()
+        positions['x'] = x_grid_point_coordinate_vector
+        positions['y'] = y_grid_point_coordinate_vector
+        sio.savemat(bos_pattern_image_directory + 'positions.mat', positions, appendmat=True, format='5',
                     long_field_names=True)
 

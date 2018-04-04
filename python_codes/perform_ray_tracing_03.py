@@ -1830,7 +1830,9 @@ def prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, sc
             ('y_camera_angle', ctypes.c_float),
             ('x_pixel_number', ctypes.c_int),
             ('y_pixel_number', ctypes.c_int),
-            ('z_sensor', ctypes.c_float)
+            ('z_sensor', ctypes.c_float),
+            ('diffraction_diameter', ctypes.c_float),
+            ('implement_diffraction', ctypes.c_bool)
         ]
 
     # create an instance of the class
@@ -1845,6 +1847,8 @@ def prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, sc
     camera_design_ctypes_struct.x_pixel_number = int(camera_design['x_pixel_number'])
     camera_design_ctypes_struct.y_pixel_number = int(camera_design['y_pixel_number'])
     camera_design_ctypes_struct.z_sensor = camera_design['z_sensor']
+    camera_design_ctypes_struct.diffraction_diameter = camera_design['diffraction_diameter']
+    camera_design_ctypes_struct.implement_diffraction = camera_design['implement_diffraction']
 
     # convert the 2D image array to a 1D array because they are easier to handle in CUDA
     # I2 = np.reshape(I,(1,1024*1024)).astype(np.float32)
@@ -2071,6 +2075,11 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     density_grad_filename = piv_simulation_parameters['density_gradients']['density_gradient_filename']
     ray_tracing_algorithm = int(piv_simulation_parameters['density_gradients']['ray_tracing_algorithm'])
 
+
+    if not 'implement_diffraction' in piv_simulation_parameters['camera_design'].keys():
+        piv_simulation_parameters['camera_design']['implement_diffraction'] = False
+        piv_simulation_parameters['camera_design']['diffraction_diameter'] = 0.0
+
     # default settigns for adding noise to the final light ray positions
     add_pos_noise = False
     pos_noise_std = float(0.0)
@@ -2111,48 +2120,69 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
                                      add_ngrad_noise, ngrad_noise_std)
 
     # this is the raw version of the original image
-    I_raw = I
+    I_raw = np.copy(I)
 
    
+    # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    # % Adding image noise                                                      %
+    # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    # piv_simulation_parameters['camera_design']['image_noise'] = 0.05
+    if(piv_simulation_parameters['camera_design']['image_noise'] > 0.0):
+
+        print 'Adding image noise of', piv_simulation_parameters['camera_design']['image_noise']
+        # this generates random numbers from a normal distribution to add to the image array
+        # image_noise = np.random.normal(0.0, scale=piv_simulation_parameters['camera_design']['image_noise'] * I.max(),
+        #                                size=I.shape)
+        image_noise = np.random.normal(0.0, scale=piv_simulation_parameters['camera_design']['image_noise'] * 1000.0,
+                                       size=I.shape)
+
+        # this adds the image noise only to elements of I that are non-zero
+        # I = np.where(I, I+image_noise, I)
+        # I += image_noise
+        I_raw += image_noise
+
+    I = np.copy(I_raw)
+
+    # this ensures that the intensity array remains positive
+    # I = abs(I)
+    I[I < 0.0] = 0.0
+
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # % Rescales and resamples image for export                                 %
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     # % This rescales the image intensity to account for the pixel gain
-    I *= 10 ** (pixel_gain/ 20.0)
+    I *= 10 ** (pixel_gain / 20.0)
 
     # % This rescales the image to values ranging from 0 to 2^bit_depth-1
     # I = (2 ** pixel_bit_depth - 1) * I / (2 ** 16 - 1)
     I = (2 ** pixel_bit_depth - 1) * I / (np.max(I[np.isfinite(I)]) - 1)
 
-        # % This rounds the values of the image to the nearest integer
+    # % This rounds the values of the image to the nearest integer
     I = np.round(I)
 
     # % This rescales the image to the full 16 bit range (but only bit_depth bits
     # % of information are now used)
     I *= (2 ** 16 - 1.0) / (2 ** pixel_bit_depth - 1.0)
 
-    # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    # % Adding image noise                                                      %
-    # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-    if(piv_simulation_parameters['camera_design']['image_noise'] > 0.0):
-
-        print 'Adding image noise of', piv_simulation_parameters['camera_design']['image_noise']
-        # this generates random numbers from a normal distribution to add to the image array
-        image_noise = np.random.normal(0.0, scale=piv_simulation_parameters['camera_design']['image_noise'] * I.max(),
-                                       size=I.shape)
-
-        # this adds the image noise only to elements of I that are non-zero
-        # I = np.where(I, I+image_noise, I)
-        I += image_noise
-    
-    # this ensures that the intensity array remains positive
-    I = abs(I)
-    
     # % This converts the image from double precision to 16 bit precision
     I = np.uint16(I)
 
+    # # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    # # % Adding image noise                                                      %
+    # # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    # # piv_simulation_parameters['camera_design']['image_noise'] = 0.05
+    # if (piv_simulation_parameters['camera_design']['image_noise'] > 0.0):
+    #     print 'Adding image noise of', piv_simulation_parameters['camera_design']['image_noise']
+    #     # this generates random numbers from a normal distribution to add to the image array
+    #     image_noise = np.random.normal(0.0, scale=piv_simulation_parameters['camera_design']['image_noise'] * I.max(),
+    #                                    size=I.shape)
+    #
+    #     # this adds the image noise only to elements of I that are non-zero
+    #     # I = np.where(I, I+image_noise, I)
+    #     # I += image_noise
+    #     image_noise[image_noise < 0.0] = 0.0
+    #     I += np.uint16(image_noise)
     # Contrast stretching (http://homepages.inf.ed.ac.uk/rbf/HIPR2/stretch.htm)
 
     # These are the percentile thresholds of the intensity values to rescale the image

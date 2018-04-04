@@ -175,6 +175,10 @@ typedef struct camera_design_t
 	int y_pixel_number;
 	// distance between the lens and the sensor in the camera coordinate system
 	float z_sensor;
+	// diffraction diameter of the system (pix.)
+	float diffraction_diameter;
+	// flag to set whether diffraction is to be implemented or not
+	bool implement_diffraction;
 }camera_design_t;
 
 // this structure contains the data about the pixels whose intensity will be incremented

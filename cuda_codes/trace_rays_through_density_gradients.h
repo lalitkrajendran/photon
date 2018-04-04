@@ -204,8 +204,8 @@ __device__ float3 calculate_lookup_index(float3 pos, density_grad_params_t param
 	// calculate the lookup index
 //	float3 lookup = {static_cast<float>(lookupfn.x*params.data_width), static_cast<float>(lookupfn.y*params.data_height), static_cast<float>(lookupfn.z*params.data_depth)};
 //	float3 lookup = {static_cast<float>(lookupfn.x*(params.data_width-1)), static_cast<float>(lookupfn.y*(params.data_height-1)), static_cast<float>(lookupfn.z*(params.data_depth-1))};
-	float3 lookup = {static_cast<float>(1.5 + lookupfn.x*(params.data_width-2.5)), static_cast<float>(1.5 + lookupfn.y*(params.data_height-2.5)), static_cast<float>(1.5 + lookupfn.z*(params.data_depth-2.5))};
-//	float3 lookup = {static_cast<float>(1 + lookupfn.x*(params.data_width-2)), static_cast<float>(1 + lookupfn.y*(params.data_height-2)), static_cast<float>(1 + lookupfn.z*(params.data_depth-2))};
+//	float3 lookup = {static_cast<float>(1.5 + lookupfn.x*(params.data_width-2.5)), static_cast<float>(1.5 + lookupfn.y*(params.data_height-2.5)), static_cast<float>(1.5 + lookupfn.z*(params.data_depth-2.5))};
+	float3 lookup = {static_cast<float>(1 + lookupfn.x*(params.data_width-2)), static_cast<float>(1 + lookupfn.y*(params.data_height-2)), static_cast<float>(1 + lookupfn.z*(params.data_depth-2))};
 //	float3 lookup = {static_cast<float>(0.5 + lookupfn.x*(params.data_width-1.5)), static_cast<float>(0.5 + lookupfn.y*(params.data_height-1.5)), static_cast<float>(0.5 + lookupfn.z*(params.data_depth-1.5))};
 
 	return lookup;
@@ -1673,7 +1673,7 @@ void loadNRRD(DataFile* datafile, int data_min, int data_max, float z_offset)
 
 	float temp, rho1, rho2, n1, n2;
 	double d_n1, d_n2, d_temp;
-	double a = 1.0;
+//	double a = 1.0;
 
 	for(int i = 0; i < sizex; i++)
 	{
