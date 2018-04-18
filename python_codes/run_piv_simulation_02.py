@@ -1198,7 +1198,7 @@ def generate_bos_lightfield_data(piv_simulation_parameters,optical_system):
         X_Max = +7.5e4
 
 
-    if (piv_simulation_parameters['bos_pattern']['Y_Min']):
+    if (piv_simulation_parameters['bos_pattern']['Y_Min']): 
         Y_Min = piv_simulation_parameters['bos_pattern']['Y_Min']
     else:
         Y_Min = -7.5e4
@@ -1214,6 +1214,8 @@ def generate_bos_lightfield_data(piv_simulation_parameters,optical_system):
     #     np.random.seed(piv_simulation_parameters['bos_pattern']['random_number_seed'][0])
     # np.random.seed(2445)
     x_grid_point_coordinate_vector = X_Min + (X_Max - X_Min) * np.random.rand(x_grid_point_number, y_grid_point_number)
+    # x_grid_point_number = 1
+    # x_grid_point_coordinate_vector = np.array([X_Min + (X_Max - X_Min)/2.0])
     # print 'first 10 x grid points', x_grid_point_coordinate_vector[0,0:10]
 
     # # set the seed of the random number generator. this will be different for each simulation
@@ -1221,6 +1223,8 @@ def generate_bos_lightfield_data(piv_simulation_parameters,optical_system):
     #     np.random.seed(piv_simulation_parameters['bos_pattern']['random_number_seed'][1])
     # np.random.seed(4245)
     y_grid_point_coordinate_vector = Y_Min + (Y_Max - Y_Min) * np.random.rand(x_grid_point_number, y_grid_point_number)
+    # y_grid_point_number = 1
+    # y_grid_point_coordinate_vector = np.array([Y_Min + (Y_Max - Y_Min)/2.0])
     # print 'first 10 y grid points', y_grid_point_coordinate_vector[0,0:10]
 
 
@@ -1241,11 +1245,11 @@ def generate_bos_lightfield_data(piv_simulation_parameters,optical_system):
     for x_grid_index in range(0,int(x_grid_point_number)):
         for y_grid_index in range(0,int(y_grid_point_number)):
 
-            # # % This is the coordinate of the current grid point
+            # # # % This is the coordinate of the current grid point
             # x_grid_point_coordinate = x_grid_point_coordinate_vector[x_grid_index]
             # y_grid_point_coordinate = y_grid_point_coordinate_vector[y_grid_index]
 
-            #TODO remove
+            # TODO remove
             # % This is the coordinate of the current grid point
             x_grid_point_coordinate = x_grid_point_coordinate_vector[x_grid_index,y_grid_index]
             y_grid_point_coordinate = y_grid_point_coordinate_vector[x_grid_index,y_grid_index]
@@ -1307,8 +1311,12 @@ def generate_bos_lightfield_data(piv_simulation_parameters,optical_system):
     # % This initializes the Z coordinate vector
     z = current_z_world_coordinate * np.ones(x.shape)
     # % This initializes the radiance vector
-    radiance = np.ones(x.shape)*10 #0.0
-
+    # radiance = np.ones(x.shape)*100 #0.0
+    if not 'lightray_radiance' in piv_simulation_parameters['bos_pattern'].keys():
+        radiance = np.ones(x.shape)*10
+    else:
+        radiance = np.ones(x.shape)*piv_simulation_parameters['bos_pattern']['lightray_radiance']        
+    
     # % This rotates the image coordinates by the specified angles
     [x,y,z] = rotate_coordinates(x,y,z,x_camera_angle,y_camera_angle,0.0,0.0,0.0,0.0)
 

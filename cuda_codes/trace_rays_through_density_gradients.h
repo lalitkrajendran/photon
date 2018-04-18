@@ -744,6 +744,7 @@ __device__ light_ray_data_t euler(light_ray_data_t light_ray_data,
 	float current_refractive_index;
 	float3 pos_temp;
 
+	// perform linear interpolation to calculate density gradient
 	if(params.interpolation_scheme == 1)
 	{
 		while(inside_box)
@@ -765,6 +766,23 @@ __device__ light_ray_data_t euler(light_ray_data_t light_ray_data,
 //					intermediate_pos[loop_ctr] = lookup; //make_float3(val.x, val.y, pos.z); //pos;
 //					intermediate_dir[loop_ctr] = dir;
 //				}
+
+//				// flag rays that exit through the sides of the volume
+//				if(pos.x < params.min_bound.x || pos.y < params.min_bound.y ||
+//						pos.x >= params.max_bound.x || pos.y >= params.max_bound.y||
+//						lookup.x < 0 || lookup.y < 0 ||	lookup.x >= params.data_width
+//						|| lookup.y >= params.data_height)
+//				{
+//					//# % This sets any of the light ray positions outside of the domain
+//					//# % to NaN values
+//					light_ray_data.ray_source_coordinates = make_float3(CUDART_NAN_F,CUDART_NAN_F,CUDART_NAN_F);
+//
+//					//# % This sets any of the light ray directions outside of the domain
+//					//# % to NaN values
+//					light_ray_data.ray_propagation_direction = make_float3(CUDART_NAN_F,CUDART_NAN_F,CUDART_NAN_F);
+//
+//				}
+
 				break;
 			}
 			// check if light ray is sufficiently inside the volume to get a non-zero refractive index.
@@ -870,7 +888,7 @@ __device__ light_ray_data_t euler(light_ray_data_t light_ray_data,
 	}
 //	params.arc_length = 0;
 
-
+	// perform cubic interpolation to calculate density gradient
 	else
 	{
 		while(inside_box)

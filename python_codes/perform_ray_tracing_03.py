@@ -2129,11 +2129,11 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     # piv_simulation_parameters['camera_design']['image_noise'] = 0.05
     if(piv_simulation_parameters['camera_design']['image_noise'] > 0.0):
 
-        print 'Adding image noise of', piv_simulation_parameters['camera_design']['image_noise']
+        print 'Adding image noise of', piv_simulation_parameters['camera_design']['image_noise']*100
         # this generates random numbers from a normal distribution to add to the image array
         # image_noise = np.random.normal(0.0, scale=piv_simulation_parameters['camera_design']['image_noise'] * I.max(),
         #                                size=I.shape)
-        image_noise = np.random.normal(0.0, scale=piv_simulation_parameters['camera_design']['image_noise'] * 1000.0,
+        image_noise = np.random.normal(0.0, scale=piv_simulation_parameters['camera_design']['image_noise'] * 100.0,
                                        size=I.shape)
 
         # this adds the image noise only to elements of I that are non-zero
@@ -2147,27 +2147,36 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     # I = abs(I)
     I[I < 0.0] = 0.0
 
-    # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    # % Rescales and resamples image for export                                 %
-    # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    # check if the user has specified that the intensity should be rescaled
+    if not 'intensity_rescaling' in piv_simulation_parameters['camera_design'].keys():
+        intensity_rescaling = True
+    else:
+        intensity_rescaling = piv_simulation_parameters['camera_design']['intensity_rescaling']
+    
+    if intensity_rescaling:        
+        # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        # % Rescales and resamples image for export                                 %
+        # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    # % This rescales the image intensity to account for the pixel gain
-    I *= 10 ** (pixel_gain / 20.0)
+        # % This rescales the image intensity to account for the pixel gain
+        I *= 10 ** (pixel_gain / 20.0)
 
-    # % This rescales the image to values ranging from 0 to 2^bit_depth-1
-    # I = (2 ** pixel_bit_depth - 1) * I / (2 ** 16 - 1)
-    I = (2 ** pixel_bit_depth - 1) * I / (np.max(I[np.isfinite(I)]) - 1)
+        # % This rescales the image to values ranging from 0 to 2^bit_depth-1
+        # I = (2 ** pixel_bit_depth - 1) * I / (2 ** 16 - 1)
+        I = (2 ** pixel_bit_depth - 1) * I / (np.max(I[np.isfinite(I)]) - 1)
 
-    # % This rounds the values of the image to the nearest integer
-    I = np.round(I)
+        # % This rounds the values of the image to the nearest integer
+        I = np.round(I)
 
-    # % This rescales the image to the full 16 bit range (but only bit_depth bits
-    # % of information are now used)
-    I *= (2 ** 16 - 1.0) / (2 ** pixel_bit_depth - 1.0)
+        # % This rescales the image to the full 16 bit range (but only bit_depth bits
+        # % of information are now used)
+        I *= (2 ** 16 - 1.0) / (2 ** pixel_bit_depth - 1.0)
 
     # % This converts the image from double precision to 16 bit precision
     I = np.uint16(I)
-
+    print 'max intensity: ', I.max()
+    print 'total intensity:', I.sum()
+    
     # # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # # % Adding image noise                                                      %
     # # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
