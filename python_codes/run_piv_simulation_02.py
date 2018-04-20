@@ -1280,33 +1280,6 @@ def generate_bos_lightfield_data(piv_simulation_parameters,optical_system):
         x = x[:count+1]
         y = y[:count+1]
 
-    # % This generates a series of points that fill the circle of one quarter of
-    # % the grid point diameter uniformly
-    [x_lightray_coordinates, y_lightray_coordinates] = calculate_sunflower_coordinates(grid_point_diameter/4,particle_number_per_grid_point/16);
-
-    # % These are the coordinates of the first origin marker
-    x_grid_point_coordinate = 0
-    y_grid_point_coordinate = 0
-
-    # % These are the coordinates of the current lightrays
-    x_grid_point_lightray_coordinates = x_lightray_coordinates + x_grid_point_coordinate
-    y_grid_point_lightray_coordinates = y_lightray_coordinates + y_grid_point_coordinate
-
-    # % This adds the current lightrays to the total lightray vectors
-    x = np.append(x,x_grid_point_lightray_coordinates)
-    y = np.append(y,y_grid_point_lightray_coordinates)
-
-    # % These are the coordinates of the second origin marker
-    x_grid_point_coordinate = 0
-    y_grid_point_coordinate = 0
-
-    # % These are the coordinates of the current lightrays
-    x_grid_point_lightray_coordinates = x_lightray_coordinates + x_grid_point_coordinate
-    y_grid_point_lightray_coordinates = y_lightray_coordinates + y_grid_point_coordinate
-
-    # % This adds the current lightrays tot he total lightray vectors
-    x = np.append(x,x_grid_point_lightray_coordinates)
-    y = np.append(y,y_grid_point_lightray_coordinates)
 
     # % This initializes the Z coordinate vector
     z = current_z_world_coordinate * np.ones(x.shape)
@@ -1322,7 +1295,6 @@ def generate_bos_lightfield_data(piv_simulation_parameters,optical_system):
 
     # % % This rotates the particles by the specified angles
     # % [x_source,y_source,z_source]=rotate_coordinates(x_source,y_source,z_source,theta_x,theta_y,theta_z,0,0,0);
-
 
     # % This translates the Z coordinates of the paricles to the focal plane
     z = z + z_object

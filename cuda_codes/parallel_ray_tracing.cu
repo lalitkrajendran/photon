@@ -102,8 +102,11 @@ __device__ light_ray_data_t generate_lightfield_angular_data(float lens_pitch, f
 
 //	float x_current = 0.0;
 //	float y_current = 0.0;
-//	float x_current = 5.0e3; //0.0;
-//	float y_current = 5.0e3;
+//	float x_current = 25.0e3; //0.0;
+//	float y_current = 25.0e3;
+
+//	if(x_current == 0 && y_current == 0)
+//		printf("x = 0, y = 0.\n");
 
 
 	//--------------------------------------------------------------------------------------
@@ -1834,6 +1837,8 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 		lightfield_source_shared.radiance = lightfield_source.radiance[current_source_point_number];
 		lightfield_source_shared.diameter_index = lightfield_source.diameter_index[current_source_point_number];
 
+		if(lightfield_source_shared.x == 0 && lightfield_source_shared.y == 0)
+			printf("x = 0, y = 0. particleid=%d\n", local_particle_id);
 	}
 
 	// ensure that the shared memory information is updated before the rest of the threads
@@ -2916,6 +2921,13 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	int num_particles = lightfield_source.num_particles;
 	printf("number of particles: %d\n",num_particles);
 
+	for(k = 0; k < num_particles; k++)
+	{
+		if(lightfield_source.x == 0 && lightfield_source.y == 0)
+			printf("x=0, y=0 at particle number: %d\n", k);
+		if(k == 545 || k ==551)
+			printf("k: %d, x=%f, y=%f\n", k, lightfield_source.x, lightfield_source.y);
+	}
 	// allocate space for device arrays on GPU
 	cudaMalloc((void **)&d_source_x,sizeof(float)*num_particles);
 	cudaMalloc((void **)&d_source_y,num_particles*sizeof(float));
@@ -3286,6 +3298,7 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 //	// close the file
 //	file_image_array.close();
 
+	printf("mid point before ray tracing: %f\n", image_array[130815]);
 	bool save_lightrays = false;
 
 	for(k = 0; k < KMAX; k++)
@@ -3322,7 +3335,7 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 		cudaDeviceSynchronize();
 		printf("done.\n");
 
-		if(k == 0)
+		if(1) //k == 0)
 		{
 			printf("arc length: %f\n", params.arc_length);
 			//--------------------------------------------------------------------------------------
@@ -3472,7 +3485,7 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 
 	// copy image data to CPU
 	cudaMemcpy(image_array,d_image_array,sizeof(float)*camera_design_p->x_pixel_number*camera_design_p->y_pixel_number,cudaMemcpyDeviceToHost);
-
+	printf("mid point after ray tracing: %f\n", image_array[130815]);
 	// end timer
 	end = clock();
 

@@ -53,7 +53,7 @@ script, filepath, starting_index, number_of_parameter_files = argv
 starting_index = int(starting_index)
 number_of_parameter_files = int(number_of_parameter_files)
 
-# filepath = '/home/shannon/c/aether/Projects/BOS/error-analysis/analysis/data/parameters/crlb/'
+# filepath = '/home/shannon/c/aether/Projects/BOS/error-analysis/analysis/data/parameters/all/'
 # starting_index = 1
 # number_of_parameter_files = 1
 
