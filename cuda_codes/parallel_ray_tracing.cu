@@ -99,20 +99,17 @@ __device__ light_ray_data_t generate_lightfield_angular_data(float lens_pitch, f
 	float x_current = lightfield_source.x;
 	float y_current = lightfield_source.y;
 	float z_current = lightfield_source.z;
-
+//	printf("x_current: %.2f, y_current: %.2f\n", x_current, y_current);
 //	float x_current = 0.0;
 //	float y_current = 0.0;
 //	float x_current = 25.0e3; //0.0;
 //	float y_current = 25.0e3;
 
-//	if(x_current == 0 && y_current == 0)
-//		printf("x = 0, y = 0.\n");
-
 
 	//--------------------------------------------------------------------------------------
 	// compute direction of propagation of light ray
 	//--------------------------------------------------------------------------------------
-	float lens_pitch_scaling_factor = 1e-4; //1e-4; //0.3; //1e-4;
+	float lens_pitch_scaling_factor = 1e-4; //1e-4; //1e-1; //1e-4; //0.3; //1e-4;
 
 	// generate random points on the lens where the rays should intersect
 	float x_lens = 0.5*lens_pitch_scaling_factor*lens_pitch*sqrt(random_number_1)*cos(2*M_PI*random_number_2);
@@ -1465,6 +1462,7 @@ __device__ light_ray_data_t intersect_sensor_02(light_ray_data_t light_ray_data,
 	//# % This calculates the intersection points
 	float3 pos_intersect = ray_source_coordinates + ray_propagation_direction * intersection_time;
 
+//	printf("pos_intersect: %.2f, %.2f, %.2f\n", pos_intersect.x, pos_intersect.y, pos_intersect.z);
 	// add noise to the final light ray position
 	float2 noise;
 	if(add_pos_noise)
@@ -1489,9 +1487,9 @@ __device__ light_ray_data_t intersect_sensor_02(light_ray_data_t light_ray_data,
 
 	//# % This is the number of pixel diameters the point (x,y) is from the center
 	//# % of the (0,0) pixel
-	float d_x = (ray_source_coordinates.x - pixel_1_x) / camera_design.pixel_pitch + 1.5;
-	float d_y = (ray_source_coordinates.y - pixel_1_y) / camera_design.pixel_pitch + 1.5;
-
+	float d_x = (ray_source_coordinates.x - pixel_1_x) / camera_design.pixel_pitch; // + 1.5;
+	float d_y = (ray_source_coordinates.y - pixel_1_y) / camera_design.pixel_pitch; // + 1.5;
+//	printf("pixel location of light ray: %.2f, %.2f\n", d_x, d_y);
 	//# % This checks if the given light ray actually intersects the sensor
 	//# % (ie the rays that are within the sensor pitch)
 	if(d_x >= camera_design.x_pixel_number || d_y >= camera_design.y_pixel_number
@@ -1520,8 +1518,9 @@ __device__ light_ray_data_t intersect_sensor_02(light_ray_data_t light_ray_data,
 	// ------------------------------------------------------------------------------
 	// Update pixel intensities based on a diffraction model (Taken from Matt's code)
 	// ------------------------------------------------------------------------------
-	float X = d_x - 0.5;
-	float Y = d_y - 0.5;
+	float X = d_x - 0.5; // - 0.5;
+	float Y = d_y - 0.5; // - 0.5;
+//	printf("pixel location of centroid: %.2f, %.2f\n", X, Y);
 
 	float PARTICLE_DIAMETERS = diffraction_diameter;
 	float PARTICLE_MAX_INTENSITIES = light_ray_data.ray_radiance*cos_4_alpha;
@@ -1545,6 +1544,9 @@ __device__ light_ray_data_t intersect_sensor_02(light_ray_data_t light_ray_data,
 	//% fractional values
 	int minRenderedRows = floor(Y - render_fraction * PARTICLE_DIAMETERS);
 	int maxRenderedRows =  ceil(Y + render_fraction * PARTICLE_DIAMETERS);
+
+//	printf("render rows: %d, %d, cols: %d, %d\n", minRenderedRows, maxRenderedRows,
+//			minRenderedCols, maxRenderedCols);
 	int row, col;
 	int image_index;
 	float pixel_increment;
@@ -1578,7 +1580,7 @@ __device__ light_ray_data_t intersect_sensor_02(light_ray_data_t light_ray_data,
 	                		   erf(sqrt8 *(col - X + 0.5) / PARTICLE_DIAMETERS)) *
 	                   (erf( sqrt8 *  (row - Y - 0.5)/ PARTICLE_DIAMETERS) -
 	                		   erf(sqrt8 * (row - Y + 0.5) / PARTICLE_DIAMETERS));
-
+//				printf("row: %d, col: %d, pixel_increment: %.2f\n", row, col, pixel_increment);
 				// this performs the addition but in a way that avoids a race condition where
 				// multiple threads try to write to the same memory location
 				atomicAdd(&image_array[image_index],pixel_increment);
@@ -1668,8 +1670,8 @@ __device__ pixel_data_t intersect_sensor(light_ray_data_t light_ray_data,camera_
 
 	//# % This is the number of pixel diameters the point (x,y) is from the center
 	//# % of the (0,0) pixel
-	float d_x = (ray_source_coordinates.x - pixel_1_x) / camera_design.pixel_pitch + 1.5;
-	float d_y = (ray_source_coordinates.y - pixel_1_y) / camera_design.pixel_pitch + 1.5;
+	float d_x = (ray_source_coordinates.x - pixel_1_x) / camera_design.pixel_pitch; // + 1.5;
+	float d_y = (ray_source_coordinates.y - pixel_1_y) / camera_design.pixel_pitch; // + 1.5;
 
 	//# % This checks if the given light ray actually intersects the sensor
 	//# % (ie the rays that are within the sensor pitch)
@@ -1837,8 +1839,6 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 		lightfield_source_shared.radiance = lightfield_source.radiance[current_source_point_number];
 		lightfield_source_shared.diameter_index = lightfield_source.diameter_index[current_source_point_number];
 
-		if(lightfield_source_shared.x == 0 && lightfield_source_shared.y == 0)
-			printf("x = 0, y = 0. particleid=%d\n", local_particle_id);
 	}
 
 	// ensure that the shared memory information is updated before the rest of the threads
@@ -2921,13 +2921,6 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	int num_particles = lightfield_source.num_particles;
 	printf("number of particles: %d\n",num_particles);
 
-	for(k = 0; k < num_particles; k++)
-	{
-		if(lightfield_source.x == 0 && lightfield_source.y == 0)
-			printf("x=0, y=0 at particle number: %d\n", k);
-		if(k == 545 || k ==551)
-			printf("k: %d, x=%f, y=%f\n", k, lightfield_source.x, lightfield_source.y);
-	}
 	// allocate space for device arrays on GPU
 	cudaMalloc((void **)&d_source_x,sizeof(float)*num_particles);
 	cudaMalloc((void **)&d_source_y,num_particles*sizeof(float));
@@ -3298,7 +3291,6 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 //	// close the file
 //	file_image_array.close();
 
-	printf("mid point before ray tracing: %f\n", image_array[130815]);
 	bool save_lightrays = false;
 
 	for(k = 0; k < KMAX; k++)
@@ -3485,7 +3477,7 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 
 	// copy image data to CPU
 	cudaMemcpy(image_array,d_image_array,sizeof(float)*camera_design_p->x_pixel_number*camera_design_p->y_pixel_number,cudaMemcpyDeviceToHost);
-	printf("mid point after ray tracing: %f\n", image_array[130815]);
+
 	// end timer
 	end = clock();
 
