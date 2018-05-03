@@ -2153,7 +2153,8 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     else:
         intensity_rescaling = piv_simulation_parameters['camera_design']['intensity_rescaling']
     
-    if intensity_rescaling:        
+    if intensity_rescaling:
+        print 'rescaling intensity'        
         # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         # % Rescales and resamples image for export                                 %
         # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2163,7 +2164,7 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
 
         # % This rescales the image to values ranging from 0 to 2^bit_depth-1
         # I = (2 ** pixel_bit_depth - 1) * I / (2 ** 16 - 1)
-        I = (2 ** pixel_bit_depth - 1) * I / (np.max(I[np.isfinite(I)]) - 1)
+        I = (2 ** pixel_bit_depth - 1) * I / (np.max(I[np.isfinite(I)]))
 
         # % This rounds the values of the image to the nearest integer
         I = np.round(I)
