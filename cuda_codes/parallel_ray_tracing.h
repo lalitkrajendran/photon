@@ -249,10 +249,10 @@ struct density_grad_params_t
 __global__ void parallel_ray_tracing(float, float, scattering_data_t*, int,
 		lightfield_source_t*, int, int, int, float, float, light_ray_data_t*, int,
 		 float*, float*, element_data_t*, float3*, float4*, int*, int, camera_design_t*,
-		 float*, bool, density_grad_params_t, float3*, float3*, int, bool);
+		 float*, bool, density_grad_params_t, float3*, float3*, int, bool, float);
 
 __device__ light_ray_data_t generate_lightfield_angular_data(float, float, scattering_data_t,
-		int, lightfield_source_single_t, int, float, float, float, float);
+		int, lightfield_source_single_t, int, float, float, float, float, float);
 
 __device__ light_ray_data_t propagate_rays_through_optical_system(element_data_t*, float3*, float4* ,
 		int*, int, int, int, light_ray_data_t);
@@ -293,7 +293,7 @@ int add(int a, int b);
 void start_ray_tracing(float, float, scattering_data_t*, char*, lightfield_source_t*,
 		int, float, float, int, double (*element_center)[3], element_data_t*,
 		double (*element_plane_parameters)[4], int*, camera_design_t*, float*,
-		bool, char*, char*, char*, int, int, bool, float, bool, float);
+		bool, char*, bool, char*, char*, int, int, bool, float, bool, float, float);
 
 void temp_check();
 

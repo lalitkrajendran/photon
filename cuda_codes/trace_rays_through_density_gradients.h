@@ -755,6 +755,11 @@ __device__ light_ray_data_t euler(light_ray_data_t light_ray_data,
 
 			pos = light_ray_data.ray_source_coordinates;
 			dir = light_ray_data.ray_propagation_direction;
+//			if(loop_ctr < 1000)
+//			{
+//				intermediate_pos[loop_ctr] = pos; //make_float3(val.x, lookup.z, pos.z); //pos;
+//				intermediate_dir[loop_ctr] = dir;
+//			}
 
 			lookup = calculate_lookup_index(pos, params, lookup_scale);
 
@@ -822,7 +827,6 @@ __device__ light_ray_data_t euler(light_ray_data_t light_ray_data,
 //				continue;
 			}
 
-			loop_ctr += 1;
 			current_refractive_index = 1 + val.w;
 
 			//---------------------------------------------------------
@@ -877,12 +881,8 @@ __device__ light_ray_data_t euler(light_ray_data_t light_ray_data,
 			light_ray_data.ray_source_coordinates = pos;
 			light_ray_data.ray_propagation_direction = dir;
 
-//			if(loop_ctr < 1000)
-//			{
-//				intermediate_pos[loop_ctr] = pos; //make_float3(val.x, lookup.z, pos.z); //pos;
-//				intermediate_dir[loop_ctr] = dir;
-//			}
 			val_prev = val;
+			loop_ctr += 1;
 
 		}
 	}
@@ -995,6 +995,12 @@ __device__ light_ray_data_t rk4(light_ray_data_t light_ray_data, density_grad_pa
 
 			if(loop_ctr > loop_ctr_max)
 				break;
+
+//			if(loop_ctr < 1000)
+//			{
+//				intermediate_pos[loop_ctr] = light_ray_data.ray_source_coordinates;
+//				intermediate_dir[loop_ctr] = light_ray_data.ray_propagation_direction;
+//			}
 
 			pos = light_ray_data.ray_source_coordinates;
 			dir = light_ray_data.ray_propagation_direction;
@@ -1142,11 +1148,6 @@ __device__ light_ray_data_t rk4(light_ray_data_t light_ray_data, density_grad_pa
 
 //			if(loop_ctr > 100)
 //				break;
-//			if(loop_ctr < 1000)
-//			{
-//				intermediate_pos[loop_ctr] = light_ray_data.ray_source_coordinates;
-//				intermediate_dir[loop_ctr] = light_ray_data.ray_propagation_direction;
-//			}
 		}
 	}
 
@@ -1796,11 +1797,13 @@ density_grad_params_t setData(float* data, density_grad_params_t _params)
 	_params.data = new float4[data_width*data_height*data_depth];
 
 	// save the refractive index gradient data to file.
-	std::string filename = "/home/shannon/c/aether/Projects/BOS/error-analysis/analysis/src/photon/cuda_codes/data/gradient.bin";
+//	std::string filename = "/home/shannon/c/aether/Projects/BOS/error-analysis/analysis/src/photon/cuda_codes/data/gradient_backward.bin";
+//	std::string filename = "/home/shannon/c/aether/Projects/BOS/error-analysis/analysis/src/photon/cuda_codes/data/gradient_central.bin";
 
-	std::ofstream file;
-	file.open(filename.c_str(), ios::out | ios::binary);
-	float4 data_out;
+//	std::ofstream file;
+//	file.open(filename.c_str(), ios::out | ios::binary);
+//	float4 data_out;
+//	float4 data_out_2;
 
 	// calculate grid spacings for gradient calculation
 	float grid_x = _params.grid_spacing.x;
@@ -1834,11 +1837,11 @@ density_grad_params_t setData(float* data, density_grad_params_t _params)
 			// obtain refractive index values from points lying on either side of the current grid
 			// point along x, y and z
 
-
 			lookup = make_float3(x-1,y,z);
 			sample1.x = data[size_t(lookup.z*data_width*data_height + lookup.y*data_width + lookup.x)];
 			lookup = make_float3(x+1,y,z);
 			sample2.x = data[size_t(lookup.z*data_width*data_height + lookup.y*data_width + lookup.x)];
+
 
 			lookup = make_float3(x,y-1,z);
 			sample1.y = data[size_t(lookup.z*data_width*data_height + lookup.y*data_width + lookup.x)];
@@ -1855,10 +1858,6 @@ density_grad_params_t setData(float* data, density_grad_params_t _params)
 			normal.x = (sample2.x - sample1.x)/(2*grid_x);
 			normal.y = (sample2.y - sample1.y)/(2*grid_y);
 			normal.z = (sample2.z - sample1.z)/(2*grid_z);
-//			if (x==0 && y==0 && z==0)
-//			{
-//				printf("normals: %.2f, %.2f, %.2f\n", normal.x, normal.y, normal.z);
-//			}
 
 			// assign refractive index gradient values to the array
 			_params.data[data_loc].x = normal.x;
@@ -1867,16 +1866,14 @@ density_grad_params_t setData(float* data, density_grad_params_t _params)
 			_params.data[data_loc].w = data[size_t(z*data_width*data_height + y*data_width + x)];
 
 			loop_ctr++;
-			data_out = make_float4(normal.x, normal.y, normal.z, data[data_loc]);
-			// write to file
-			file.write((char*)&data_out, sizeof(float4));
+
 			if(_params.data[data_loc].w == 0)
 				printf("_params.data[data_loc].w == 0 at data_loc: %d\n", data_loc);
 
 		  }
 		}
 	}
-	file.close();
+
 	printf("Minimum Refractive Index: %f\n", _params.data_min);
 	printf("loop ctr: %d\n", loop_ctr);
 

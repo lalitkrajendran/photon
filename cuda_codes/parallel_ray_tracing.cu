@@ -69,7 +69,7 @@ __device__ float random_single(unsigned int seed, int id)
 __device__ light_ray_data_t generate_lightfield_angular_data(float lens_pitch, float image_distance,
 		scattering_data_t scattering_data, int scattering_type, lightfield_source_single_t lightfield_source,
                                      int lightray_number_per_particle, float beam_wavelength,
-                                     float aperture_f_number, float random_number_1,float random_number_2)
+                                     float aperture_f_number, float random_number_1,float random_number_2, float ray_cone_pitch_ratio)
 
 {
 	/*
@@ -105,11 +105,10 @@ __device__ light_ray_data_t generate_lightfield_angular_data(float lens_pitch, f
 //	float x_current = 25.0e3; //0.0;
 //	float y_current = 25.0e3;
 
-
 	//--------------------------------------------------------------------------------------
 	// compute direction of propagation of light ray
 	//--------------------------------------------------------------------------------------
-	float lens_pitch_scaling_factor = 1e-4; //1e-4; //1e-1; //1e-4; //0.3; //1e-4;
+	float lens_pitch_scaling_factor = ray_cone_pitch_ratio; //1; //1e-1; //1e-4; //0.3; //1e-4;
 
 	// generate random points on the lens where the rays should intersect
 	float x_lens = 0.5*lens_pitch_scaling_factor*lens_pitch*sqrt(random_number_1)*cos(2*M_PI*random_number_2);
@@ -207,12 +206,15 @@ __device__ light_ray_data_t generate_lightfield_angular_data(float lens_pitch, f
 
 	// this is the origin of the light ray
 	light_ray_data.ray_source_coordinates = make_float3(x_current,y_current,z_current);
+//	light_ray_data.ray_source_coordinates = make_float3(0.0,0.0,z_current);
 	// this is the propagation direction of the light ray
 	light_ray_data.ray_propagation_direction = normalize(make_float3(theta_temp,phi_temp,-1.0));
+//	light_ray_data.ray_propagation_direction = normalize(make_float3(0.001,0.0,-1.0));
 	// this is the wavelength of the light ray
 	light_ray_data.ray_wavelength = beam_wavelength;
 	// this is the radiance of the light ray
-	light_ray_data.ray_radiance = 1/(aperture_f_number*aperture_f_number)*irradiance_current;
+//	light_ray_data.ray_radiance = 1/(aperture_f_number*aperture_f_number)*irradiance_current;
+	light_ray_data.ray_radiance = irradiance_current;
 
 	return light_ray_data;
 }
@@ -401,7 +403,7 @@ __device__ light_ray_data_t propagate_rays_through_single_element(element_data_t
 
 		//# % This extracts the pitch of the lens
 		element_pitch = optical_element.element_geometry.pitch;
-
+//		element_pitch *= 10;
 		//# % This is the thickness of the optical element from the front optical axis
 		//# % vertex to the back optical axis vertex
 		element_vertex_distance = optical_element.element_geometry.vertex_distance;
@@ -484,7 +486,7 @@ __device__ light_ray_data_t propagate_rays_through_single_element(element_data_t
 			return light_ray_data;
 		}
 
-		// save current light ray position and exit (front surface, before refraction)
+//		// save current light ray position and exit (front surface, before refraction)
 //		light_ray_data.ray_source_coordinates = pos_intersect;
 //		light_ray_data.ray_propagation_direction = ray_propagation_direction;
 //		return light_ray_data;
@@ -1269,162 +1271,6 @@ __device__ light_ray_data_t propagate_rays_through_optical_system(element_data_t
 
 }
 
-//__device__ light_ray_data_t intersect_sensor_02(light_ray_data_t light_ray_data,camera_design_t camera_design,
-//		int lightray_number_per_particle, int num_rays, bool add_pos_noise, float noise_std,
-//		curandState* states, int ray_id, float diffraction_diameter, float* image_array)
-//{
-//	// Constants
-//	#define pi 3.141592653589793
-//
-//	// structure to hold the ray intersection point, pixel location etc.
-////	pixel_data_t pixel_data;
-//
-//	//# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-//	//# % Propagation of the light rays to the sensor                         %
-//	//# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-//
-//	//# % This extracts the propagation direction of the light rays
-//	float3 ray_propagation_direction = light_ray_data.ray_propagation_direction;
-//	//# % This extracts the light ray source coordinates
-//	float3 ray_source_coordinates = light_ray_data.ray_source_coordinates;
-//
-//	// flip angles
-////	ray_propagation_direction.x = - ray_propagation_direction.x;
-////	ray_propagation_direction.y = - ray_propagation_direction.y;
-//
-//	//# % This extracts the individual plane parameters for the sensor
-//	float a = 0.0;
-//	float b = 0.0;
-//	float c = 1.0;
-//	float d = -camera_design.z_sensor;
-//
-//	//# % This is the independent intersection time between the light rays and
-//	//# % the first plane of the aperture stop
-//	float intersection_time = -(dot(make_float3(a,b,c),ray_source_coordinates) + d)/
-//			dot(make_float3(a,b,c),ray_propagation_direction);
-//
-//	//# % This calculates the intersection points
-//	float3 pos_intersect = ray_source_coordinates + ray_propagation_direction * intersection_time;
-//
-//	// add noise to the final light ray position
-//	float2 noise;
-//	if(add_pos_noise)
-//	{
-////		noise_std = 0.10;
-//		// calculate the noise to be added from a standard normal distribution
-//		noise = curand_normal2(&states[ray_id]);
-//
-//		// add the noise scaled by the required standard deviation
-//		pos_intersect.x += noise.x * noise_std * camera_design.pixel_pitch;
-//		pos_intersect.y += noise.y * noise_std * camera_design.pixel_pitch;
-//
-//	}
-//
-//	//# % This sets the new light ray origin to the intersection point with the
-//	//# % sensor
-//	ray_source_coordinates = pos_intersect;
-//
-//	//# % This is the coordinate of pixel (1,1) [0][0]
-//	float pixel_1_x = -camera_design.pixel_pitch * (camera_design.x_pixel_number - 1) / 2.0;
-//	float pixel_1_y = -camera_design.pixel_pitch * (camera_design.y_pixel_number - 1) / 2.0;
-//
-//	//# % This is the number of pixel diameters the point (x,y) is from the center
-//	//# % of the (0,0) pixel
-//	float d_x = (ray_source_coordinates.x - pixel_1_x) / camera_design.pixel_pitch + 1.5;
-//	float d_y = (ray_source_coordinates.y - pixel_1_y) / camera_design.pixel_pitch + 1.5;
-//
-//	//# % This checks if the given light ray actually intersects the sensor
-//	//# % (ie the rays that are within the sensor pitch)
-//	if(d_x >= camera_design.x_pixel_number || d_y >= camera_design.y_pixel_number
-//			|| d_x <0 || d_y <0)
-//	{
-//		light_ray_data.ray_source_coordinates = make_float3(CUDART_NAN_F,CUDART_NAN_F,CUDART_NAN_F);
-//		return light_ray_data;
-//	}
-//
-//	light_ray_data.ray_source_coordinates = ray_source_coordinates;
-//	//# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-//	//# % Add lightray radiance to sensor integration                         %
-//	//# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-//
-//	//# % This is the angle between the lightray and the sensor (ie a lightray
-//	//# % normal to the sensor would yield an angle of zero)
-//	//alpha = np.arctan(np.sqrt((ray_propagation_direction[:,0] / ray_propagation_direction[:,2]) ** 2 + (
-//	//    ray_propagation_direction[:,1] / ray_propagation_direction[:,2]) ** 2))
-//	float alpha = atan(sqrt((ray_propagation_direction.x/ray_propagation_direction.z)*(ray_propagation_direction.x/ray_propagation_direction.z)
-//			+ (ray_propagation_direction.y/ray_propagation_direction.z)*(ray_propagation_direction.y/ray_propagation_direction.z)));
-//
-//	//# % This calculates the cos^4(alpha) term which controls the contribution
-//	//# % of the incident light rays onto the measured energy in the sensor
-//	double cos_4_alpha = cos(alpha)*cos(alpha)*cos(alpha)*cos(alpha);
-//
-//	// ------------------------------------------------------------------------------
-//	// Update pixel intensities based on a diffraction model (Taken from Matt's code)
-//	// ------------------------------------------------------------------------------
-//	float X = d_x - 0.5;
-//	float Y = d_y - 0.5;
-//
-//	float PARTICLE_DIAMETERS = diffraction_diameter;
-//	float PARTICLE_MAX_INTENSITIES = light_ray_data.ray_radiance*cos_4_alpha;
-//	//% Square root of 8; just calculate this once
-//	float sqrt8 = sqrtf(8.0);
-//
-//	//% Define render fraction
-//	//% This is a multiple of the particle
-//	//% diameter that specifies how far away from the
-//	//% particle center to render.
-//	float render_fraction = 1.0; //0.75;
-//
-//	//% Determine the miniumum and maximum columns (leftmost and rightmost pixels) in the image
-//	//% to which each particle contributes some intensity,
-//	//% fractional values
-//	int minRenderedCols = floor(X - render_fraction * PARTICLE_DIAMETERS);
-//	int maxRenderedCols =  ceil(X + render_fraction * PARTICLE_DIAMETERS);
-//
-//	//% Determine the minimum and maximum rows (topmost and bottommost pixels) in
-//	//% the image to which each particle contributes some intensity,
-//	//% fractional values
-//	int minRenderedRows = floor(Y - render_fraction * PARTICLE_DIAMETERS);
-//	int maxRenderedRows =  ceil(Y + render_fraction * PARTICLE_DIAMETERS);
-//	int row, col;
-//	int image_index;
-//	float pixel_increment;
-//	//% Loop over all the pixels to which the particle contributes intensity
-//	for(col = minRenderedCols; col <=maxRenderedCols; col++)
-//	    for(row = minRenderedRows; row <= maxRenderedRows; row++)
-//	    {
-//	        //% Radius from the particle center
-//	        float render_radius = sqrt((col - X)*(col - X) + (row - Y)*(row - Y));
-//
-//	        //% Boolean for whether to render the particle
-//	        bool render_pixel = col >= 1 && col <= camera_design.x_pixel_number
-//	        		&& row >= 1 && row <= camera_design.y_pixel_number
-//	            && render_radius < render_fraction * PARTICLE_DIAMETERS;
-//
-//	        //% Render the pixel if it meets the criteria
-//	        if(render_pixel)
-//	        {
-//		        // this is the index of the image array corresponding to the pixel
-//				// where the intensity will be incremented
-////				image_index = row + camera_design.y_pixel_number * col; //(ii_indices[k]-1)*x_pixel_number + jj_indices[k]-1;
-//				image_index = (row-1)*camera_design.x_pixel_number + (col-1); //(ii_indices[k]-1)*x_pixel_number + jj_indices[k]-1;
-//
-//				// this is the amount by which the pixel's intensity will be updated
-//				pixel_increment = PARTICLE_MAX_INTENSITIES * (PARTICLE_DIAMETERS)* (PARTICLE_DIAMETERS) * pi / 32.0 *
-//	                   (erf( sqrt8 *  (col - X - 0.5)/ PARTICLE_DIAMETERS ) -
-//	                		   erf(sqrt8 *(col - X + 0.5) / PARTICLE_DIAMETERS)) *
-//	                   (erf( sqrt8 *  (row - Y - 0.5)/ PARTICLE_DIAMETERS) -
-//	                		   erf(sqrt8 * (row - Y + 0.5) / PARTICLE_DIAMETERS));
-//				// this performs the addition but in a way that avoids a race condition where
-//				// multiple threads try to write to the same memory location
-//				atomicAdd(&image_array[image_index],pixel_increment);
-//	        }
-//
-//	    }
-//
-//	return light_ray_data;
-//}
-
 __device__ light_ray_data_t intersect_sensor_02(light_ray_data_t light_ray_data,camera_design_t camera_design,
 		int lightray_number_per_particle, int num_rays, bool add_pos_noise, float noise_std,
 		curandState* states, int ray_id, float diffraction_diameter, float* image_array)
@@ -1462,6 +1308,9 @@ __device__ light_ray_data_t intersect_sensor_02(light_ray_data_t light_ray_data,
 	//# % This calculates the intersection points
 	float3 pos_intersect = ray_source_coordinates + ray_propagation_direction * intersection_time;
 
+//	printf("ray_coordinates: %.2f, %.2f, %.2f\n", ray_source_coordinates.x, ray_source_coordinates.y, ray_source_coordinates.z);
+//	printf("z_sensor: %.2f\n", camera_design.z_sensor);
+//	printf("intersection_time: %.2f\n", intersection_time);
 //	printf("pos_intersect: %.2f, %.2f, %.2f\n", pos_intersect.x, pos_intersect.y, pos_intersect.z);
 	// add noise to the final light ray position
 	float2 noise;
@@ -1513,8 +1362,8 @@ __device__ light_ray_data_t intersect_sensor_02(light_ray_data_t light_ray_data,
 
 	//# % This calculates the cos^4(alpha) term which controls the contribution
 	//# % of the incident light rays onto the measured energy in the sensor
-	double cos_4_alpha = cos(alpha)*cos(alpha)*cos(alpha)*cos(alpha);
-
+//	double cos_4_alpha = cos(alpha)*cos(alpha)*cos(alpha)*cos(alpha);
+	double cos_4_alpha = 1;
 	// ------------------------------------------------------------------------------
 	// Update pixel intensities based on a diffraction model (Taken from Matt's code)
 	// ------------------------------------------------------------------------------
@@ -1523,7 +1372,7 @@ __device__ light_ray_data_t intersect_sensor_02(light_ray_data_t light_ray_data,
 //	printf("pixel location of centroid: %.2f, %.2f\n", X, Y);
 
 	float PARTICLE_DIAMETERS = diffraction_diameter;
-	float PARTICLE_MAX_INTENSITIES = light_ray_data.ray_radiance*cos_4_alpha;
+	float PARTICLE_MAX_INTENSITIES = light_ray_data.ray_radiance*cos_4_alpha * 8.0/pi;
 	//% Square root of 8; just calculate this once
 	float sqrt8 = sqrtf(8.0);
 
@@ -1531,7 +1380,7 @@ __device__ light_ray_data_t intersect_sensor_02(light_ray_data_t light_ray_data,
 	//% This is a multiple of the particle
 	//% diameter that specifies how far away from the
 	//% particle center to render.
-	float render_fraction = 1.0; //0.75;
+	float render_fraction = 0.75;
 
 	//% Determine the miniumum and maximum columns (leftmost and rightmost pixels) in the image
 	//% to which each particle contributes some intensity,
@@ -1790,7 +1639,7 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 		bool simulate_density_gradients, density_grad_params_t params, //density_grad_params_t* density_grad_params_p,
 		float3* final_pos, float3* final_dir, int num_lightrays_save, bool save_lightrays,
 		bool add_pos_noise, float noise_std, curandState* states, bool add_ngrad_noise, float ngrad_noise_std,
-		float3* intermediate_pos, float3* intermediate_dir, bool implement_diffraction)
+		float3* intermediate_pos, float3* intermediate_dir, int num_intermediate_rays_save, bool implement_diffraction, float ray_cone_pitch_ratio)
 
 {
 
@@ -1862,14 +1711,18 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 	// generate light rays
 	light_ray_data_t light_ray_data = generate_lightfield_angular_data(lens_pitch, image_distance,scattering_data,
 				scattering_type, lightfield_source_shared,lightray_number_per_particle,
-				beam_wavelength,aperture_f_number,rand_array_1[local_ray_id],rand_array_2[local_ray_id]);
+				beam_wavelength,aperture_f_number,rand_array_1[local_ray_id],rand_array_2[local_ray_id], ray_cone_pitch_ratio);
+	float3 temp_pos;
+	float3 temp_dir;
 
-//	if(global_ray_id < num_lightrays_save && save_lightrays)
-//	{
+	if(global_ray_id < num_lightrays_save && save_lightrays)
+	{
 //		final_dir[global_ray_id] = light_ray_data.ray_propagation_direction;
 //		final_pos[global_ray_id] = light_ray_data.ray_source_coordinates;
 //		return;
-//	}
+		temp_pos = light_ray_data.ray_source_coordinates;
+		temp_dir = light_ray_data.ray_propagation_direction;
+	}
 
 	// trace the light ray through a medium containing density gradients
 	if(simulate_density_gradients)
@@ -1893,6 +1746,13 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 //		return;
 	}
 
+	if(global_ray_id < num_intermediate_rays_save && save_lightrays)
+	{
+		intermediate_pos[global_ray_id] = temp_pos;
+		intermediate_dir[global_ray_id] = temp_dir;
+//		final_pos[global_ray_id] = light_ray_data.ray_source_coordinates;
+//		return;
+	}
 
 	// trace rays through the optical train
 	light_ray_data = propagate_rays_through_optical_system(element_data, element_center,
@@ -1924,7 +1784,7 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 		if(global_ray_id < num_lightrays_save && save_lightrays)
 		{
 			final_pos[global_ray_id] = light_ray_data.ray_source_coordinates;
-	//		final_dir[global_ray_id] = light_ray_data.ray_propagation_direction;
+//			final_dir[global_ray_id] = light_ray_data.ray_propagation_direction;
 		}
 	}
 	else
@@ -2328,13 +2188,15 @@ void read_from_file()
 	float pos_noise_std = 0.0;
 	bool add_ngrad_noise = false;
 	float ngrad_noise_std = 0.0;
-
+	float ray_cone_pitch_ratio = 1e-4;
+	bool save_lightrays = true;
 	// call the ray tracing function
 	start_ray_tracing(lens_pitch, image_distance,&scattering_data, scattering_type_str,&lightfield_source,
 			lightray_number_per_particle,beam_wavelength,aperture_f_number,
 			num_elements, element_center_p,element_data,element_plane_parameters_p,element_system_index,&camera_design,image_array,
-			simulate_density_gradients, density_grad_filename, lightray_position_save_path, lightray_direction_save_path, num_lightrays_save,
-			ray_tracing_algorithm, add_pos_noise, pos_noise_std, add_ngrad_noise, ngrad_noise_std);
+			simulate_density_gradients, density_grad_filename, save_lightrays, lightray_position_save_path, lightray_direction_save_path, num_lightrays_save,
+			ray_tracing_algorithm, add_pos_noise, pos_noise_std, add_ngrad_noise, ngrad_noise_std,
+			ray_cone_pitch_ratio);
 
 }
 
@@ -2848,9 +2710,10 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 				double (*element_plane_parameters)[4], int *element_system_index,
 				camera_design_t* camera_design_p, float* image_array,
 				bool simulate_density_gradients, char* density_grad_filename,
-				char* lightray_position_save_path, char* lightray_direction_save_path,
+				bool save_lightrays, char* lightray_position_save_path, char* lightray_direction_save_path,
 				int num_lightrays_save, int ray_tracing_algorithm,
-				bool add_pos_noise, float pos_noise_std, bool add_ngrad_noise, float ngrad_noise_std)
+				bool add_pos_noise, float pos_noise_std, bool add_ngrad_noise, float ngrad_noise_std,
+				float ray_cone_pitch_ratio)
 {
 	/*
 	 * This function receives the ray tracing parameters from the python code, allocates
@@ -3013,7 +2876,7 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	//--------------------------------------------------------------------------------------
 	// allocate space on GPU for intermediate light ray positions
 	//--------------------------------------------------------------------------------------
-	int num_intermediate_save = 1000;
+	int num_intermediate_save = 1000; //num_lightrays_save;
 	float3* d_intermediate_pos = 0;
 	cudaMalloc((void **)&d_intermediate_pos, sizeof(float3)*num_intermediate_save);
 
@@ -3159,6 +3022,10 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	// of the GPU memory, and threads-blocks-grids specifications
 	int source_point_number = lightfield_source.source_point_number;
 
+	if(num_particles < source_point_number)
+		source_point_number = num_particles;
+
+
 	// number of the light rays to be generated and traced in a single call
 	int num_rays = source_point_number*lightray_number_per_particle;
 //	// print the number of rays
@@ -3291,11 +3158,8 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 //	// close the file
 //	file_image_array.close();
 
-	bool save_lightrays = false;
-
 	for(k = 0; k < KMAX; k++)
 	{
-		save_lightrays = false;
 		// display progress to the user
 		printf("%d out of %d\n",k+1, KMAX);
 
@@ -3303,7 +3167,7 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 		// that will be simulated in this call
 		n_min = k*source_point_number;
 
-		if(k == 0)
+		if(k == 0 && save_lightrays)
 		{
 			printf("number of light rays to be saved: %d\n", num_lightrays_save);
 			// allocate memory to store final light ray positions and directions
@@ -3321,13 +3185,13 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 			d_element_system_index,num_elements,
 			d_camera_design, d_image_array,simulate_density_gradients, params,
 			d_final_pos, d_final_dir, num_lightrays_save, save_lightrays, add_pos_noise, pos_noise_std,
-			states, add_ngrad_noise, ngrad_noise_std, d_intermediate_pos, d_intermediate_dir,
-			implement_diffraction);
+			states, add_ngrad_noise, ngrad_noise_std, d_intermediate_pos, d_intermediate_dir, num_intermediate_save,
+			implement_diffraction, ray_cone_pitch_ratio);
 
 		cudaDeviceSynchronize();
 		printf("done.\n");
 
-		if(1) //k == 0)
+		if(save_lightrays) //k == 0)
 		{
 			printf("arc length: %f\n", params.arc_length);
 			//--------------------------------------------------------------------------------------
