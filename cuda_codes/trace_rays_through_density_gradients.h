@@ -723,7 +723,8 @@ __device__ void increment_arc_length(density_grad_params_t* paramsp, int thread_
 __device__ light_ray_data_t euler(light_ray_data_t light_ray_data,
 		density_grad_params_t params, float3 lookup_scale, int thread_id,
 		bool add_ngrad_noise, float ngrad_noise_std, curandState* states,
-		float3* intermediate_pos, float3* intermediate_dir)
+		float3* intermediate_pos, float3* intermediate_dir,
+		bool save_intermediate_ray_data, int num_intermediate_positions_save)
 {
 	/************ Update ray position using EULER method *********/
 
@@ -755,18 +756,19 @@ __device__ light_ray_data_t euler(light_ray_data_t light_ray_data,
 
 			pos = light_ray_data.ray_source_coordinates;
 			dir = light_ray_data.ray_propagation_direction;
-//			if(loop_ctr < 1000)
-//			{
-//				intermediate_pos[loop_ctr] = pos; //make_float3(val.x, lookup.z, pos.z); //pos;
-//				intermediate_dir[loop_ctr] = dir;
-//			}
+
+			if(save_intermediate_ray_data && loop_ctr < num_intermediate_positions_save)
+			{
+				intermediate_pos[loop_ctr] = pos; //make_float3(val.x, lookup.z, pos.z); //pos;
+				intermediate_dir[loop_ctr] = dir;
+			}
 
 			lookup = calculate_lookup_index(pos, params, lookup_scale);
 
 			// check if ray is inside volume
 			if(!ray_inside_box(pos, params, lookup) && loop_ctr!=0)
 			{
-//				if(loop_ctr < 1000)
+//				if(save_intermediate_ray_data && loop_ctr < num_intermediate_positions_save)
 //				{
 //					intermediate_pos[loop_ctr] = lookup; //make_float3(val.x, val.y, pos.z); //pos;
 //					intermediate_dir[loop_ctr] = dir;
@@ -953,7 +955,8 @@ __device__ light_ray_data_t euler(light_ray_data_t light_ray_data,
 
 
 __device__ light_ray_data_t rk4(light_ray_data_t light_ray_data, density_grad_params_t params, float3 lookup_scale,
-		int thread_id, float3* intermediate_pos, float3* intermediate_dir)
+		int thread_id, float3* intermediate_pos, float3* intermediate_dir,
+		bool save_intermediate_ray_data, int num_intermediate_positions_save)
 {
 	/************ Update ray position using RK4 method *********/
 	/*
@@ -996,11 +999,11 @@ __device__ light_ray_data_t rk4(light_ray_data_t light_ray_data, density_grad_pa
 			if(loop_ctr > loop_ctr_max)
 				break;
 
-//			if(loop_ctr < 1000)
-//			{
-//				intermediate_pos[loop_ctr] = light_ray_data.ray_source_coordinates;
-//				intermediate_dir[loop_ctr] = light_ray_data.ray_propagation_direction;
-//			}
+			if(save_intermediate_ray_data && loop_ctr < num_intermediate_positions_save)
+			{
+				intermediate_pos[loop_ctr] = light_ray_data.ray_source_coordinates;
+				intermediate_dir[loop_ctr] = light_ray_data.ray_propagation_direction;
+			}
 
 			pos = light_ray_data.ray_source_coordinates;
 			dir = light_ray_data.ray_propagation_direction;
@@ -1427,7 +1430,7 @@ __device__ light_ray_data_t adams_bashforth(light_ray_data_t light_ray_data, den
 }
 __device__ light_ray_data_t trace_rays_through_density_gradients(light_ray_data_t light_ray_data,
 		density_grad_params_t params, int thread_id, bool add_ngrad_noise, float ngrad_noise_std, curandState* states,
-		float3* intermediate_pos, float3* intermediate_dir)
+		float3* intermediate_pos, float3* intermediate_dir, bool save_intermediate_ray_data, int num_intermediate_positions_save)
 {
 
 	// this is the corner of the volume containing the minimum coordinates
@@ -1487,11 +1490,13 @@ __device__ light_ray_data_t trace_rays_through_density_gradients(light_ray_data_
  	{
  		case 1:
  			/************ Update ray position using EULER method *********/
- 			light_ray_data = euler(light_ray_data, params, lookup_scale, thread_id, add_ngrad_noise, ngrad_noise_std, states, intermediate_pos, intermediate_dir);
+ 			light_ray_data = euler(light_ray_data, params, lookup_scale, thread_id, add_ngrad_noise, ngrad_noise_std,
+ 					states, intermediate_pos, intermediate_dir, save_intermediate_ray_data, num_intermediate_positions_save);
  			break;
  		case 2:
  		 	/************ Update ray position using RK4 method *********/
- 			light_ray_data = rk4(light_ray_data, params, lookup_scale, thread_id, intermediate_pos, intermediate_dir);
+ 			light_ray_data = rk4(light_ray_data, params, lookup_scale, thread_id, intermediate_pos, intermediate_dir,
+ 					save_intermediate_ray_data, num_intermediate_positions_save);
  			break;
  		case 3:
  			/************ Update ray position using RK45 method *********/
