@@ -1137,7 +1137,7 @@ __device__ light_ray_data_t propagate_rays_through_multiple_elements(element_dat
 		//	# % This extracts the light ray radiance
 		//	ray_radiance[light_ray_indices] = light_ray_data_temp['ray_radiance']
 
-		free(pos_c_current);
+		delete [] pos_c_current;
 	}
 	// free pointers
 	free(unique_plane_intersection_time);
@@ -1362,8 +1362,8 @@ __device__ light_ray_data_t intersect_sensor_02(light_ray_data_t light_ray_data,
 
 	//# % This calculates the cos^4(alpha) term which controls the contribution
 	//# % of the incident light rays onto the measured energy in the sensor
-//	double cos_4_alpha = cos(alpha)*cos(alpha)*cos(alpha)*cos(alpha);
-	double cos_4_alpha = 1;
+	double cos_4_alpha = cos(alpha)*cos(alpha)*cos(alpha)*cos(alpha);
+//	double cos_4_alpha = 1;
 	// ------------------------------------------------------------------------------
 	// Update pixel intensities based on a diffraction model (Taken from Matt's code)
 	// ------------------------------------------------------------------------------
@@ -2658,7 +2658,11 @@ void check_density_gradients(density_grad_params_t params)
 
     // free allocated memory
     cudaFree(d_light_ray_data);
-    free(light_ray_data);
+    delete [] light_ray_data;
+    delete [] pos_i;
+    delete [] pos_f;
+    delete [] dir_i;
+    delete [] dir_f;
 
 }
 
@@ -2941,6 +2945,11 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	// copy image array contents from the previous iteration to the gpu
 	cudaMemcpy(d_image_array,image_array,sizeof(float)*num_pixels,cudaMemcpyHostToDevice);
 
+	// flag to implement diffraction
+	bool implement_diffraction = camera_design_p->implement_diffraction;
+	if(implement_diffraction)
+		printf("implementing diffraction diameter of %.2f pix.\n", camera_design_p->diffraction_diameter);
+
 	//--------------------------------------------------------------------------------------
 	// setup density gradient data
 	//--------------------------------------------------------------------------------------
@@ -2984,12 +2993,6 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 		// setup the array containing the density gradient data separately as a texture
 		Host_Init(&params,d_params_p);
 	}
-
-	// flag to implement diffraction
-	bool implement_diffraction = camera_design_p->implement_diffraction;
-	if(implement_diffraction)
-		printf("implementing diffraction diameter of %.2f pix.", camera_design_p->diffraction_diameter);
-
 
 	//--------------------------------------------------------------------------------------
 	// setup blocks and threads for ray tracing on the GPU
@@ -3361,19 +3364,22 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	cudaFree(d_camera_design);
 	cudaFree(d_image_array);
 
-	printf("freeing memory allocated for initializing noise\n");
 	if(add_pos_noise || add_ngrad_noise)
+	{
+		printf("freeing memory allocated for initializing noise\n");
 		cudaFree(states);
-
+	}
 
 	if(simulate_density_gradients)
 	{
+		printf("freeing memory allocated for density gradient data\n");
+		delete [] params.data;
+		checkCudaErrors(cudaFree(d_params_p));
+
 		if(params.interpolation_scheme == 1)
 		{
-			printf("freeing memory allocated for density gradient data\n");
 			checkCudaErrors(cudaFreeArray(data_array));
 			checkCudaErrors(cudaUnbindTexture(tex_data));
-			checkCudaErrors(cudaFree(d_params_p));
 		}
 
 		else

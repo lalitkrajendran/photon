@@ -55,7 +55,7 @@
 #include <stdint.h>
 #include <cuda_runtime.h>
 #include <cuda.h>
-
+#include <vector_types.h>
 #include "float3_operators.h"
 #include "parallel_ray_tracing.h"
 #include "helper_cuda.h"
@@ -1908,6 +1908,7 @@ density_grad_params_t readDatafromFile(char* filename, float z_offset)
 
     // data structure that will contain the density and grid information from the file
     DataFile* dataFiles[200];
+//    DataFile* dataFile;
 
     // add the current filename to the list
     files.push_back(string(filename));
@@ -1916,29 +1917,32 @@ density_grad_params_t readDatafromFile(char* filename, float z_offset)
     for(int file = 0; file < files.size(); file++)
     {
         dataFiles[file] = new DataFile();
-        dataFiles[file]->filename = new char[512];
+        dataFiles[file]->filename = new char[1024];
     }
 
+    // elements to control the max and min to be read ( not sure what these statements do)
+    int data_min = 0;
+    int data_max = 1024;
+
     char** input_files;
+
     input_files = new char*[files.size()];
 
     // these are the minimum and maximum number of data points to read from the file
     // (not sure what these are for)
-	int data_min = 0;
-	int data_max = 1024;
 
     for( int i = 0; i < 1; i++)
     {
         cout << "file: " << files[i] << endl;
-        input_files[i] = new char[files[i].length()];
+        // allocate extra space for null character
+        input_files[i] = new char[files[i].length()+10];
         strcpy(input_files[i], files[i].c_str());
         strcpy(dataFiles[i]->filename, input_files[i]);
         printf("copied filename");
         loadNRRD(dataFiles[i],data_min,data_max, z_offset);
+        delete [] input_files[i];
     }
-
-    // this is the address to the location where the density data are stored
-    float* data = dataFiles[0]->data;
+    delete [] input_files;
 
     // get minimum and maximum coordinates along all three axes
     _params.min_bound = make_float3(dataFiles[0]->xmin, dataFiles[0]->ymin, dataFiles[0]->zmin);
@@ -1959,7 +1963,7 @@ density_grad_params_t readDatafromFile(char* filename, float z_offset)
 
     cout << "setting up renderer\n";
 
-    _params = setData(data, _params);
+    _params = setData(dataFiles[0]->data, _params);
 
     // set step size to be minimum of the three grid spacings
     float step_size = fmin(dataFiles[0]->del_x,dataFiles[0]->del_y);
@@ -1976,6 +1980,8 @@ density_grad_params_t readDatafromFile(char* filename, float z_offset)
     // set the step size as the min for now
     _params.step_size = _params.min_step_size;
 
+	// delete old array
+	delete[] dataFiles[0]->data;
     return _params;
 
 }
