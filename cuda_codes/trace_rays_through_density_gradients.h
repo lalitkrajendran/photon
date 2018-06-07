@@ -1820,11 +1820,11 @@ density_grad_params_t setData(float* data, density_grad_params_t _params)
 	float3 sample1, sample2, normal, lookup;
 	int loop_ctr = 0;
 	// loop over all the grid points and compute the refractive index gradient
-	for(size_t z = 0; z < data_depth; z++)
+	for(size_t z = 1; z < data_depth; z++)
 	{
-		for(size_t y = 0; y < data_height; y++)
+		for(size_t y = 1; y < data_height; y++)
 		{
-		  for(size_t x = 0; x < data_width; x++)
+		  for(size_t x = 1; x < data_width; x++)
 		  {
 			size_t DELTA = 1;
 			lookup = make_float3(x,y,z);
@@ -1859,7 +1859,6 @@ density_grad_params_t setData(float* data, density_grad_params_t _params)
 			sample2.z = data[size_t(lookup.z*data_width*data_height + lookup.y*data_width + lookup.x)];
 
 			// calculate the refractive index gradient
-
 			normal.x = (sample2.x - sample1.x)/(2*grid_x);
 			normal.y = (sample2.y - sample1.y)/(2*grid_y);
 			normal.z = (sample2.z - sample1.z)/(2*grid_z);
@@ -1917,7 +1916,7 @@ density_grad_params_t readDatafromFile(char* filename, float z_offset)
     for(int file = 0; file < files.size(); file++)
     {
         dataFiles[file] = new DataFile();
-        dataFiles[file]->filename = new char[256];
+        dataFiles[file]->filename = new char[512];
     }
 
     char** input_files;

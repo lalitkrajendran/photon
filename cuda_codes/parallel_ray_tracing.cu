@@ -101,7 +101,7 @@ __device__ light_ray_data_t generate_lightfield_angular_data(float lens_pitch, f
 	float z_current = lightfield_source.z;
 //	printf("x_current: %.2f, y_current: %.2f\n", x_current, y_current);
 //	float x_current = 0.0;
-//	float y_current = 0.0;
+//	float y_current = 15e3;
 //	float x_current = 25.0e3; //0.0;
 //	float y_current = 25.0e3;
 
@@ -1336,7 +1336,7 @@ __device__ light_ray_data_t intersect_sensor_02(light_ray_data_t light_ray_data,
 
 	//# % This is the number of pixel diameters the point (x,y) is from the center
 	//# % of the (0,0) pixel
-	float d_x = (ray_source_coordinates.x - pixel_1_x) / camera_design.pixel_pitch; // + 1.5;
+	float d_x = camera_design.x_pixel_number - 1 - (ray_source_coordinates.x - pixel_1_x) / camera_design.pixel_pitch; // + 1.5;
 	float d_y = (ray_source_coordinates.y - pixel_1_y) / camera_design.pixel_pitch; // + 1.5;
 //	printf("pixel location of light ray: %.2f, %.2f\n", d_x, d_y);
 	//# % This checks if the given light ray actually intersects the sensor
@@ -3105,6 +3105,18 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	// pointer to store intermediate direction of light rays on CPU
 	float3* intermediate_dir = 0;
 
+//	if(num_rays < num_lightrays_save)
+//	{
+//		printf("number of rays to be saved is larger than number to be traced. Reducing value");
+//		num_lightrays_save = num_rays;
+//	}
+//
+//	if(num_rays < num_intermediate_positions_save)
+//	{
+//		printf("number of intermediate positions to be saved is larger than number to be traced. Reducing value");
+//		num_intermediate_positions_save = num_rays;
+//	}
+
 	if(save_lightrays)
 	{
 		printf("number of light rays to be saved: %d\n", num_lightrays_save);
@@ -3274,11 +3286,10 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 
 		}
 
-//		break;
 	}
 
 	// copy image data to CPU
-	cudaMemcpy(image_array,d_image_array,sizeof(float)*camera_design_p->x_pixel_number*camera_design_p->y_pixel_number,cudaMemcpyDeviceToHost);
+	cudaMemcpy(image_array,d_image_array,sizeof(float)*num_pixels,cudaMemcpyDeviceToHost);
 	cudaDeviceSynchronize();
 	// end timer
 	end = clock();
@@ -3295,6 +3306,7 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 
 	if(save_lightrays)
 	{
+		printf("freeing memory allocated for saving final light ray data\n");
 		// free arrays
 		free(final_pos);
 		cudaFree(d_final_pos);
@@ -3306,6 +3318,7 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 
 	if(save_intermediate_ray_data)
 	{
+		printf("freeing memory allocated for saving intermediate light ray data\n");
 		// free arrays
 		free(intermediate_pos);
 		cudaFree(d_intermediate_pos);
@@ -3316,16 +3329,22 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	}
 
 	// free allocated memory on the CPU
+	printf("freeing memory allocated for storing random numbers\n");
 	free(h_rand1);
 	free(h_rand2);
-
-	free(element_center_2);
-	free(element_plane_parameters_2);
-
 	// free allocated memory on the GPU
 	cudaFree(d_rand1);
 	cudaFree(d_rand2);
 
+	printf("freeing memory allocated for storing element data\n");
+	free(element_center_2);
+	free(element_plane_parameters_2);
+	cudaFree(d_element_center);
+	cudaFree(d_element_plane_parameters);
+	cudaFree(d_element_system_index);
+	cudaFree(d_element_data);
+
+	printf("freeing memory allocated for lightfield source data\n");
 	cudaFree(d_source_x);
 	cudaFree(d_source_y);
 	cudaFree(d_source_z);
@@ -3338,14 +3357,11 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 		cudaFree(d_scattering_irradiance);
 	}
 
-	cudaFree(d_element_center);
-	cudaFree(d_element_plane_parameters);
-	cudaFree(d_element_system_index);
-	cudaFree(d_element_data);
-
+	printf("freeing memory allocated for camera and image\n");
 	cudaFree(d_camera_design);
 	cudaFree(d_image_array);
 
+	printf("freeing memory allocated for initializing noise\n");
 	if(add_pos_noise || add_ngrad_noise)
 		cudaFree(states);
 
@@ -3354,6 +3370,7 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	{
 		if(params.interpolation_scheme == 1)
 		{
+			printf("freeing memory allocated for density gradient data\n");
 			checkCudaErrors(cudaFreeArray(data_array));
 			checkCudaErrors(cudaUnbindTexture(tex_data));
 			checkCudaErrors(cudaFree(d_params_p));

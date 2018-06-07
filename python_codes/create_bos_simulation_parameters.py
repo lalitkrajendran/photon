@@ -23,7 +23,6 @@ def create_bos_simulation_parameters():
     # % lens front principal plane and the center of the focal plane) to the
     # % design structure (in microns)
     piv_simulation_parameters['lens_design']['object_distance'] = 700e3
-
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # % Camera Design Parameters                                                %
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

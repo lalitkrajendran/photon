@@ -52,8 +52,8 @@ script, filepath, starting_index, number_of_parameter_files = argv
 # convert string variables to integers
 starting_index = int(starting_index)
 number_of_parameter_files = int(number_of_parameter_files)
-
-# filepath = '/home/shannon/c/aether/Projects/BOS/error-analysis/analysis/data/parameters/all/'
+print 'number of parameter files to run in one simulation', number_of_parameter_files
+# filepath = '/home/shannon/c/aether/Projects/BOS/error-analysis/analysis/data/parameters/ngradnoise/'
 # starting_index = 1
 # number_of_parameter_files = 1
 
@@ -105,19 +105,28 @@ for i in range(starting_index,starting_index+number_of_parameter_files):
         if(type(piv_simulation_parameters[key]) == sio.matlab.mio5_params.mat_struct):
              piv_simulation_parameters[key] = _todict(piv_simulation_parameters[key])
 
-    bos_pattern_image_top_directory = piv_simulation_parameters['output_data']['bos_pattern_image_directory']
+    if piv_simulation_parameters['bos_pattern']['generate_bos_pattern_images']:
+        bos_pattern_image_top_directory = piv_simulation_parameters['output_data']['bos_pattern_image_directory']
 
-    # This creates the top level bos pattern image directory
-    if not (os.path.exists(bos_pattern_image_top_directory)):
-        # This creates the bos pattern image directory
-        os.makedirs(bos_pattern_image_top_directory)
+        # This creates the top level bos pattern image directory
+        if not (os.path.exists(bos_pattern_image_top_directory)):
+            # This creates the bos pattern image directory
+            os.makedirs(bos_pattern_image_top_directory)
 
-    # create the directories to save final light ray positions and directions
-    if not (os.path.exists(bos_pattern_image_top_directory + 'light-ray-positions/')):
-        os.makedirs(bos_pattern_image_top_directory + 'light-ray-positions/')
+        # create the directories to save final light ray positions and directions
+        if not (os.path.exists(bos_pattern_image_top_directory + 'light-ray-positions/')):
+            os.makedirs(bos_pattern_image_top_directory + 'light-ray-positions/')
 
-    if not (os.path.exists(bos_pattern_image_top_directory + 'light-ray-directions/')):
-        os.makedirs(bos_pattern_image_top_directory + 'light-ray-directions/')
+        if not (os.path.exists(bos_pattern_image_top_directory + 'light-ray-directions/')):
+            os.makedirs(bos_pattern_image_top_directory + 'light-ray-directions/')
+
+    if piv_simulation_parameters['calibration_grid']['generate_calibration_grid_images']:
+        calibration_grid_top_directory = piv_simulation_parameters['output_data']['calibration_grid_image_directory']
+
+        # This creates the top level directory
+        if not (os.path.exists(calibration_grid_top_directory)):
+            # This creates the bos pattern image directory
+            os.makedirs(calibration_grid_top_directory)
 
     # convert int variables to float
     for i in piv_simulation_parameters:
