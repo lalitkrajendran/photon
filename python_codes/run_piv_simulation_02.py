@@ -1201,8 +1201,8 @@ def generate_bos_lightfield_data(piv_simulation_parameters,optical_system):
     # np.random.seed(2445)
     np.random.seed()
     # random_numbers = np.random.rand(x_grid_point_number, y_grid_point_number, 2)
-    random_numbers = np.random.rand(1,x_grid_point_number*y_grid_point_number*2)
-    random_numbers = np.reshape(random_numbers, (x_grid_point_number, y_grid_point_number, 2))
+    random_numbers = np.random.rand(1,int(x_grid_point_number)*int(y_grid_point_number)*2)
+    random_numbers = np.reshape(random_numbers, (int(x_grid_point_number), int(y_grid_point_number), 2))
     
     x_grid_point_coordinate_vector = X_Min + (X_Max - X_Min) * random_numbers[:,:,0]
     # x_grid_point_coordinate_vector = X_Min + (X_Max - X_Min) * np.random.rand(x_grid_point_number, y_grid_point_number)
@@ -1631,6 +1631,27 @@ def run_piv_simulation_02(piv_simulation_parameters):
             # convert none to NAN just for MATLAB
             scattering_data = np.NAN
 
+            if piv_simulation_parameters['output_data']['save_lightrays']:
+                piv_simulation_parameters['output_data']['lightray_positions_filepath'] = calibration_grid_image_directory + 'light-ray-positions/plane%02d/' % (plane_index)
+                # if the write directory does not exist, create it
+                if (not (os.path.exists(piv_simulation_parameters['output_data']['lightray_positions_filepath']))):
+                    os.makedirs(piv_simulation_parameters['output_data']['lightray_positions_filepath'])
+                # if it exists, then delete the old parameter files
+                else:
+                    files = glob.glob(piv_simulation_parameters['output_data']['lightray_positions_filepath'] + '*.bin')
+                    for f in files:
+                        os.remove(f)
+
+                piv_simulation_parameters['output_data']['lightray_directions_filepath'] = calibration_grid_image_directory + 'light-ray-directions/plane%02d/' % (plane_index)
+                # if the write directory does not exist, create it
+                if (not (os.path.exists(piv_simulation_parameters['output_data']['lightray_directions_filepath']))):
+                    os.makedirs(piv_simulation_parameters['output_data']['lightray_directions_filepath'])
+                # if it exists, then delete the old parameter files
+                else:
+                    files = glob.glob(piv_simulation_parameters['output_data']['lightray_directions_filepath'] + '*.bin')
+                    for f in files:
+                        os.remove(f)
+
             # % This performs the ray tracing to generate the sensor image
             I, I_raw = perform_ray_tracing_03(piv_simulation_parameters,optical_system,pixel_gain,scattering_data,scattering_type,lightfield_source,field_type)
 
@@ -1714,14 +1735,14 @@ def run_piv_simulation_02(piv_simulation_parameters):
         # % This creates random radial coordinates for the lightrays to intersect
         # % on the lens
         np.random.seed(1105)
-        r_temp = np.random.rand(1, lightray_number_per_particle).astype('float32')
+        r_temp = np.random.rand(1, int(lightray_number_per_particle)).astype('float32')
         r_temp.tofile(cuda_codes_filepath + '/data/random1.bin')
         # print 'first ten numbers for r_temp', r_temp[0, 0:10]
 
         # % This creates random angular coordinates for the lightrays to
         # % intersect on the lens
         # np.random.seed(4092)
-        psi_temp = np.random.rand(1, lightray_number_per_particle).astype('float32')
+        psi_temp = np.random.rand(1, int(lightray_number_per_particle)).astype('float32')
         psi_temp.tofile(cuda_codes_filepath + '/data/random2.bin')
         # print 'first ten numbers for psi_temp', psi_temp[0, 0:10]
         ################################################################################################################
