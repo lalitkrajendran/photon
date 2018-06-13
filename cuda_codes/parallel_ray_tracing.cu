@@ -3108,21 +3108,10 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	// pointer to store intermediate direction of light rays on CPU
 	float3* intermediate_dir = 0;
 
-//	if(num_rays < num_lightrays_save)
-//	{
-//		printf("number of rays to be saved is larger than number to be traced. Reducing value");
-//		num_lightrays_save = num_rays;
-//	}
-//
-//	if(num_rays < num_intermediate_positions_save)
-//	{
-//		printf("number of intermediate positions to be saved is larger than number to be traced. Reducing value");
-//		num_intermediate_positions_save = num_rays;
-//	}
-
 	if(save_lightrays)
 	{
 		printf("number of light rays to be saved: %d\n", num_lightrays_save);
+		// allocate memory
 		final_pos = (float3*) malloc(sizeof(float3)*num_lightrays_save);
 		final_dir = (float3*) malloc(sizeof(float3)*num_lightrays_save);
 		cudaMalloc((void **)&d_final_pos, sizeof(float3)*num_lightrays_save);
@@ -3132,6 +3121,7 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	if(save_intermediate_ray_data)
 	{
 		printf("number of intermediate positions to be saved: %d\n", num_intermediate_positions_save);
+		// allocate memory
 		intermediate_pos = (float3*) malloc(sizeof(float3)*num_intermediate_positions_save);
 		intermediate_dir = (float3*) malloc(sizeof(float3)*num_intermediate_positions_save);
 		cudaMalloc((void **)&d_intermediate_pos, sizeof(float3)*num_intermediate_positions_save);
@@ -3168,6 +3158,28 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 		// that will be simulated in this call
 		n_min = k*source_point_number;
 
+		if(save_lightrays)
+		{
+			// initialize all values to nan
+			for(light_ray_index = 0; light_ray_index < num_lightrays_save; light_ray_index++)
+			{
+				final_pos[light_ray_index] = make_float3(NAN, NAN, NAN);
+				final_dir[light_ray_index] = make_float3(NAN, NAN, NAN);
+			}
+			cudaMemcpy(d_final_pos, final_pos, sizeof(float3)*num_lightrays_save, cudaMemcpyHostToDevice);
+			cudaMemcpy(d_final_dir, final_dir, sizeof(float3)*num_lightrays_save, cudaMemcpyHostToDevice);
+		}
+		if(save_intermediate_ray_data)
+		{
+			// initialize all values to nan
+			for(light_ray_index = 0; light_ray_index < num_lightrays_save; light_ray_index++)
+			{
+				intermediate_pos[light_ray_index] = make_float3(NAN, NAN, NAN);
+				intermediate_dir[light_ray_index] = make_float3(NAN, NAN, NAN);
+			}
+			cudaMemcpy(d_intermediate_pos, intermediate_pos, sizeof(float3)*num_intermediate_positions_save, cudaMemcpyHostToDevice);
+			cudaMemcpy(d_intermediate_dir, intermediate_dir, sizeof(float3)*num_intermediate_positions_save, cudaMemcpyHostToDevice);
+		}
 		printf("beginning ray tracing .....");
 		parallel_ray_tracing<<<grid,block>>>(lens_pitch, image_distance,scattering_data,
 			scattering_type, lightfield_source,lightray_number_per_particle, n_min, n_max,
