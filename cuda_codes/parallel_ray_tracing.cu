@@ -3196,7 +3196,7 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 
 		if(save_lightrays) //k == 0)
 		{
-			printf("arc length: %f\n", params.arc_length);
+//			printf("arc length: %f\n", params.arc_length);
 			//--------------------------------------------------------------------------------------
 			// save final light ray positions to file (for debugging purposes)
 			//--------------------------------------------------------------------------------------
