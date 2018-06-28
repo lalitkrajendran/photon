@@ -1475,8 +1475,6 @@ __device__ light_ray_data_t trace_rays_through_density_gradients(light_ray_data_
 // 	light_ray_data.ray_source_coordinates = pos;
 // 	return light_ray_data;
 
-	float refractive_index = 1.000277;
-
 	// increment ray position by a small amount so it is inside the volume.
 //	pos = pos + dir * 1 * params.step_size/refractive_index;
 	pos.z = params.max_bound.z;

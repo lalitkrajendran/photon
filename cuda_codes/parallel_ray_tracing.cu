@@ -101,7 +101,7 @@ __device__ light_ray_data_t generate_lightfield_angular_data(float lens_pitch, f
 	float z_current = lightfield_source.z;
 //	printf("x_current: %.2f, y_current: %.2f\n", x_current, y_current);
 //	float x_current = 0.0;
-//	float y_current = 15e3;
+//	float y_current = 0.0;
 //	float x_current = 25.0e3; //0.0;
 //	float y_current = 25.0e3;
 
@@ -393,9 +393,101 @@ __device__ light_ray_data_t propagate_rays_through_single_element(element_data_t
 	double element_vertex_distance;
 	float a,b,c,d,norm_vector_magnitude, optical_axis_distance,ds;
 	float3 pos_c,pos_intersect;
+
+	//# % If the element type is 'thin lens', this extracts the optical properties
+	//# % required to perform the ray propagation
+	if (element_type == 't')
+	{
+		//# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+		//# % Extraction of the lens optical properties                           %
+		//# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+		//# % This extracts the pitch of the lens
+		element_pitch = optical_element.element_geometry.pitch;
+//		element_pitch *= 10;
+		//# % This is the thickness of the optical element from the front optical axis
+		//# % vertex to the back optical axis vertex
+		element_vertex_distance = optical_element.element_geometry.vertex_distance;
+
+		//# % This extracts the focal length
+		float element_focal_length = optical_element.element_properties.thin_lens_focal_length;
+
+		//# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+		//# % propagation of the light rays through the lens
+		//# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+		//# % This extracts the individual plane parameters
+		a = element_plane_parameters.x;
+		b = element_plane_parameters.y;
+		c = element_plane_parameters.z;
+		d = element_plane_parameters.w;
+
+		//# % This is the independent intersection time between the light rays and
+		//# % the first plane of the aperture stop
+		float intersection_time = -(dot(make_float3(a,b,c),ray_source_coordinates) + d)/
+				dot(make_float3(a,b,c),ray_propagation_direction);
+
+		//# % This calculates the intersection points
+		pos_intersect = ray_source_coordinates + ray_propagation_direction * intersection_time;
+
+		//# % This extracts the center point coordinates
+		pos_c = element_center;
+
+		//# % This calculates how far the intersection point is from the optical
+		//# % axis of the lens (for determining if the rays hit the lens outside of
+		//# % the pitch and thus would be destroyed)
+		optical_axis_distance = measure_distance_to_optical_axis(pos_intersect,element_center,element_plane_parameters);
+
+		//# % This checks if the given light ray actually intersects the lens
+		//# % (ie the rays that are within the lens pitch)
+		if(optical_axis_distance > element_pitch/2.0)
+		{
+
+			light_ray_data.ray_source_coordinates = make_float3(CUDART_NAN_F,CUDART_NAN_F,CUDART_NAN_F);
+			//# % This sets any of the light ray directions outside of the domain of
+			//# % the lens to NaN values
+			light_ray_data.ray_propagation_direction = make_float3(CUDART_NAN_F,CUDART_NAN_F,CUDART_NAN_F);
+
+			//# % This sets any of the light ray wavelengths outside of the  domain of
+			//# % the lens to NaN values
+			light_ray_data.ray_wavelength = CUDART_NAN_F;
+
+			//# % This sets any of the light ray radiances outside of the  domain of
+			//# % the lens to NaN values
+			light_ray_data.ray_radiance = CUDART_NAN;
+
+			//# % This sets the intersection points of any of the light rays outside of
+			//# % the domain of the lens to NaN values
+			pos_intersect = make_float3(CUDART_NAN_F,CUDART_NAN_F,CUDART_NAN_F);
+
+			return light_ray_data;
+		}
+
+//		// save current light ray position and exit (before refraction)
+//		light_ray_data.ray_source_coordinates = pos_intersect;
+//		light_ray_data.ray_propagation_direction = ray_propagation_direction;
+//		return light_ray_data;
+
+		//# % This sets the new light ray origin to the intersection point with the
+		//# % front surface of the lens
+		ray_source_coordinates = pos_intersect;
+
+		ray_propagation_direction = -(ray_source_coordinates-element_center)/element_focal_length + ray_propagation_direction;
+
+//		//# % This normalizes the ray propagation direction so that it's magnitude
+//		//# % equals one
+		ray_propagation_direction = normalize(ray_propagation_direction);
+
+//		// save current light ray position and exit (after refraction)
+//		light_ray_data.ray_source_coordinates = ray_source_coordinates;
+//		light_ray_data.ray_propagation_direction = ray_propagation_direction;
+//		return light_ray_data;
+
+	}
+
 	//# % If the element type is 'lens', this extracts the optical properties
 	//# % required to perform the ray propagation
-	if (element_type == 'l')
+	else if (element_type == 'l')
 	{
 		//# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 		//# % Extraction of the lens optical properties                           %
@@ -1766,6 +1858,7 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 //		final_pos[global_ray_id] = light_ray_data.ray_source_coordinates;
 //		return;
 //	}
+
 	// ignore rays that did not pass through the optical train
 	if(isnan(light_ray_data.ray_propagation_direction.x) || isnan(light_ray_data.ray_propagation_direction.y)
 				|| isnan(light_ray_data.ray_propagation_direction.z)
