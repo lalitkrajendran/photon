@@ -1107,6 +1107,81 @@ def generate_calibration_lightfield_data(piv_simulation_parameters,optical_syste
 
     return lightfield_source
 
+def create_non_overlapping_dot_coordinates(piv_simulation_parameters):
+    # This function creates random co-ordinates for the dot centroids on a dot pattern, ensuring no overlap
+    np.random.seed()
+
+    xmin = piv_simulation_parameters['bos_pattern']['X_Min']
+    xmax = piv_simulation_parameters['bos_pattern']['X_Max']
+    ymin = piv_simulation_parameters['bos_pattern']['Y_Min']
+    ymax = piv_simulation_parameters['bos_pattern']['Y_Max']
+
+    # number of dots required
+    num_dots = piv_simulation_parameters['bos_pattern']['x_grid_point_number'] \
+                        * piv_simulation_parameters['bos_pattern']['y_grid_point_number']
+
+    # max number of iterations
+    max_iter = 50e3
+
+    # geometric diameter (um)
+    d_g = piv_simulation_parameters['bos_pattern']['grid_point_diameter']
+    # diffraction diameter (pix.)
+    if piv_simulation_parameters['camera_design']['implement_diffraction']:
+        d_diff = piv_simulation_parameters['camera_design']['diffraction_diameter']
+    else:
+        d_diff = 0.0
+
+    # calculate magnification
+    M = piv_simulation_parameters['lens_design']['focal_length'] \
+        / (piv_simulation_parameters['lens_design']['object_distance'] - piv_simulation_parameters['lens_design']['focal_length'])
+
+    # convert diffraction diameter to microns
+    d_diff_microns = d_diff * piv_simulation_parameters['camera_design']['pixel_pitch'] * 1/M
+
+    # total dot diameter (um)
+    dot_diameter = np.sqrt(d_g**2 + d_diff_microns**2)
+
+    # minimum interval between points
+    distance_threshold = dot_diameter * 1.5
+
+    # initialize variables
+    dot_ctr = 0
+    loop_ctr = 0
+    x_all = np.zeros(shape=(num_dots,))
+    y_all = np.zeros(shape=(num_dots,))
+
+    # begin point generation
+    while dot_ctr < num_dots and loop_ctr < max_iter:
+        loop_ctr = loop_ctr + 1
+
+        # generate random point
+        pos_current = np.random.rand(2)
+        x_current = xmin + dot_diameter / 2 + (xmax - xmin - dot_diameter) * pos_current[0]
+        y_current = ymin + dot_diameter / 2 + (ymax - ymin - dot_diameter) * pos_current[1]
+
+        # compute distance with respect to all other points
+        if loop_ctr > 1:
+            delta_x = x_all - x_current
+            delta_y = y_all - y_current
+            distance = np.min(np.sqrt(delta_x**2 + delta_y**2))
+        else:
+            distance = distance_threshold * 2
+        # check if the distance is greater than the predefined threshold
+        if distance > distance_threshold:
+            x_all[dot_ctr] = x_current
+            y_all[dot_ctr] = y_current
+            dot_ctr = dot_ctr + 1
+
+    num_dots_generated = dot_ctr
+
+    coordinates = np.empty((x_all.size + y_all.size,), dtype=x_all.dtype)
+    coordinates[0::2] = x_all
+    coordinates[1::2] = y_all
+    # coordinates = np.append(x_all, y_all)
+    coordinates = np.reshape(coordinates, (int(piv_simulation_parameters['bos_pattern']['x_grid_point_number']),
+                                           int(piv_simulation_parameters['bos_pattern']['y_grid_point_number']), 2))
+    return coordinates
+
 def generate_bos_lightfield_data(piv_simulation_parameters,optical_system):
 # % This function generates a structure containing the location of the each of the
 # % lightfield source points as well as their irradiance and color on a BOS texture.  Only a single value is
@@ -1199,16 +1274,16 @@ def generate_bos_lightfield_data(piv_simulation_parameters,optical_system):
         Y_Max = +7.5e4
 
     # # set the seed of the random number generator. this will be different for each simulation
-    # if(piv_simulation_parameters['bos_pattern']['random_number_seed'][0]):
-    #     np.random.seed(piv_simulation_parameters['bos_pattern']['random_number_seed'][0])
     # np.random.seed(2445)
     # np.random.seed()
+    grid_point_coordinates = create_non_overlapping_dot_coordinates(piv_simulation_parameters)
     # random_numbers = np.random.rand(x_grid_point_number, y_grid_point_number, 2)
     random_numbers = np.random.rand(1,int(x_grid_point_number)*int(y_grid_point_number)*2)
     random_numbers = np.reshape(random_numbers, (int(x_grid_point_number), int(y_grid_point_number), 2))
     
     # x_grid_point_coordinate_vector = X_Min + (X_Max - X_Min) * random_numbers[:,:,0]
-    x_grid_point_coordinate_vector = X_Min + (X_Max - X_Min) * np.random.rand(x_grid_point_number, y_grid_point_number)
+    # x_grid_point_coordinate_vector = X_Min + (X_Max - X_Min) * np.random.rand(x_grid_point_number, y_grid_point_number)
+    x_grid_point_coordinate_vector = grid_point_coordinates[:,:,0]
     # x_grid_point_number = 1
     # x_grid_point_coordinate_vector = np.array([X_Min + 1*(X_Max - X_Min)/2.0])
     # x_grid_point_number = 10
@@ -1216,7 +1291,8 @@ def generate_bos_lightfield_data(piv_simulation_parameters,optical_system):
 
 
     # y_grid_point_coordinate_vector = Y_Min + (Y_Max - Y_Min) * random_numbers[:,:,1]
-    y_grid_point_coordinate_vector = Y_Min + (Y_Max - Y_Min) * np.random.rand(x_grid_point_number, y_grid_point_number)
+    # y_grid_point_coordinate_vector = Y_Min + (Y_Max - Y_Min) * np.random.rand(x_grid_point_number, y_grid_point_number)
+    y_grid_point_coordinate_vector = grid_point_coordinates[:,:,1]
     # y_grid_point_number = 1
     # y_grid_point_coordinate_vector = np.array([Y_Min + 1*(Y_Max - Y_Min)/2.0])
     # y_grid_point_number = 10
@@ -1246,13 +1322,13 @@ def generate_bos_lightfield_data(piv_simulation_parameters,optical_system):
     for x_grid_index in range(0,int(x_grid_point_number)):
         for y_grid_index in range(0,int(y_grid_point_number)):
 
-            # % This is the coordinate of the current grid point
-            x_grid_point_coordinate = x_grid_point_coordinate_vector[x_grid_index]
-            y_grid_point_coordinate = y_grid_point_coordinate_vector[y_grid_index]
+            # # % This is the coordinate of the current grid point
+            # x_grid_point_coordinate = x_grid_point_coordinate_vector[x_grid_index]
+            # y_grid_point_coordinate = y_grid_point_coordinate_vector[y_grid_index]
 
-            # # # % This is the coordinate of the current grid point
-            # x_grid_point_coordinate = x_grid_point_coordinate_vector[x_grid_index,y_grid_index]
-            # y_grid_point_coordinate = y_grid_point_coordinate_vector[x_grid_index,y_grid_index]
+            # # % This is the coordinate of the current grid point
+            x_grid_point_coordinate = x_grid_point_coordinate_vector[x_grid_index,y_grid_index]
+            y_grid_point_coordinate = y_grid_point_coordinate_vector[x_grid_index,y_grid_index]
 
             #% These are the coordinates of the current lightrays
             x_grid_point_lightray_coordinates = x_lightray_coordinates + x_grid_point_coordinate
