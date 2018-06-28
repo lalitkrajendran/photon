@@ -260,8 +260,11 @@ def create_camera_optical_system(piv_simulation_parameters):
     # lens_thickness = (lens_radius_of_curvature - np.sqrt(np.power(lens_radius_of_curvature,2) - np.power(lens_pitch,2)))/2.0
 
     # Added by lalit
-    lens_thickness = 2.0*(lens_radius_of_curvature - np.sqrt(
-        np.power(lens_radius_of_curvature, 2) - np.power(lens_pitch/2.0, 2)))
+    if piv_simulation_parameters['lens_design']['lens_model'] == 'thin-lens':
+        lens_thickness = 0.0
+    else:
+        lens_thickness = 2.0*(lens_radius_of_curvature - np.sqrt(
+            np.power(lens_radius_of_curvature, 2) - np.power(lens_pitch/2.0, 2)))
 
     # This calculates the refractive index that would be required to produce a
     # lens with the specified parameters
@@ -1199,27 +1202,23 @@ def generate_bos_lightfield_data(piv_simulation_parameters,optical_system):
     # if(piv_simulation_parameters['bos_pattern']['random_number_seed'][0]):
     #     np.random.seed(piv_simulation_parameters['bos_pattern']['random_number_seed'][0])
     # np.random.seed(2445)
-    np.random.seed()
+    # np.random.seed()
     # random_numbers = np.random.rand(x_grid_point_number, y_grid_point_number, 2)
     random_numbers = np.random.rand(1,int(x_grid_point_number)*int(y_grid_point_number)*2)
     random_numbers = np.reshape(random_numbers, (int(x_grid_point_number), int(y_grid_point_number), 2))
     
-    x_grid_point_coordinate_vector = X_Min + (X_Max - X_Min) * random_numbers[:,:,0]
-    # x_grid_point_coordinate_vector = X_Min + (X_Max - X_Min) * np.random.rand(x_grid_point_number, y_grid_point_number)
+    # x_grid_point_coordinate_vector = X_Min + (X_Max - X_Min) * random_numbers[:,:,0]
+    x_grid_point_coordinate_vector = X_Min + (X_Max - X_Min) * np.random.rand(x_grid_point_number, y_grid_point_number)
     # x_grid_point_number = 1
-    # x_grid_point_coordinate_vector = np.array([X_Min + (X_Max - X_Min)/2.0])
+    # x_grid_point_coordinate_vector = np.array([X_Min + 1*(X_Max - X_Min)/2.0])
     # x_grid_point_number = 10
     # x_grid_point_coordinate_vector = np.ones(shape=(x_grid_point_number,)) * [X_Min + (X_Max - X_Min)/2.0]
 
 
-    # # set the seed of the random number generator. this will be different for each simulation
-    # if(piv_simulation_parameters['bos_pattern']['random_number_seed'][1]):
-    #     np.random.seed(piv_simulation_parameters['bos_pattern']['random_number_seed'][1])
-    # np.random.seed(4245)
-    y_grid_point_coordinate_vector = Y_Min + (Y_Max - Y_Min) * random_numbers[:,:,1]
-    # y_grid_point_coordinate_vector = Y_Min + (Y_Max - Y_Min) * np.random.rand(x_grid_point_number, y_grid_point_number)
+    # y_grid_point_coordinate_vector = Y_Min + (Y_Max - Y_Min) * random_numbers[:,:,1]
+    y_grid_point_coordinate_vector = Y_Min + (Y_Max - Y_Min) * np.random.rand(x_grid_point_number, y_grid_point_number)
     # y_grid_point_number = 1
-    # y_grid_point_coordinate_vector = np.array([Y_Min + (Y_Max - Y_Min)/2.0])
+    # y_grid_point_coordinate_vector = np.array([Y_Min + 1*(Y_Max - Y_Min)/2.0])
     # y_grid_point_number = 10
     # y_grid_point_coordinate_vector = np.linspace(start=Y_Min, stop=Y_Max, num=y_grid_point_number, endpoint=False)
 
@@ -1247,14 +1246,13 @@ def generate_bos_lightfield_data(piv_simulation_parameters,optical_system):
     for x_grid_index in range(0,int(x_grid_point_number)):
         for y_grid_index in range(0,int(y_grid_point_number)):
 
-            # # % This is the coordinate of the current grid point
-            # x_grid_point_coordinate = x_grid_point_coordinate_vector[x_grid_index]
-            # y_grid_point_coordinate = y_grid_point_coordinate_vector[y_grid_index]
+            # % This is the coordinate of the current grid point
+            x_grid_point_coordinate = x_grid_point_coordinate_vector[x_grid_index]
+            y_grid_point_coordinate = y_grid_point_coordinate_vector[y_grid_index]
 
-            # # TODO rem# ove            #
-            # # % This is the coordinate of the current grid point
-            x_grid_point_coordinate = x_grid_point_coordinate_vector[x_grid_index,y_grid_index]
-            y_grid_point_coordinate = y_grid_point_coordinate_vector[x_grid_index,y_grid_index]
+            # # # % This is the coordinate of the current grid point
+            # x_grid_point_coordinate = x_grid_point_coordinate_vector[x_grid_index,y_grid_index]
+            # y_grid_point_coordinate = y_grid_point_coordinate_vector[x_grid_index,y_grid_index]
 
             #% These are the coordinates of the current lightrays
             x_grid_point_lightray_coordinates = x_lightray_coordinates + x_grid_point_coordinate
@@ -1469,6 +1467,9 @@ def generate_bos_image_lightfield_data(piv_simulation_parameters,optical_system)
 def run_piv_simulation_02(piv_simulation_parameters):
 # This function runs a PIV simulation using the thick lens, non-paraxial
 # camera simulation.
+
+    # piv_simulation_parameters['lens_design']['lens_model'] = 'general'
+    # piv_simulation_parameters['lens_design']['lens_model'] = 'thin-lens'
 
     # % % This creates the simulation parameters for running the simulation
     # % piv_simulation_parameters=create_piv_simulation_parameters_02;
@@ -1736,6 +1737,7 @@ def run_piv_simulation_02(piv_simulation_parameters):
         # % on the lens
         np.random.seed(1105)
         r_temp = np.random.rand(1, int(lightray_number_per_particle)).astype('float32')
+        # r_temp = np.linspace(start=0, stop=0.5, num=int(lightray_number_per_particle)).astype('float32')
         r_temp.tofile(cuda_codes_filepath + '/data/random1.bin')
         # print 'first ten numbers for r_temp', r_temp[0, 0:10]
 
@@ -1743,6 +1745,8 @@ def run_piv_simulation_02(piv_simulation_parameters):
         # % intersect on the lens
         # np.random.seed(4092)
         psi_temp = np.random.rand(1, int(lightray_number_per_particle)).astype('float32')
+        # psi_temp = np.linspace(start=0, stop=1, num=int(lightray_number_per_particle)).astype('float32')
+        # psi_temp = np.zeros(shape=(1,int(lightray_number_per_particle))).astype('float32')
         psi_temp.tofile(cuda_codes_filepath + '/data/random2.bin')
         # print 'first ten numbers for psi_temp', psi_temp[0, 0:10]
         ################################################################################################################

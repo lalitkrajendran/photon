@@ -1633,7 +1633,7 @@ def prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, sc
                                  simulate_density_gradients, lightray_positions_filepath, lightray_directions_filepath,
                                  num_lightrays_save, ray_tracing_algorithm, add_pos_noise, pos_noise_std,
                                  add_ngrad_noise, ngrad_noise_std, ray_cone_pitch_ratio, save_lightrays, 
-                                 save_intermediate_ray_data, num_intermediate_positions_save):
+                                 save_intermediate_ray_data, num_intermediate_positions_save, lens_model):
     #-------------------------------------------------------------------------------------------------------------------
     # convert variables to appropriate ctypes formats
     # -------------------------------------------------------------------------------------------------------------------
@@ -1793,7 +1793,12 @@ def prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, sc
             element_data_ctypes[i].axial_offset_distances[j] = element_data[i]['axial_offset_distances'][j]
 
         element_data_ctypes[i].element_number = element_data[i]['element_number']
-        element_data_ctypes[i].element_type = 'l' #element_data[i]['element_type'][0]
+
+        if lens_model == 'thin-lens':
+            element_data_ctypes[i].element_type = 't'
+        else:
+            element_data_ctypes[i].element_type = 'l'
+
         element_data_ctypes[i].elements_coplanar = element_data[i]['elements_coplanar']
 
         for j in range(3):
@@ -2047,6 +2052,11 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     element_plane_parameters[:,3] = element_plane_parameters[:,3] - element_plane_parameters[:,2] * z_lens
     element_center[:,2] = element_center[:,2] + z_lens
 
+    # set lens model 't' for thin lens, 'l' for general lens with non-paraxial rays and thickness
+    if 'lens_model' in piv_simulation_parameters['lens_design'].keys():
+        lens_model = piv_simulation_parameters['lens_design']['lens_model']
+    else:
+        lens_model = 'general'
 
 
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2054,7 +2064,7 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     # % This initializes the sensor image
-    I = np.zeros([x_pixel_number, y_pixel_number]).astype('float32')
+    I = np.zeros([int(x_pixel_number), int(y_pixel_number)]).astype('float32')
 
     # # path to the directory containing the cuda codes
 #     cuda_codes_filepath = '../cuda_codes'
@@ -2144,12 +2154,12 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
                                               I,density_grad_filename,simulate_density_gradients, lightray_positions_filepath
                                      , lightray_directions_filepath, num_lightrays_save, ray_tracing_algorithm, add_pos_noise, pos_noise_std,
                                      add_ngrad_noise, ngrad_noise_std, ray_cone_pitch_ratio, piv_simulation_parameters['output_data']['save_lightrays'],
-                                     save_intermediate_ray_data, num_intermediate_positions_save)
+                                     save_intermediate_ray_data, num_intermediate_positions_save, lens_model)
 
     # this is the raw version of the original image
     I_raw = np.copy(I)
 
-   
+
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # % Adding image noise                                                      %
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2179,9 +2189,9 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
         intensity_rescaling = True
     else:
         intensity_rescaling = piv_simulation_parameters['camera_design']['intensity_rescaling']
-    
+
     if intensity_rescaling:
-        print 'rescaling intensity'        
+        print 'rescaling intensity'
         # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         # % Rescales and resamples image for export                                 %
         # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2204,7 +2214,7 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     I = np.uint16(I)
     print 'max intensity: ', I.max()
     print 'total intensity:', I.sum()
-    
+
     # # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # # % Adding image noise                                                      %
     # # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
