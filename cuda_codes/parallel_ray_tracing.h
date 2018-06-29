@@ -90,6 +90,8 @@ typedef struct lightfield_source_single_t
 	float y;
 	// this is the z location of each particle
 	float z;
+	// offset for co-ordinate system
+	float z_offset;
 }lightfield_source_single_t;
 
 
