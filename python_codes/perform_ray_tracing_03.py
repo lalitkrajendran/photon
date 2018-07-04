@@ -2212,6 +2212,19 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
 
     # % This converts the image from double precision to 16 bit precision
     I = np.uint16(I)
+
+    # crops image if required
+    if piv_simulation_parameters['output_data']['crop_image']:
+        # size of the cropped image
+        nr_crop = int(piv_simulation_parameters['output_data']['r_crop'])
+        nc_crop = int(piv_simulation_parameters['output_data']['c_crop'])
+
+        # size of the current image
+        nr = I.shape[0]
+        nc = I.shape[1]
+        I = I[nr / 2 - nr_crop / 2:nr / 2 + nr_crop / 2 - 1, nc / 2 - nc_crop / 2:nc / 2 + nc_crop / 2 - 1]
+        I_raw = I_raw[nr / 2 - nr_crop / 2:nr / 2 + nr_crop / 2 - 1, nc / 2 - nc_crop / 2:nc / 2 + nc_crop / 2 - 1]
+
     print 'max intensity: ', I.max()
     print 'total intensity:', I.sum()
 
