@@ -1279,24 +1279,15 @@ def generate_bos_lightfield_data(piv_simulation_parameters,optical_system):
         'focal_length'])
 
     # # set the seed of the random number generator. this will be different for each simulation
-    # np.random.seed(2445)
-    np.random.seed()
-    grid_point_coordinates = create_non_overlapping_dot_coordinates(piv_simulation_parameters)
-    x_grid_point_coordinate_vector = grid_point_coordinates[:,0]
-    y_grid_point_coordinate_vector = grid_point_coordinates[:,1]
-
-    # x_grid_point_number = 1
-    # x_grid_point_coordinate_vector = np.zeros(shape=(1,1))
-    # x_grid_point_coordinate_vector[0,0] = np.array([X_Min + 1*(X_Max - X_Min)/2.0 + piv_simulation_parameters['camera_design']['pixel_pitch']/M/2.0])
-    # x_grid_point_number = 10
-    # x_grid_point_coordinate_vector = np.ones(shape=(x_grid_point_number,)) * [X_Min + (X_Max - X_Min)/2.0]
-
-
-    # y_grid_point_number = 1
-    # y_grid_point_coordinate_vector = np.zeros(shape=(1,1))
-    # y_grid_point_coordinate_vector[0,0] = np.array([Y_Min + 1*(Y_Max - Y_Min)/2.0 + piv_simulation_parameters['camera_design']['pixel_pitch']/M/2.0])
-    # y_grid_point_number = 10
-    # y_grid_point_coordinate_vector = np.linspace(start=Y_Min, stop=Y_Max, num=y_grid_point_number, endpoint=False)
+    if grid_point_number == 1:
+        x_grid_point_coordinate_vector = np.array([X_Min + 1*(X_Max - X_Min)/2.0 + piv_simulation_parameters['camera_design']['pixel_pitch']/M/2.0])
+        y_grid_point_coordinate_vector = np.array([Y_Min + 1*(Y_Max - Y_Min)/2.0 + piv_simulation_parameters['camera_design']['pixel_pitch']/M/2.0])
+    else:
+        # np.random.seed(2445)
+        np.random.seed()
+        grid_point_coordinates = create_non_overlapping_dot_coordinates(piv_simulation_parameters)
+        x_grid_point_coordinate_vector = grid_point_coordinates[:, 0]
+        y_grid_point_coordinate_vector = grid_point_coordinates[:, 1]
 
     # % This generates a series of points that fill the circle of the grid point
     # % uniformly
@@ -1839,17 +1830,17 @@ def run_piv_simulation_02(piv_simulation_parameters):
         # % This creates random radial coordinates for the lightrays to intersect
         # % on the lens
         np.random.seed(1105)
-        # r_temp = np.random.rand(1, int(lightray_number_per_particle)).astype('float32')
-        r_temp = np.linspace(start=0, stop=1, num=int(lightray_number_per_particle)).astype('float32')
+        r_temp = np.random.rand(1, int(lightray_number_per_particle)).astype('float32')
+        # r_temp = np.linspace(start=0, stop=1, num=int(lightray_number_per_particle)).astype('float32')
         r_temp.tofile(cuda_codes_filepath + '/data/random1.bin')
         # print 'first ten numbers for r_temp', r_temp[0, 0:10]
 
         # % This creates random angular coordinates for the lightrays to
         # % intersect on the lens
         # np.random.seed(4092)
-        # psi_temp = np.random.rand(1, int(lightray_number_per_particle)).astype('float32')
+        psi_temp = np.random.rand(1, int(lightray_number_per_particle)).astype('float32')
         # psi_temp = np.linspace(start=0, stop=1, num=int(lightray_number_per_particle)).astype('float32')
-        psi_temp = np.zeros(shape=(1,int(lightray_number_per_particle))).astype('float32')
+        # psi_temp = np.zeros(shape=(1,int(lightray_number_per_particle))).astype('float32')
         psi_temp.tofile(cuda_codes_filepath + '/data/random2.bin')
         # print 'first ten numbers for psi_temp', psi_temp[0, 0:10]
         ################################################################################################################
