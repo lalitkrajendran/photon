@@ -115,7 +115,7 @@ __device__ light_ray_data_t generate_lightfield_angular_data(float lens_pitch, f
 	// generate random points on the lens where the rays should intersect
 	float x_lens = 0.5*lens_pitch_scaling_factor*lens_pitch*sqrt(random_number_1)*cos(2*M_PI*random_number_2);
 	float y_lens = 0.5*lens_pitch_scaling_factor*lens_pitch*sqrt(random_number_1)*sin(2*M_PI*random_number_2);
-//	float x_lens = 0.0;
+//	float x_lens = 0.0; //0.5*lens_pitch_scaling_factor*(random_number_1 - 0.5);
 //	float y_lens = 0.0;
 //	image_distance = 217514.0;
 
@@ -211,6 +211,7 @@ __device__ light_ray_data_t generate_lightfield_angular_data(float lens_pitch, f
 //	light_ray_data.ray_source_coordinates = make_float3(0.0,0.0,z_current);
 	// this is the propagation direction of the light ray
 	light_ray_data.ray_propagation_direction = normalize(make_float3(theta_temp,phi_temp,-1.0));
+//	light_ray_data.ray_propagation_direction = make_float3(theta_temp, phi_temp, -sqrt(1.0 - theta_temp*theta_temp - phi_temp*phi_temp));
 //	light_ray_data.ray_propagation_direction = normalize(make_float3(0.001,0.0,-1.0));
 	// this is the wavelength of the light ray
 	light_ray_data.ray_wavelength = beam_wavelength;
@@ -1510,11 +1511,6 @@ __device__ light_ray_data_t intersect_sensor_02(light_ray_data_t light_ray_data,
 				image_index = (row)*camera_design.x_pixel_number + (col);
 
 				// this is the amount by which the pixel's intensity will be updated
-//				pixel_increment = PARTICLE_MAX_INTENSITIES * (PARTICLE_DIAMETERS)* (PARTICLE_DIAMETERS) * pi / 32.0 *
-//	                   (erf( sqrt8 *  (col - X - 0.5)/ PARTICLE_DIAMETERS ) -
-//	                		   erf(sqrt8 *(col - X + 0.5) / PARTICLE_DIAMETERS)) *
-//	                   (erf( sqrt8 *  (row - Y - 0.5)/ PARTICLE_DIAMETERS) -
-//	                		   erf(sqrt8 * (row - Y + 0.5) / PARTICLE_DIAMETERS));
 				pixel_increment = PARTICLE_MAX_INTENSITIES * pi / 32.0 *
 	                   (erf( sqrt8 *  (col - X - 0.5)/ PARTICLE_DIAMETERS ) -
 	                		   erf(sqrt8 *(col - X + 0.5) / PARTICLE_DIAMETERS)) *
@@ -2017,17 +2013,23 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 
 	// this structure contains the camera design information
 	camera_design_t camera_design = *camera_design_p;
-//
-//	light_ray_data = create_apparent_image(light_ray_data, camera_design,
-//					lightray_number_per_particle,num_rays, add_pos_noise, noise_std, states, global_ray_id, camera_design.diffraction_diameter, image_array,
-//					lightfield_source_shared.z, lightfield_source_shared.z_offset, element_data[0]);
-//
-//	if(global_ray_id < num_lightrays_save && save_lightrays)
-//	{
-//		final_pos[global_ray_id] = light_ray_data.ray_source_coordinates;
-//		final_dir[global_ray_id] = light_ray_data.ray_propagation_direction;
-//	}
-//	return;
+
+	if (element_data[0].element_type == 'n')
+	{
+		// create an apparent image without ray tracing through lens
+		light_ray_data = create_apparent_image(light_ray_data, camera_design,
+						lightray_number_per_particle,num_rays, add_pos_noise, noise_std, states, global_ray_id, camera_design.diffraction_diameter, image_array,
+						lightfield_source_shared.z, lightfield_source_shared.z_offset, element_data[0]);
+
+		if(global_ray_id < num_lightrays_save && save_lightrays)
+		{
+			final_pos[global_ray_id] = light_ray_data.ray_source_coordinates;
+//			final_dir[global_ray_id] = light_ray_data.ray_propagation_direction;
+		}
+
+		return;
+	}
+
 	// trace rays through the optical train
 	light_ray_data = propagate_rays_through_optical_system(element_data, element_center,
 			element_plane_parameters,element_system_index,num_elements,num_rays,
