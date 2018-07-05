@@ -1796,6 +1796,8 @@ def prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, sc
 
         if lens_model == 'thin-lens':
             element_data_ctypes[i].element_type = 't'
+        elif lens_model == 'apparent':
+            element_data_ctypes[i].element_type = 'n'
         else:
             element_data_ctypes[i].element_type = 'l'
 

@@ -1832,15 +1832,16 @@ def run_piv_simulation_02(piv_simulation_parameters):
         np.random.seed(1105)
         r_temp = np.random.rand(1, int(lightray_number_per_particle)).astype('float32')
         # r_temp = np.linspace(start=0, stop=1, num=int(lightray_number_per_particle)).astype('float32')
+        # r_temp = np.array([0.0, 0.5, 1.0]).astype('float32')
         r_temp.tofile(cuda_codes_filepath + '/data/random1.bin')
         # print 'first ten numbers for r_temp', r_temp[0, 0:10]
 
         # % This creates random angular coordinates for the lightrays to
         # % intersect on the lens
         # np.random.seed(4092)
-        psi_temp = np.random.rand(1, int(lightray_number_per_particle)).astype('float32')
+        # psi_temp = np.random.rand(1, int(lightray_number_per_particle)).astype('float32')
         # psi_temp = np.linspace(start=0, stop=1, num=int(lightray_number_per_particle)).astype('float32')
-        # psi_temp = np.zeros(shape=(1,int(lightray_number_per_particle))).astype('float32')
+        psi_temp = np.zeros(shape=(1,int(lightray_number_per_particle))).astype('float32')
         psi_temp.tofile(cuda_codes_filepath + '/data/random2.bin')
         # print 'first ten numbers for psi_temp', psi_temp[0, 0:10]
         ################################################################################################################
