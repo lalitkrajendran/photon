@@ -720,6 +720,23 @@ __device__ void increment_arc_length(density_grad_params_t* paramsp, int thread_
 		paramsp->arc_length += paramsp->step_size;
 }
 
+__device__ float3 cosines_to_angles(float3 dir)
+{
+	// convert direction cosines to angles
+	float3 theta = make_float3(acos(dir.x), acos(dir.y), acos(dir.z));
+
+	return theta;
+}
+
+__device__ float3 angles_to_cosines(float3 theta)
+{
+	// convert angles to direction cosines
+	float3 dir = make_float3(cos(theta.x), cos(theta.y), cos(theta.z));
+
+	return dir;
+}
+
+
 __device__ light_ray_data_t euler(light_ray_data_t light_ray_data,
 		density_grad_params_t params, float3 lookup_scale, int thread_id,
 		bool add_ngrad_noise, float ngrad_noise_std, curandState* states,
@@ -742,8 +759,9 @@ __device__ light_ray_data_t euler(light_ray_data_t light_ray_data,
 	float4 val_prev = make_float4(0.0, 0.0, 0.0, 0.0);
 
 	int loop_ctr = 0;
+	int loop_ctr_max = 1e7;
 	float current_refractive_index;
-	float3 pos_temp;
+//	float3 pos_temp;
 
 	// perform linear interpolation to calculate density gradient
 	if(params.interpolation_scheme == 1)
@@ -751,7 +769,7 @@ __device__ light_ray_data_t euler(light_ray_data_t light_ray_data,
 		while(inside_box)
 		{
 
-			if(loop_ctr > 1e7)
+			if(loop_ctr > loop_ctr_max)
 				break;
 
 			pos = light_ray_data.ray_source_coordinates;
@@ -859,6 +877,11 @@ __device__ light_ray_data_t euler(light_ray_data_t light_ray_data,
 //			dir = dir + params.step_size*normal; ///current_refractive_index;
 			dir = dir + params.step_size*normal/current_refractive_index;
 
+//			float3 theta = cosines_to_angles(dir);
+//			theta = theta + params.step_size*normal/current_refractive_index;
+//
+//			dir = angles_to_cosines(theta);
+
 			// normalize the direction to ensure that it is a unit vector
 			dir = normalize(dir);
 //			dir.z = -sqrt(1.0 - dir.x*dir.x - dir.y*dir.y);
@@ -887,6 +910,7 @@ __device__ light_ray_data_t euler(light_ray_data_t light_ray_data,
 			loop_ctr += 1;
 
 		}
+//		light_ray_data.ray_propagation_direction = normal;
 	}
 //	params.arc_length = 0;
 
@@ -1801,11 +1825,11 @@ density_grad_params_t setData(float* data, density_grad_params_t _params)
 
 	// save the refractive index gradient data to file.
 //	std::string filename = "/home/shannon/c/aether/Projects/BOS/error-analysis/analysis/src/photon/cuda_codes/data/gradient_backward.bin";
-//	std::string filename = "/home/shannon/c/aether/Projects/BOS/error-analysis/analysis/src/photon/cuda_codes/data/gradient_central.bin";
+	std::string filename = "/home/shannon/c/aether/Projects/BOS/error-analysis/analysis/src/photon/cuda_codes/data/gradient_central.bin";
 
-//	std::ofstream file;
-//	file.open(filename.c_str(), ios::out | ios::binary);
-//	float4 data_out;
+	std::ofstream file;
+	file.open(filename.c_str(), ios::out | ios::binary);
+	float4 data_out;
 //	float4 data_out_2;
 
 	// calculate grid spacings for gradient calculation
@@ -1815,14 +1839,15 @@ density_grad_params_t setData(float* data, density_grad_params_t _params)
 
 	printf("grid_x: %f, grid_y: %f, grid_z: %f\n", grid_x, grid_y, grid_z);
 
-	float3 sample1, sample2, normal, lookup;
+	float3 normal, lookup;
+	float sample1, sample2, sample3;
 	int loop_ctr = 0;
 	// loop over all the grid points and compute the refractive index gradient
-	for(size_t z = 1; z < data_depth; z++)
+	for(size_t z = 0; z < data_depth; z++)
 	{
-		for(size_t y = 1; y < data_height; y++)
+		for(size_t y = 0; y < data_height; y++)
 		{
-		  for(size_t x = 1; x < data_width; x++)
+		  for(size_t x = 0; x < data_width; x++)
 		  {
 			size_t DELTA = 1;
 			lookup = make_float3(x,y,z);
@@ -1833,33 +1858,111 @@ density_grad_params_t setData(float* data, density_grad_params_t _params)
 			if (data[data_loc] < _params.data_min)
 			  _params.data_min = data[data_loc];
 
-			if (lookup.x < DELTA || lookup.y < DELTA || lookup.z < DELTA ||
-				lookup.x >= data_width-DELTA || lookup.y >= data_height -DELTA || lookup.z >=data_depth-DELTA)
-			  continue;
+			// --------------------------------
+			// calculate x derivative
+			// --------------------------------
+			if(lookup.x < DELTA)
+			{
+				lookup = make_float3(x,y,z);
+				sample1 = data[size_t(lookup.z*data_width*data_height + lookup.y*data_width + lookup.x)];
+				lookup = make_float3(x+1,y,z);
+				sample2 = data[size_t(lookup.z*data_width*data_height + lookup.y*data_width + lookup.x)];
+				lookup = make_float3(x+2,y,z);
+				sample3 = data[size_t(lookup.z*data_width*data_height + lookup.y*data_width + lookup.x)];
 
-			// obtain refractive index values from points lying on either side of the current grid
-			// point along x, y and z
+				normal.x = (-3/2 * sample1 + 2 * sample2 - 1/2 * sample3)/grid_x;
+			}
+			else if(lookup.x >= data_width-DELTA)
+			{
+				lookup = make_float3(x,y,z);
+				sample1 = data[size_t(lookup.z*data_width*data_height + lookup.y*data_width + lookup.x)];
+				lookup = make_float3(x-1,y,z);
+				sample2 = data[size_t(lookup.z*data_width*data_height + lookup.y*data_width + lookup.x)];
+				lookup = make_float3(x-2,y,z);
+				sample3 = data[size_t(lookup.z*data_width*data_height + lookup.y*data_width + lookup.x)];
 
-			lookup = make_float3(x-1,y,z);
-			sample1.x = data[size_t(lookup.z*data_width*data_height + lookup.y*data_width + lookup.x)];
-			lookup = make_float3(x+1,y,z);
-			sample2.x = data[size_t(lookup.z*data_width*data_height + lookup.y*data_width + lookup.x)];
+				normal.x = (3/2 * sample1 - 2 * sample2 + 1/2 * sample3)/grid_x;
+			}
+			else
+			{
+				lookup = make_float3(x-1,y,z);
+				sample1 = data[size_t(lookup.z*data_width*data_height + lookup.y*data_width + lookup.x)];
+				lookup = make_float3(x+1,y,z);
+				sample2 = data[size_t(lookup.z*data_width*data_height + lookup.y*data_width + lookup.x)];
+
+				normal.x = (sample2 - sample1)/(2*grid_x);
+			}
+
+			// --------------------------------
+			// calculate y derivative
+			// --------------------------------
+			if(lookup.y < DELTA)
+			{
+				lookup = make_float3(x,y,z);
+				sample1 = data[size_t(lookup.z*data_width*data_height + lookup.y*data_width + lookup.x)];
+				lookup = make_float3(x,y+1,z);
+				sample2 = data[size_t(lookup.z*data_width*data_height + lookup.y*data_width + lookup.x)];
+				lookup = make_float3(x,y+2,z);
+				sample3 = data[size_t(lookup.z*data_width*data_height + lookup.y*data_width + lookup.x)];
+
+				normal.y = (-3/2 * sample1 + 2 * sample2 - 1/2 * sample3)/grid_y;
+			}
+			else if(lookup.y >= data_height-DELTA)
+			{
+				lookup = make_float3(x,y,z);
+				sample1 = data[size_t(lookup.z*data_width*data_height + lookup.y*data_width + lookup.x)];
+				lookup = make_float3(x,y-1,z);
+				sample2 = data[size_t(lookup.z*data_width*data_height + lookup.y*data_width + lookup.x)];
+				lookup = make_float3(x,y-2,z);
+				sample3 = data[size_t(lookup.z*data_width*data_height + lookup.y*data_width + lookup.x)];
+
+				normal.y = (3/2 * sample1 - 2 * sample2 + 1/2 * sample3)/grid_y;
+			}
+			else
+			{
+				lookup = make_float3(x,y-1,z);
+				sample1 = data[size_t(lookup.z*data_width*data_height + lookup.y*data_width + lookup.x)];
+				lookup = make_float3(x,y+1,z);
+				sample2 = data[size_t(lookup.z*data_width*data_height + lookup.y*data_width + lookup.x)];
+
+				normal.y = (sample2 - sample1)/(2*grid_y);
+			}
 
 
-			lookup = make_float3(x,y-1,z);
-			sample1.y = data[size_t(lookup.z*data_width*data_height + lookup.y*data_width + lookup.x)];
-			lookup = make_float3(x,y+1,z);
-			sample2.y = data[size_t(lookup.z*data_width*data_height + lookup.y*data_width + lookup.x)];
+			// --------------------------------
+			// calculate z derivative
+			// --------------------------------
+			if(lookup.z < DELTA)
+			{
+				lookup = make_float3(x,y,z);
+				sample1 = data[size_t(lookup.z*data_width*data_height + lookup.y*data_width + lookup.x)];
+				lookup = make_float3(x,y,z+1);
+				sample2 = data[size_t(lookup.z*data_width*data_height + lookup.y*data_width + lookup.x)];
+				lookup = make_float3(x,y,z+2);
+				sample3 = data[size_t(lookup.z*data_width*data_height + lookup.y*data_width + lookup.x)];
 
-			lookup = make_float3(x,y,z-1);
-			sample1.z = data[size_t(lookup.z*data_width*data_height + lookup.y*data_width + lookup.x)];
-			lookup = make_float3(x,y,z+1);
-			sample2.z = data[size_t(lookup.z*data_width*data_height + lookup.y*data_width + lookup.x)];
+				normal.z = (-3/2 * sample1 + 2 * sample2 - 1/2 * sample3)/grid_z;
+			}
+			else if(lookup.z >= data_depth-DELTA)
+			{
+				lookup = make_float3(x,y,z);
+				sample1 = data[size_t(lookup.z*data_width*data_height + lookup.y*data_width + lookup.x)];
+				lookup = make_float3(x,y,z-1);
+				sample2 = data[size_t(lookup.z*data_width*data_height + lookup.y*data_width + lookup.x)];
+				lookup = make_float3(x,y,z-2);
+				sample3 = data[size_t(lookup.z*data_width*data_height + lookup.y*data_width + lookup.x)];
 
-			// calculate the refractive index gradient
-			normal.x = (sample2.x - sample1.x)/(2*grid_x);
-			normal.y = (sample2.y - sample1.y)/(2*grid_y);
-			normal.z = (sample2.z - sample1.z)/(2*grid_z);
+				normal.z = (3/2 * sample1 - 2 * sample2 + 1/2 * sample3)/grid_z;
+			}
+			else
+			{
+				lookup = make_float3(x,y,z-1);
+				sample1 = data[size_t(lookup.z*data_width*data_height + lookup.y*data_width + lookup.x)];
+				lookup = make_float3(x,y,z+1);
+				sample2 = data[size_t(lookup.z*data_width*data_height + lookup.y*data_width + lookup.x)];
+
+				normal.z = (sample2 - sample1)/(2*grid_z);
+			}
 
 			// assign refractive index gradient values to the array
 			_params.data[data_loc].x = normal.x;
@@ -1872,10 +1975,12 @@ density_grad_params_t setData(float* data, density_grad_params_t _params)
 			if(_params.data[data_loc].w == 0)
 				printf("_params.data[data_loc].w == 0 at data_loc: %d\n", data_loc);
 
+			file.write((char*)&_params.data[data_loc], sizeof(float)*4);
 		  }
 		}
 	}
 
+	file.close();
 	printf("Minimum Refractive Index: %f\n", _params.data_min);
 	printf("loop ctr: %d\n", loop_ctr);
 
