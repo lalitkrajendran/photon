@@ -1285,9 +1285,20 @@ def generate_bos_lightfield_data(piv_simulation_parameters,optical_system):
     else:
         # np.random.seed(2445)
         np.random.seed()
-        grid_point_coordinates = create_non_overlapping_dot_coordinates(piv_simulation_parameters)
-        x_grid_point_coordinate_vector = grid_point_coordinates[:, 0]
-        y_grid_point_coordinate_vector = grid_point_coordinates[:, 1]
+        if piv_simulation_parameters['bos_pattern']['dot_overlap']:
+            # create overlapped dots
+            random_numbers = np.random.rand(int(grid_point_number) * 2)
+            np.random.rand()
+            x_grid_point_coordinate_vector = X_Min + (X_Max - X_Min) * random_numbers[:grid_point_number]
+            y_grid_point_coordinate_vector = Y_Min + (Y_Max - Y_Min) * random_numbers[grid_point_number:]
+        else:
+            # create non-overlapped dots
+            grid_point_coordinates = create_non_overlapping_dot_coordinates(piv_simulation_parameters)
+            x_grid_point_coordinate_vector = grid_point_coordinates[:, 0]
+            y_grid_point_coordinate_vector = grid_point_coordinates[:, 1]
+        # x_grid_point_coordinate_vector = X_Min + np.linspace(start=0, stop=1.0, num=11, endpoint=True) * (X_Max - X_Min)
+        # y_grid_point_coordinate_vector = np.zeros(shape=x_grid_point_coordinate_vector.shape)
+
 
     # % This generates a series of points that fill the circle of the grid point
     # % uniformly
@@ -1308,44 +1319,6 @@ def generate_bos_lightfield_data(piv_simulation_parameters,optical_system):
     y = np.zeros(int(particle_number_per_grid_point*grid_point_number))
     # % This is a counting index
     count = 0
-
-    # # % This iterates through the grid points generating the light rays for each
-    # # % point
-    # for x_grid_index in range(0,int(x_grid_point_number)):
-    #     for y_grid_index in range(0,int(y_grid_point_number)):
-    #
-    #         # # % This is the coordinate of the current grid point
-    #         # x_grid_point_coordinate = x_grid_point_coordinate_vector[x_grid_index]
-    #         # y_grid_point_coordinate = y_grid_point_coordinate_vector[y_grid_index]
-    #
-    #         # # % This is the coordinate of the current grid point
-    #         x_grid_point_coordinate = x_grid_point_coordinate_vector[x_grid_index,y_grid_index]
-    #         y_grid_point_coordinate = y_grid_point_coordinate_vector[x_grid_index,y_grid_index]
-    #
-    #         #% These are the coordinates of the current lightrays
-    #         x_grid_point_lightray_coordinates = x_lightray_coordinates + x_grid_point_coordinate
-    #         y_grid_point_lightray_coordinates = y_lightray_coordinates + y_grid_point_coordinate
-    #
-    #         # This is the vector of indices to add in the new coordinates
-    #         if len(x_grid_point_lightray_coordinates) > 1:
-    #             index_vector = count + np.linspace(start=0,stop=len(x_grid_point_lightray_coordinates)-1,
-    #                                                num=len(x_grid_point_lightray_coordinates), endpoint=True).astype('int')
-    #         else:
-    #             index_vector = count
-    #
-    #         # This increments the counting variable
-    #         count = count + len(x_grid_point_lightray_coordinates)
-    #
-    #         # This adds the current lightrays tot the total lightray vectors
-    #         # if(x_grid_index==0 and y_grid_index==0):
-    #         #     x = x_grid_point_lightray_coordinates
-    #         #     y = y_grid_point_lightray_coordinates
-    #         # else:
-    #         #     x = np.append(x,x_grid_point_lightray_coordinates)
-    #         #     y = np.append(y,y_grid_point_lightray_coordinates)
-    #         x[index_vector] = x_grid_point_lightray_coordinates
-    #         y[index_vector] = y_grid_point_lightray_coordinates
-
 
     # % This iterates through the grid points generating the light rays for each
     # % point

@@ -84,7 +84,6 @@ for i in range(starting_index,starting_index+number_of_parameter_files):
     parameter_filename_read = bos_simulation_parameters_read_directory + os.path.basename(
         bos_parameter_list[i - 1])
     print "parameter_filename_read: " + parameter_filename_read
-
     # This loads the current parameter data
     # NOTE: the mat file is being loaded as an object array of one dimension. this helps to maintain
     # similarity in syntax from the matlab code, since since matlab structures and python objects
