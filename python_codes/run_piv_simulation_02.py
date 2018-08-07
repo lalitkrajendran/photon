@@ -1172,9 +1172,9 @@ def create_non_overlapping_dot_coordinates(piv_simulation_parameters):
 
     num_dots_generated = dot_ctr
 
-    coordinates = np.empty((x_all.size,2), dtype=x_all.dtype)
-    coordinates[:,0] = x_all
-    coordinates[:,1] = y_all
+    coordinates = np.empty((num_dots_generated,2), dtype=x_all.dtype)
+    coordinates[:,0] = x_all[:num_dots_generated]
+    coordinates[:,1] = y_all[:num_dots_generated]
     # coordinates = np.empty((x_all.size + y_all.size,), dtype=x_all.dtype)
     # coordinates[0::2] = x_all
     # coordinates[1::2] = y_all
@@ -1296,6 +1296,7 @@ def generate_bos_lightfield_data(piv_simulation_parameters,optical_system):
             grid_point_coordinates = create_non_overlapping_dot_coordinates(piv_simulation_parameters)
             x_grid_point_coordinate_vector = grid_point_coordinates[:, 0]
             y_grid_point_coordinate_vector = grid_point_coordinates[:, 1]
+            grid_point_number = x_grid_point_coordinate_vector.size
         # x_grid_point_coordinate_vector = X_Min + np.linspace(start=0, stop=1.0, num=11, endpoint=True) * (X_Max - X_Min)
         # y_grid_point_coordinate_vector = np.zeros(shape=x_grid_point_coordinate_vector.shape)
 
@@ -1364,6 +1365,10 @@ def generate_bos_lightfield_data(piv_simulation_parameters,optical_system):
     
     # % This rotates the image coordinates by the specified angles
     [x,y,z] = rotate_coordinates(x,y,z,x_camera_angle,y_camera_angle,0.0,0.0,0.0,0.0)
+
+    x = np.squeeze(np.asarray(x))
+    y = np.squeeze(np.asarray(y))
+    z = np.squeeze(np.asarray(z))
 
     # % This translates the Z coordinates of the paricles to the focal plane
     z = z + z_object
@@ -1782,6 +1787,8 @@ def run_piv_simulation_02(piv_simulation_parameters):
         # lightfield_source = generate_bos_image_lightfield_data(piv_simulation_parameters,optical_system)
         lightfield_source, x_grid_point_coordinate_vector, y_grid_point_coordinate_vector = generate_bos_lightfield_data(piv_simulation_parameters, optical_system)
 
+        # modify number of dots generated in piv simulation parameters
+        piv_simulation_parameters['bos_pattern']['num_dots_generated'] = lightfield_source['x'].size
         # % This adds the number of lightrays per particle to the
         # % 'lightfield_source' data
         lightfield_source['lightray_number_per_particle'] = lightray_number_per_particle
