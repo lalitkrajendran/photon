@@ -208,11 +208,10 @@ __device__ light_ray_data_t generate_lightfield_angular_data(float lens_pitch, f
 
 	// this is the origin of the light ray
 	light_ray_data.ray_source_coordinates = make_float3(x_current,y_current,z_current);
-//	light_ray_data.ray_source_coordinates = make_float3(0.0,0.0,z_current);
+
 	// this is the propagation direction of the light ray
 	light_ray_data.ray_propagation_direction = normalize(make_float3(theta_temp,phi_temp,-1.0));
-//	light_ray_data.ray_propagation_direction = make_float3(theta_temp, phi_temp, -sqrt(1.0 - theta_temp*theta_temp - phi_temp*phi_temp));
-//	light_ray_data.ray_propagation_direction = normalize(make_float3(0.001,0.0,-1.0));
+
 	// this is the wavelength of the light ray
 	light_ray_data.ray_wavelength = beam_wavelength;
 	// this is the radiance of the light ray
@@ -1979,7 +1978,7 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 		temp_pos = light_ray_data.ray_source_coordinates;
 		temp_dir = light_ray_data.ray_propagation_direction;
 	}
-
+//	return;
 	// trace the light ray through a medium containing density gradients
 	if(simulate_density_gradients)
 	{
@@ -2005,8 +2004,8 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 
 	if(save_intermediate_ray_data && !simulate_density_gradients && global_ray_id < num_intermediate_positions_save && save_lightrays)
 	{
-		intermediate_pos[global_ray_id] = temp_pos;
-		intermediate_dir[global_ray_id] = temp_dir;
+		intermediate_pos[global_ray_id * num_intermediate_positions_save] = temp_pos;
+		intermediate_dir[global_ray_id * num_intermediate_positions_save] = temp_dir;
 //		final_pos[global_ray_id] = light_ray_data.ray_source_coordinates;
 //		return;
 	}
@@ -2245,8 +2244,8 @@ void read_from_file()
 	// num_particles
 	file_lightfield_source.read ((char*)&lightfield_source.num_particles, sizeof(int));
 
-	// num_rays
-	file_lightfield_source.read ((char*)&lightfield_source.num_rays, sizeof(int));
+//	// num_rays
+//	file_lightfield_source.read ((char*)&lightfield_source.num_rays, sizeof(int));
 
 	// diameter_index
 	lightfield_source.diameter_index = (int *) malloc(lightfield_source.num_particles * sizeof(int));
@@ -2576,7 +2575,7 @@ void save_to_file(float lens_pitch, float image_distance,
 	// num_particles
 	file_lightfield_source.write ((char*)&lightfield_source_p->num_particles, sizeof(int));
 	// num_rays
-	file_lightfield_source.write ((char*)&lightfield_source_p->num_rays, sizeof(int));
+//	file_lightfield_source.write ((char*)&lightfield_source_p->num_rays, sizeof(int));
 	// diameter_index
 	for(k = 0; k < lightfield_source_p->num_particles; k++)
 		file_lightfield_source.write ((char*)&lightfield_source_p->diameter_index[k], sizeof(int));
@@ -2868,6 +2867,7 @@ void check_density_gradients(density_grad_params_t params)
     dirFile.close();
 
     printf("done\n");
+    curandState* states = 0;
 
     // store initial positions and directions of light rays
 	float3* pos_i = new float3[N];
@@ -2884,7 +2884,12 @@ void check_density_gradients(density_grad_params_t params)
     cudaMemcpy(d_light_ray_data,light_ray_data,sizeof(light_ray_data_t)*N,cudaMemcpyHostToDevice);
 
     // call kernel
-    check_trace_rays_through_density_gradients<<<1,N>>>(d_light_ray_data,params);
+    bool save_intermediate_ray_data = false;
+    int num_intermediate_positions_save = 0;
+    float3* intermediate_pos = 0;
+    float3* intermediate_dir = 0;
+
+    check_trace_rays_through_density_gradients<<<1,N>>>(d_light_ray_data,params,states, save_intermediate_ray_data, num_intermediate_positions_save, intermediate_pos, intermediate_dir);
 
     // copy new light ray data
     cudaMemcpy(light_ray_data,d_light_ray_data,sizeof(light_ray_data_t)*N,cudaMemcpyDeviceToHost);
@@ -3358,7 +3363,7 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	//--------------------------------------------------------------------------------------
 
 	// counter for light rays
-	int light_ray_index;
+	int light_ray_index, pos_index;
 
 	// pointer to store final position of light rays on CPU
 	float3* final_pos = 0;
@@ -3394,10 +3399,10 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	{
 		printf("number of intermediate positions to be saved: %d\n", num_intermediate_positions_save);
 		// allocate memory
-		intermediate_pos = (float3*) malloc(sizeof(float3)*num_intermediate_positions_save);
-		intermediate_dir = (float3*) malloc(sizeof(float3)*num_intermediate_positions_save);
-		cudaMalloc((void **)&d_intermediate_pos, sizeof(float3)*num_intermediate_positions_save);
-		cudaMalloc((void **)&d_intermediate_dir, sizeof(float3)*num_intermediate_positions_save);
+		intermediate_pos = (float3*) malloc(sizeof(float3)*num_intermediate_positions_save*num_lightrays_save);
+		intermediate_dir = (float3*) malloc(sizeof(float3)*num_intermediate_positions_save*num_lightrays_save);
+		cudaMalloc((void **)&d_intermediate_pos, sizeof(float3)*num_intermediate_positions_save*num_lightrays_save);
+		cudaMalloc((void **)&d_intermediate_dir, sizeof(float3)*num_intermediate_positions_save*num_lightrays_save);
 	}
 
 	//------------------------------------------------------------------------------------------
@@ -3445,12 +3450,13 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 		{
 			// initialize all values to nan
 			for(light_ray_index = 0; light_ray_index < num_lightrays_save; light_ray_index++)
-			{
-				intermediate_pos[light_ray_index] = make_float3(NAN, NAN, NAN);
-				intermediate_dir[light_ray_index] = make_float3(NAN, NAN, NAN);
-			}
-			cudaMemcpy(d_intermediate_pos, intermediate_pos, sizeof(float3)*num_intermediate_positions_save, cudaMemcpyHostToDevice);
-			cudaMemcpy(d_intermediate_dir, intermediate_dir, sizeof(float3)*num_intermediate_positions_save, cudaMemcpyHostToDevice);
+				for(pos_index = 0; pos_index < num_intermediate_positions_save; pos_index++)
+				{
+					intermediate_pos[light_ray_index*num_intermediate_positions_save + pos_index] = make_float3(NAN, NAN, NAN);
+					intermediate_dir[light_ray_index*num_intermediate_positions_save + pos_index] = make_float3(NAN, NAN, NAN);
+				}
+			cudaMemcpy(d_intermediate_pos, intermediate_pos, sizeof(float3)*num_intermediate_positions_save*num_lightrays_save, cudaMemcpyHostToDevice);
+			cudaMemcpy(d_intermediate_dir, intermediate_dir, sizeof(float3)*num_intermediate_positions_save*num_lightrays_save, cudaMemcpyHostToDevice);
 		}
 		printf("beginning ray tracing .....");
 		parallel_ray_tracing<<<grid,block>>>(lens_pitch, image_distance,scattering_data,
@@ -3524,7 +3530,7 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 			// save intermediate light ray positions to file (for debugging purposes)
 			//--------------------------------------------------------------------------------------
 			printf("saving intermediate light ray positions to file\n");
-			cudaMemcpy(intermediate_pos, d_intermediate_pos, sizeof(float3)*num_intermediate_positions_save, cudaMemcpyDeviceToHost);
+			cudaMemcpy(intermediate_pos, d_intermediate_pos, sizeof(float3)*num_intermediate_positions_save*num_lightrays_save, cudaMemcpyDeviceToHost);
 			cudaDeviceSynchronize();
 			// this is the file path
 			filepath = lightray_position_save_path;
@@ -3539,8 +3545,9 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 			std::ofstream file_intermediate_pos(full_filename.c_str(), ios::out | ios::binary);
 
 			// save all the pixel intensities to file
-			for(light_ray_index = 0; light_ray_index < num_intermediate_positions_save; light_ray_index++)
-					file_intermediate_pos.write((char*)&intermediate_pos[light_ray_index],sizeof(float3));
+			for(light_ray_index = 0; light_ray_index < num_lightrays_save; light_ray_index++)
+				for(pos_index = 0; pos_index < num_intermediate_positions_save; pos_index++)
+					file_intermediate_pos.write((char*)&intermediate_pos[light_ray_index*num_intermediate_positions_save + pos_index],sizeof(float3));
 
 			// close the file
 			file_intermediate_pos.close();

@@ -777,8 +777,8 @@ __device__ light_ray_data_t euler(light_ray_data_t light_ray_data,
 
 			if(save_intermediate_ray_data && loop_ctr < num_intermediate_positions_save)
 			{
-				intermediate_pos[loop_ctr] = pos; //make_float3(val.x, lookup.z, pos.z); //pos;
-				intermediate_dir[loop_ctr] = dir;
+				intermediate_pos[thread_id*num_intermediate_positions_save + loop_ctr] = pos; //make_float3(val.x, lookup.z, pos.z); //pos;
+				intermediate_dir[thread_id*num_intermediate_positions_save + loop_ctr] = dir;
 			}
 
 			lookup = calculate_lookup_index(pos, params, lookup_scale);
@@ -1025,8 +1025,8 @@ __device__ light_ray_data_t rk4(light_ray_data_t light_ray_data, density_grad_pa
 
 			if(save_intermediate_ray_data && loop_ctr < num_intermediate_positions_save)
 			{
-				intermediate_pos[loop_ctr] = light_ray_data.ray_source_coordinates;
-				intermediate_dir[loop_ctr] = light_ray_data.ray_propagation_direction;
+				intermediate_pos[thread_id*num_intermediate_positions_save + loop_ctr] = light_ray_data.ray_source_coordinates;
+				intermediate_dir[thread_id*num_intermediate_positions_save + loop_ctr] = light_ray_data.ray_propagation_direction;
 			}
 
 			pos = light_ray_data.ray_source_coordinates;
@@ -1501,7 +1501,11 @@ __device__ light_ray_data_t trace_rays_through_density_gradients(light_ray_data_
 
 	// increment ray position by a small amount so it is inside the volume.
 //	pos = pos + dir * 1 * params.step_size/refractive_index;
-	pos.z = params.max_bound.z;
+	if(dir.z > 0)
+		pos.z = params.min_bound.z;
+	else
+		pos.z = params.max_bound.z;
+
  	light_ray_data.ray_source_coordinates = pos;
 
 // 	light_ray_data.ray_source_coordinates = pos;
@@ -1546,17 +1550,12 @@ __device__ void check_texture_lookup()
 
 	float4 val;
 	float3 lookup;
-	int a;
+
 	// extract refractive index gradients as well as the local refractive index
 	lookup.x = 1;
 	lookup.y = 1;
 	lookup.z = 1;
 	val = tex3D(tex_data, lookup.x + 0.5, lookup.y + 0.5, lookup.z + 0.5);
-
-	if(val.w == 0)
-		a = 1;
-	else
-		a = 2;
 
 	printf("val.w: %f\n", val.w);
 
@@ -1578,7 +1577,8 @@ __device__ void check_texture_lookup()
 //	check_texture_lookup();
 //}
 
-__global__ void check_trace_rays_through_density_gradients(light_ray_data_t* light_ray_data, density_grad_params_t params)
+__global__ void check_trace_rays_through_density_gradients(light_ray_data_t* light_ray_data, density_grad_params_t params, curandState* states,
+		bool save_intermediate_ray_data, int num_intermediate_positions_save, float3* intermediate_pos, float3* intermediate_dir)
 {
 	/*
 	 * This function is used to check the ray deflection produced by the
@@ -1593,7 +1593,14 @@ __global__ void check_trace_rays_through_density_gradients(light_ray_data_t* lig
 //	id = blockIdx.x*blockDim.x + threadIdx.x;
 	id = threadIdx.x;
 
-//	light_ray_data[id] = trace_rays_through_density_gradients(light_ray_data[id],params, 0, 0, 0.0);
+	bool add_ngrad_noise = false;
+	float ngrad_noise_std = 0;
+
+	light_ray_data[id] = trace_rays_through_density_gradients(light_ray_data[id],params, id,add_ngrad_noise, ngrad_noise_std,
+			states, intermediate_pos, intermediate_dir,
+			save_intermediate_ray_data, num_intermediate_positions_save);
+
+
 }
 extern "C"{
 
@@ -1829,7 +1836,7 @@ density_grad_params_t setData(float* data, density_grad_params_t _params)
 
 	std::ofstream file;
 	file.open(filename.c_str(), ios::out | ios::binary);
-	float4 data_out;
+//	float4 data_out;
 //	float4 data_out_2;
 
 	// calculate grid spacings for gradient calculation

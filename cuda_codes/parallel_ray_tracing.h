@@ -48,8 +48,6 @@ typedef struct lightfield_source_t
 	float* y;
 	// this is the z location of each particle
 	float* z;
-	// total number of rays (<=lightray_process_number)
-	int num_rays;
 	// number of particles to simulate
 	int num_particles;
 	// offset along z
