@@ -1722,7 +1722,11 @@ def prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, sc
     lightfield_source['y'] = np.asarray(lightfield_source['y'].astype('float32'))
     lightfield_source['z'] = np.asarray(lightfield_source['z'].astype('float32'))
     lightfield_source['diameter_index'] = np.asarray(lightfield_source['diameter_index'].astype('int32'))
-    lightfield_source['z_offset'] = float(lightfield_source['z_offset'])
+
+    if not 'z_offset' in lightfield_source.keys():
+        lightfield_source['z_offset'] = 0
+    else:
+        lightfield_source['z_offset'] = float(lightfield_source['z_offset'])
 
     # copy data to structure
     lightfield_source_ctypes = lightfield_source_struct()
@@ -2139,15 +2143,19 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     if piv_simulation_parameters['output_data']['save_lightrays']:
         lightray_positions_filepath = piv_simulation_parameters['output_data']['lightray_positions_filepath']
         lightray_directions_filepath = piv_simulation_parameters['output_data']['lightray_directions_filepath']
+        # number of light rays to save positions and directions for
+        num_lightrays_save = int(piv_simulation_parameters['output_data']['num_lightrays_save'])
     else:
         lightray_positions_filepath = ''
         lightray_directions_filepath = ''
-        
-    # number of light rays to save positions and directions for
-    num_lightrays_save = int(piv_simulation_parameters['output_data']['num_lightrays_save'])
+        num_lightrays_save = 0
 
     save_intermediate_ray_data = piv_simulation_parameters['output_data']['save_intermediate_ray_data']
-    num_intermediate_positions_save = piv_simulation_parameters['output_data']['num_intermediate_positions_save']
+    if save_intermediate_ray_data:
+        num_intermediate_positions_save = piv_simulation_parameters['output_data']['num_intermediate_positions_save']
+    else:
+        num_intermediate_positions_save = 0
+
     
     # convert the data to ctypes compatible format and call the CUDA function
     I = prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, scattering_type,

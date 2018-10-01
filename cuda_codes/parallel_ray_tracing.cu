@@ -3286,8 +3286,8 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	// number of the light rays to be generated and traced in a single call
 	int num_rays = source_point_number*lightray_number_per_particle;
 //	// print the number of rays
-	printf("num_particles: %d, source_point_number: %d, num_rays: %d\n",
-			num_particles, source_point_number, num_rays);
+	printf("num_particles: %d, source_point_number: %d, lightray_number_per_particle: %d, num_rays: %d\n",
+			num_particles, source_point_number, lightray_number_per_particle, num_rays);
 
 	// allocate number of threads per block
 	dim3 block(500,1);
