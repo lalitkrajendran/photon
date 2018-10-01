@@ -774,12 +774,12 @@ def load_lightfield_data(piv_simulation_parameters,optical_system,mie_scattering
         # from the parameters structure
         particle_diameter_index_distribution = mie_scattering_data['particle_diameter_index_distribution']
         # This sets the irradiance constant for using Mie scattering
-        irradiance_constant = 500.0/1.0e4  # LKR added the extra 100 multiplication
+        irradiance_constant = 500.0 #500.0/1.0e4
     else:
         # This sets the particle diameter indices to a Null value
-        particle_diameter_index_distribution= None
+        particle_diameter_index_distribution = np.ones(particle_number)
         # This sets the irradiance constant for not using Mie scattering
-        irradiance_constant = 500.0
+        irradiance_constant = 1e4
 
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # % Calculates optical system properties                                    %
@@ -799,32 +799,75 @@ def load_lightfield_data(piv_simulation_parameters,optical_system,mie_scattering
     # This is the object distance of the lens
     z_object = v1_vertex_plane - h1_principal_plane + object_distance
 
-    # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    # % Loads the current particle field data                                   %
-    # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    if piv_simulation_parameters['particle_field']['load_particle_data']:
+        # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        # % Loads the current particle field data                                   %
+        # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    # This is the list of particle data files that can be loaded
-    particle_data_list = glob.glob(data_directory + data_filename_prefix + '*.mat')
+        # This is the list of particle data files that can be loaded
+        particle_data_list = glob.glob(data_directory + data_filename_prefix + '*.mat')
 
-    # This is the filename of the first frame specified by the
-    # 'frame_vector' vector
-    particle_data_filename_read = particle_data_list[frame_index-1]
+        # This is the filename of the first frame specified by the
+        # 'frame_vector' vector
+        particle_data_filename_read = particle_data_list[frame_index-1]
 
-    # This loads the particle data file to memory
-    mat_contents = sio.loadmat(particle_data_filename_read, squeeze_me = True)
-    particle_data = pickle.load(open(particle_data_filename_read[:-3] + 'p','rb'))
+        # This loads the particle data file to memory
+        mat_contents = sio.loadmat(particle_data_filename_read, squeeze_me = True)
+        particle_data = pickle.load(open(particle_data_filename_read[:-3] + 'p','rb'))
 
-    # reads variable from mat_contents
-    X = np.squeeze(particle_data['X'])
-    Y = np.squeeze(particle_data['Y'])
-    Z = np.squeeze(particle_data['Z'])
+        # reads variable from mat_contents
+        X = np.squeeze(particle_data['X'])
+        Y = np.squeeze(particle_data['Y'])
+        Z = np.squeeze(particle_data['Z'])
 
-    # This extracts only the specified number of particles from the
-    # particle position vectors
-    # NOTE: During array slicing in python, the last index is particle_number -1
-    X = X[0:int(particle_number)]
-    Y = Y[0:int(particle_number)]
-    Z = Z[0:int(particle_number)]
+        # This extracts only the specified number of particles from the
+        # particle position vectors
+        # NOTE: During array slicing in python, the last index is particle_number -1
+        X = X[0:int(particle_number)]
+        Y = Y[0:int(particle_number)]
+        Z = Z[0:int(particle_number)]
+    else:
+        if 'X_Min' in piv_simulation_parameters['particle_field'].keys():
+            X_Min = piv_simulation_parameters['particle_field']['X_Min']
+        else:
+            X_Min = -1e5 #-7.5e4
+
+        if 'X_Max' in piv_simulation_parameters['particle_field'].keys():
+            X_Max = piv_simulation_parameters['particle_field']['X_Max']
+        else:
+            X_Max = 1e5 #+7.5e4
+
+        if 'Y_Min' in piv_simulation_parameters['particle_field'].keys():
+            Y_Min = piv_simulation_parameters['particle_field']['Y_Min']
+        else:
+            Y_Min = -7.5e4 #-7.5e4
+
+        if 'Y_Max' in piv_simulation_parameters['particle_field'].keys():
+            Y_Max = piv_simulation_parameters['particle_field']['Y_Max']
+        else:
+            Y_Max = 7.5e4 #+7.5e4
+
+        if 'Z_Min' in piv_simulation_parameters['particle_field'].keys():
+            Z_Min = piv_simulation_parameters['particle_field']['Z_Min']
+        else:
+            Z_Min = -7.5e3 #-7.5e3
+
+        if 'Z_Max' in piv_simulation_parameters['particle_field'].keys():
+            Z_Max = piv_simulation_parameters['particle_field']['Z_Max']
+        else:
+            Z_Max = +7.5e3 #+7.5e3
+
+        # X_Min = -5e4/1e1 #-7.5e4
+        # X_Max = 5e4/1e1 #+7.5e4
+        # Y_Min = -5e4/1e1 #-7.5e4
+        # Y_Max = 5e4/1e1 #+7.5e4
+        # Z_Min = -5e4/1e1 #-7.5e3
+        # Z_Max = 5e4/1e1 #+7.5e3
+
+        X = (X_Max - X_Min) * np.random.rand(int(particle_number)) + X_Min
+        Y = (Y_Max - Y_Min) * np.random.rand(int(particle_number)) + Y_Min
+        Z = (Z_Max - Z_Min) * np.random.rand(int(particle_number)) + Z_Min
+
 
     # This calculates the standard deviation of the Gaussian beam function
     # based upon the Full Width Half Maximum
@@ -847,8 +890,8 @@ def load_lightfield_data(piv_simulation_parameters,optical_system,mie_scattering
     lightfield_source['source_point_number'] = 10000
 
     # This is the number of rays to be generated for each source point
-    lightfield_source['lightray_number_per_particle'] = 10000
-
+    lightfield_source['lightray_number_per_particle'] = piv_simulation_parameters['particle_field']['lightray_number_per_particle']
+    lightfield_source['num_particles'] = particle_number
     # This adds in the particles to the lightfield source data
     lightfield_source['x'] = X
     lightfield_source['y'] = Y
@@ -1536,6 +1579,29 @@ def generate_bos_image_lightfield_data(piv_simulation_parameters,optical_system)
     return lightfield_source
 
 
+def generate_random_numbers_for_lightrays(lightray_number_per_particle):
+    ################################################################################################################
+    # generate random numbers for light ray intersection with lens
+    ################################################################################################################
+
+    # path to the directory containing the cuda codes
+    cuda_codes_filepath = '../cuda_codes'
+
+    # generate a set of random numbers using MT 19937
+    # % This creates random radial coordinates for the lightrays to intersect
+    # % on the lens
+    np.random.seed(1105)
+    r_temp = np.random.rand(1, int(lightray_number_per_particle)).astype('float32')
+    r_temp.tofile(os.path.join(cuda_codes_filepath, 'data', 'random1.bin'))
+
+    # % This creates random angular coordinates for the lightrays to
+    # % intersect on the lens
+    # np.random.seed(4092)
+    psi_temp = np.random.rand(1, int(lightray_number_per_particle)).astype('float32')
+    # psi_temp = np.zeros(shape=(1,int(lightray_number_per_particle))).astype('float32')
+    psi_temp.tofile(os.path.join(cuda_codes_filepath, 'data', 'random2.bin'))
+
+
 def run_piv_simulation_02(piv_simulation_parameters):
 # This function runs a PIV simulation using the thick lens, non-paraxial
 # camera simulation.
@@ -1556,144 +1622,265 @@ def run_piv_simulation_02(piv_simulation_parameters):
     # optical_system['design']['optical_element'][0]['element_geometry'] = np.NAN
     # optical_system['design']['optical_element'][0]['element_properties'] = np.NAN
 
-    # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    # % Particle Field Simulation                                               %
-    # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    if piv_simulation_parameters['simulation_type'] == 'piv':
+        # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        # % Particle Field Simulation                                               %
+        # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    # # % This extracts the Boolean value stating whether to generate the particle
-    # # % field images from the structure
-    generate_particle_field_images = piv_simulation_parameters['particle_field']['generate_particle_field_images']
+        # # % This extracts the Boolean value stating whether to generate the particle
+        # # % field images from the structure
+        generate_particle_field_images = piv_simulation_parameters['particle_field']['generate_particle_field_images']
 
-    # % This extracts the vector giving the frames of particle positions to load to
-    # % the parameters structure (this indexes into the list generated by the
-    # % command 'dir([data_directory,data_filename_prefix,'*.mat'])')
-    frame_vector = piv_simulation_parameters['particle_field']['frame_vector']
+        # % This extracts the vector giving the frames of particle positions to load to
+        # % the parameters structure (this indexes into the list generated by the
+        # % command 'dir([data_directory,data_filename_prefix,'*.mat'])')
+        frame_vector = piv_simulation_parameters['particle_field']['frame_vector']
 
-    # % This adds the directory to save the particle images to parameters
-    # % structure
-    particle_image_directory = piv_simulation_parameters['output_data']['particle_image_directory']
+        # % This adds the directory to save the particle images to parameters
+        # % structure
+        particle_image_directory = piv_simulation_parameters['output_data']['particle_image_directory']
 
-    # % This extracts the number of lightrays to simulate per particle (this is roughly
-    # % equivalent to the power of the laser)
-    lightray_number_per_particle = piv_simulation_parameters['particle_field']['lightray_number_per_particle']
+        # % This extracts the number of lightrays to simulate per particle (this is roughly
+        # % equivalent to the power of the laser)
+        lightray_number_per_particle = piv_simulation_parameters['particle_field']['lightray_number_per_particle']
 
-    # % This extracts the number of lightrays to propogate per iteration (this is a
-    # % function of the RAM available on the computer)
-    lightray_process_number = piv_simulation_parameters['particle_field']['lightray_process_number']
+        # % This extracts the number of lightrays to propogate per iteration (this is a
+        # % function of the RAM available on the computer)
+        lightray_process_number = piv_simulation_parameters['particle_field']['lightray_process_number']
 
-    # % This is the gain of the sensor in decibels to be used in the particle
-    # % field simulation
-    pixel_gain = piv_simulation_parameters['particle_field']['pixel_gain']
+        # % This is the gain of the sensor in decibels to be used in the particle
+        # % field simulation
+        pixel_gain = piv_simulation_parameters['particle_field']['pixel_gain']
 
-    # % This extracts a Boolean value stating whether to perform Mie scattering
-    # % simulation
-    perform_mie_scattering = piv_simulation_parameters['particle_field']['perform_mie_scattering']
-
-    # generate_particle_field_images = False
-
-    # % This generates the particle field images if specified by the parameters
-    # % structure
-    if generate_particle_field_images:
-
-        # This displays that the particle images are being simulated
-        print('\n\n')
-        print('Simulating particle images . . . ')
-      
-        
-        # This calculates the Mie scattering data if specified in the parameters
-        # data structure, otherwise the Mie scattering data is set to a Null value
-        if perform_mie_scattering:
-            # This calculates the Mie scattering parameters data used in simulating the
-            # scattering intensities of the simulated particles
-            scattering_data = create_mie_scattering_data(piv_simulation_parameters)
-            # This sets the scattering type to mie for the particle simulation
-            scattering_type = 'mie'
-        else:
-            # This sets the Mie scattering data to a Null value
-            scattering_data = None
-            # This sets the scattering type to diffuse for the particle simulation
-            scattering_type = 'diffuse'
-
-        
-         # This iterates through the frame vectors performing the ray tracing operations for each frame
-        field_type = 'particle'
-        # for frame_index in np.array(frame_vector):
-        for frame_index in range(1,3):
-            # This creates the lightfield data for performing the raytracing operation
-            print "frame_index : %d" % frame_index
-            lightfield_source = dict()
-                        
-            lightfield_source = load_lightfield_data(piv_simulation_parameters,optical_system,scattering_data,frame_index, lightfield_source)
-                
-            # convert none to NAN just for MATLAB
-            if(scattering_data == None):
-                scattering_data = np.NAN
-            os.chdir(os.path.dirname(os.path.realpath(__file__)))
-
-            # % This performs the ray tracing to generate the sensor image
-            I, I_raw = perform_ray_tracing_03(piv_simulation_parameters,optical_system,pixel_gain,scattering_data,scattering_type,lightfield_source,field_type)
-
-            # This is the filename to save the image data to
-            image_filename_write = particle_image_directory + 'particle_image_frame_' + '%04d' % frame_index + '.tif'
-
-            # This saves the image to memory
-            TIFF.imsave(image_filename_write,I)
-
-            # this is the filename to sve the raw image data to
-            raw_image_filename_write = particle_image_directory + 'particle_image_frame_' + '%04d' % frame_index + '.bin'
-
-            # this saves the image to memory
-            I_raw.tofile(raw_image_filename_write)
-
-
-    # # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    # # % Calibration Grid Simulation                                             %
-    # # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    #
-    # % This extracts the Boolean value stating whether to generate the calibration
-    # % images from the structure
-    generate_calibration_grid_images = piv_simulation_parameters['calibration_grid']['generate_calibration_grid_images']
-    # % This extracts the calibration plane number from the structure
-    calibration_plane_number = int(piv_simulation_parameters['calibration_grid']['calibration_plane_number'])
-    # % This extracts the directory to save the calibration grid images from
-    # % parameters structure
-    calibration_grid_image_directory = piv_simulation_parameters['output_data']['calibration_grid_image_directory']
-    # % This extracts the number of lightrays to simulate per particle (this is roughly
-    # % equivalent to the power of the laser)
-    lightray_number_per_particle = piv_simulation_parameters['calibration_grid']['lightray_number_per_particle']
-    # % This extracts the number of lightrays to propogate per iteration (this is a
-    # % function of the RAM available on the computer)
-    lightray_process_number = piv_simulation_parameters['calibration_grid']['lightray_process_number']
-    # % This is the gain of the sensor in decibels to be used in the calibration
-    # % grid simulation
-    pixel_gain = piv_simulation_parameters['calibration_grid']['pixel_gain']
-    # % This extracts the directory to save the calibration grid images from
-    # % parameters structure
-    calibration_grid_image_directory = piv_simulation_parameters['output_data']['calibration_grid_image_directory']
-    
-    # generate_calibration_grid_images = True
-    # % This generates the calibration grid images if specified by the parameters
-    # % structure
-    if generate_calibration_grid_images:
-
-        # % This displays that the calibration images are being simulated
-        # fprintf('\n\n');
-        print 'Simulating calibration images . . . '
-
-        # % This sets the scattering type to diffuse for the calibration grid
+        # % This extracts a Boolean value stating whether to perform Mie scattering
         # % simulation
-        scattering_type = 'diffuse'
-        # % This sets the scattering data to a Null value for the calibration grid
-        scattering_data = None
+        perform_mie_scattering = piv_simulation_parameters['particle_field']['perform_mie_scattering']
 
-        field_type = 'calibration'
+        # generate_particle_field_images = False
 
-        # % This iterates through the calibration grid planes performing the ray
-        # % tracing operations for each plane
-        for plane_index in range(1,calibration_plane_number+1):
+        # % This generates the particle field images if specified by the parameters
+        # % structure
+        if generate_particle_field_images:
+
+            # This displays that the particle images are being simulated
+            print('\n\n')
+            print('Simulating particle images . . . ')
+
+
+            # generate random numbers for light ray intersection with lens
+            generate_random_numbers_for_lightrays(lightray_number_per_particle)
+
+            # This calculates the Mie scattering data if specified in the parameters
+            # data structure, otherwise the Mie scattering data is set to a Null value
+            if perform_mie_scattering:
+                # This calculates the Mie scattering parameters data used in simulating the
+                # scattering intensities of the simulated particles
+                scattering_data = create_mie_scattering_data(piv_simulation_parameters)
+                # This sets the scattering type to mie for the particle simulation
+                scattering_type = 'mie'
+            else:
+                # This sets the Mie scattering data to a Null value
+                scattering_data = None
+                # This sets the scattering type to diffuse for the particle simulation
+                scattering_type = 'diffuse'
+
+
+             # This iterates through the frame vectors performing the ray tracing operations for each frame
+            field_type = 'particle'
+            # for frame_index in np.array(frame_vector):
+            for frame_index in range(1,2):
+                # This creates the lightfield data for performing the raytracing operation
+                print "frame_index : %d" % frame_index
+                lightfield_source = dict()
+
+                lightfield_source = load_lightfield_data(piv_simulation_parameters,optical_system,scattering_data,frame_index, lightfield_source)
+
+                # convert none to NAN just for MATLAB
+                if(scattering_data == None):
+                    scattering_data = np.NAN
+                os.chdir(os.path.dirname(os.path.realpath(__file__)))
+
+                piv_simulation_parameters['output_data']['lightray_positions_filepath'] = os.path.join(particle_image_directory, 'light-ray-positions', 'im%04d' % frame_index) + '/'
+                piv_simulation_parameters['output_data']['lightray_directions_filepath'] = os.path.join(particle_image_directory, 'light-ray-directions', 'im%04d' % frame_index) + '/'
+
+                # create the directories if they don't exist
+                if not os.path.exists(piv_simulation_parameters['output_data']['lightray_positions_filepath']):
+                    os.makedirs(piv_simulation_parameters['output_data']['lightray_positions_filepath'])
+                if not os.path.exists(piv_simulation_parameters['output_data']['lightray_directions_filepath']):
+                    os.makedirs(piv_simulation_parameters['output_data']['lightray_directions_filepath'])
+
+                # % This performs the ray tracing to generate the sensor image
+                I, I_raw = perform_ray_tracing_03(piv_simulation_parameters,optical_system,pixel_gain,scattering_data,scattering_type,lightfield_source,field_type)
+
+                # This is the filename to save the image data to
+                image_filename_write = os.path.join(particle_image_directory, 'particle_image_frame_' + '%04d' % frame_index + '.tif')
+
+                # This saves the image to memory
+                TIFF.imsave(image_filename_write,I)
+
+                # this is the filename to sve the raw image data to
+                raw_image_filename_write = os.path.join(particle_image_directory, 'particle_image_frame_' + '%04d' % frame_index + '.bin')
+
+                # this saves the image to memory
+                I_raw.tofile(raw_image_filename_write)
+
+
+            # save parameters to file
+            sio.savemat(os.path.join(particle_image_directory, 'parameters.mat'), piv_simulation_parameters, appendmat=True,
+                        format='5',
+                        long_field_names=True)
+            sio.savemat(os.path.join(particle_image_directory, 'optical_system.mat'), optical_system, appendmat=True,
+                        format='5',
+                        long_field_names=True)
+
+    elif piv_simulation_parameters['simulation_type'] == 'calibration':
+        # # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        # # % Calibration Grid Simulation                                             %
+        # # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        #
+        # % This extracts the Boolean value stating whether to generate the calibration
+        # % images from the structure
+        generate_calibration_grid_images = piv_simulation_parameters['calibration_grid']['generate_calibration_grid_images']
+        # % This extracts the calibration plane number from the structure
+        calibration_plane_number = int(piv_simulation_parameters['calibration_grid']['calibration_plane_number'])
+        # % This extracts the directory to save the calibration grid images from
+        # % parameters structure
+        calibration_grid_image_directory = piv_simulation_parameters['output_data']['calibration_grid_image_directory']
+        # % This extracts the number of lightrays to simulate per particle (this is roughly
+        # % equivalent to the power of the laser)
+        lightray_number_per_particle = piv_simulation_parameters['calibration_grid']['lightray_number_per_particle']
+        # % This extracts the number of lightrays to propogate per iteration (this is a
+        # % function of the RAM available on the computer)
+        lightray_process_number = piv_simulation_parameters['calibration_grid']['lightray_process_number']
+        # % This is the gain of the sensor in decibels to be used in the calibration
+        # % grid simulation
+        pixel_gain = piv_simulation_parameters['calibration_grid']['pixel_gain']
+        # % This extracts the directory to save the calibration grid images from
+        # % parameters structure
+        calibration_grid_image_directory = piv_simulation_parameters['output_data']['calibration_grid_image_directory']
+
+        # generate_calibration_grid_images = True
+        # % This generates the calibration grid images if specified by the parameters
+        # % structure
+        if generate_calibration_grid_images:
+
+            # % This displays that the calibration images are being simulated
+            # fprintf('\n\n');
+            print 'Simulating calibration images . . . '
+
+            # % This sets the scattering type to diffuse for the calibration grid
+            # % simulation
+            scattering_type = 'diffuse'
+            # % This sets the scattering data to a Null value for the calibration grid
+            scattering_data = None
+
+            field_type = 'calibration'
+
+            # generate random numbers for light ray intersection with lens
+            generate_random_numbers_for_lightrays(lightray_number_per_particle)
+
+            # % This iterates through the calibration grid planes performing the ray
+            # % tracing operations for each plane
+            for plane_index in range(1,calibration_plane_number+1):
+
+                # % This creates the lightfield data for performing the raytracing operation
+                lightfield_source = generate_calibration_lightfield_data(piv_simulation_parameters,optical_system,plane_index-1)
+                # % This adds the number of lightrays per particle to the
+                # % 'lightfield_source' data
+                lightfield_source['lightray_number_per_particle'] = lightray_number_per_particle
+                # % This adds the number of lightrays to simulateously process to the
+                # % 'lightfield_source' data
+                lightfield_source['lightray_process_number'] = lightray_process_number
+                # save data to mat file
+                # convert none to NAN just for MATLAB
+                scattering_data = np.NAN
+
+                if piv_simulation_parameters['output_data']['save_lightrays']:
+                    piv_simulation_parameters['output_data']['lightray_positions_filepath'] = os.path.join(calibration_grid_image_directory, 'light-ray-positions', 'plane%02d' % (plane_index))
+                    # if the write directory does not exist, create it
+                    if (not (os.path.exists(piv_simulation_parameters['output_data']['lightray_positions_filepath']))):
+                        os.makedirs(piv_simulation_parameters['output_data']['lightray_positions_filepath'])
+                    # if it exists, then delete the old parameter files
+                    else:
+                        files = glob.glob(os.path.join(piv_simulation_parameters['output_data']['lightray_positions_filepath'], '*.bin'))
+                        for f in files:
+                            os.remove(f)
+
+                    piv_simulation_parameters['output_data']['lightray_directions_filepath'] = os.path.join(calibration_grid_image_directory, 'light-ray-directions', 'plane%02d' % (plane_index))
+                    # if the write directory does not exist, create it
+                    if (not (os.path.exists(piv_simulation_parameters['output_data']['lightray_directions_filepath']))):
+                        os.makedirs(piv_simulation_parameters['output_data']['lightray_directions_filepath'])
+                    # if it exists, then delete the old parameter files
+                    else:
+                        files = glob.glob(os.path.join(piv_simulation_parameters['output_data']['lightray_directions_filepath'], '*.bin'))
+                        for f in files:
+                            os.remove(f)
+
+                # % This performs the ray tracing to generate the sensor image
+                I, I_raw = perform_ray_tracing_03(piv_simulation_parameters,optical_system,pixel_gain,scattering_data,scattering_type,lightfield_source,field_type)
+
+                # % This is the filename to save the image data to
+                image_filename_write = os.path.join(calibration_grid_image_directory, 'calibration_image_plane_' + '%04d' % plane_index + '.tif')
+
+                # % This saves the image to memory
+                TIFF.imsave(image_filename_write, I)
+
+                # this is the filename to save the raw image data to
+                raw_image_filename_write = os.path.join(calibration_grid_image_directory, 'calibration_image_plane_' + '%04d' % plane_index + '.bin')
+
+                # % This saves the image to memory
+                I_raw.tofile(raw_image_filename_write)
+
+            # save parameters to file
+            sio.savemat(os.path.join(calibration_grid_image_directory, 'parameters.mat'), piv_simulation_parameters, appendmat=True,
+                        format='5',
+                        long_field_names=True)
+            sio.savemat(os.path.join(calibration_grid_image_directory, 'optical_system.mat'), optical_system, appendmat=True, format='5',
+                        long_field_names=True)
+
+    elif piv_simulation_parameters['simulation_type'] == 'bos':
+        # # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        # # % BOS pattern Simulation                                             %
+        # # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        #
+        # % This extracts the Boolean value stating whether to generate the calibration
+        # % images from the structure
+        generate_bos_pattern_images = piv_simulation_parameters['bos_pattern']['generate_bos_pattern_images']
+        # % This extracts the directory to save the calibration grid images from
+        # % parameters structure
+        bos_pattern_image_directory = piv_simulation_parameters['output_data']['bos_pattern_image_directory']
+        # % This extracts the number of lightrays to simulate per particle (this is roughly
+        # % equivalent to the power of the laser)
+        lightray_number_per_particle = piv_simulation_parameters['bos_pattern']['lightray_number_per_particle']
+        # % This extracts the number of lightrays to propogate per iteration (this is a
+        # % function of the RAM available on the computer)
+        lightray_process_number = piv_simulation_parameters['bos_pattern']['lightray_process_number']
+        # % This is the gain of the sensor in decibels to be used in the calibration
+        # % grid simulation
+        pixel_gain = piv_simulation_parameters['bos_pattern']['pixel_gain']
+
+        # % This generates the calibration grid images if specified by the parameters
+        # % structure
+        if generate_bos_pattern_images:
+
+            # % This displays that the calibration images are being simulated
+            # fprintf('\n\n');
+            print 'Simulating bos_pattern images . . . '
+
+            # % This sets the scattering type to diffuse for the calibration grid
+            # % simulation
+            scattering_type = 'diffuse'
+            # % This sets the scattering data to a Null value for the calibration grid
+            scattering_data = None
+
+            field_type = 'calibration'
 
             # % This creates the lightfield data for performing the raytracing operation
-            lightfield_source = generate_calibration_lightfield_data(piv_simulation_parameters,optical_system,plane_index-1)
+            # lightfield_source = generate_bos_image_lightfield_data(piv_simulation_parameters,optical_system)
+            lightfield_source, x_grid_point_coordinate_vector, y_grid_point_coordinate_vector = generate_bos_lightfield_data(piv_simulation_parameters, optical_system)
+
+            # modify number of dots generated in piv simulation parameters
+            piv_simulation_parameters['bos_pattern']['num_dots_generated'] = lightfield_source['x'].size
             # % This adds the number of lightrays per particle to the
             # % 'lightfield_source' data
             lightfield_source['lightray_number_per_particle'] = lightray_number_per_particle
@@ -1704,200 +1891,83 @@ def run_piv_simulation_02(piv_simulation_parameters):
             # convert none to NAN just for MATLAB
             scattering_data = np.NAN
 
-            if piv_simulation_parameters['output_data']['save_lightrays']:
-                piv_simulation_parameters['output_data']['lightray_positions_filepath'] = calibration_grid_image_directory + 'light-ray-positions/plane%02d/' % (plane_index)
-                # if the write directory does not exist, create it
-                if (not (os.path.exists(piv_simulation_parameters['output_data']['lightray_positions_filepath']))):
-                    os.makedirs(piv_simulation_parameters['output_data']['lightray_positions_filepath'])
-                # if it exists, then delete the old parameter files
-                else:
-                    files = glob.glob(piv_simulation_parameters['output_data']['lightray_positions_filepath'] + '*.bin')
-                    for f in files:
-                        os.remove(f)
+            # generate random numbers for light ray intersection with lens
+            generate_random_numbers_for_lightrays(lightray_number_per_particle)
 
-                piv_simulation_parameters['output_data']['lightray_directions_filepath'] = calibration_grid_image_directory + 'light-ray-directions/plane%02d/' % (plane_index)
-                # if the write directory does not exist, create it
-                if (not (os.path.exists(piv_simulation_parameters['output_data']['lightray_directions_filepath']))):
-                    os.makedirs(piv_simulation_parameters['output_data']['lightray_directions_filepath'])
-                # if it exists, then delete the old parameter files
-                else:
-                    files = glob.glob(piv_simulation_parameters['output_data']['lightray_directions_filepath'] + '*.bin')
-                    for f in files:
-                        os.remove(f)
+            ################################################################################################################
+            # render the reference image without density gradients
+            ################################################################################################################
+
+            piv_simulation_parameters['density_gradients']['simulate_density_gradients'] = False
+
+            piv_simulation_parameters['output_data']['lightray_positions_filepath'] = os.path.join(bos_pattern_image_directory, 'light-ray-positions', 'im1')
+            piv_simulation_parameters['output_data']['lightray_directions_filepath'] = os.path.join(bos_pattern_image_directory, 'light-ray-directions', 'im1')
+
+            # create the directories if they don't exist
+            if not os.path.exists(piv_simulation_parameters['output_data']['lightray_positions_filepath']):
+                os.makedirs(piv_simulation_parameters['output_data']['lightray_positions_filepath'])
+            if not os.path.exists(piv_simulation_parameters['output_data']['lightray_directions_filepath']):
+                os.makedirs(piv_simulation_parameters['output_data']['lightray_directions_filepath'])
 
             # % This performs the ray tracing to generate the sensor image
             I, I_raw = perform_ray_tracing_03(piv_simulation_parameters,optical_system,pixel_gain,scattering_data,scattering_type,lightfield_source,field_type)
 
             # % This is the filename to save the image data to
-            image_filename_write = calibration_grid_image_directory + 'calibration_image_plane_' + '%04d' % plane_index + '.tif'
+            image_filename_write = os.path.join(bos_pattern_image_directory, 'bos_pattern_image_1.tif')
 
             # % This saves the image to memory
             TIFF.imsave(image_filename_write, I)
 
             # this is the filename to save the raw image data to
-            raw_image_filename_write = calibration_grid_image_directory + 'calibration_image_plane_' + '%04d' % plane_index + '.bin'
+            raw_image_filename_write = os.path.join(bos_pattern_image_directory, 'bos_pattern_image_1.bin')
 
             # % This saves the image to memory
             I_raw.tofile(raw_image_filename_write)
 
-        # save parameters to file
-        sio.savemat(calibration_grid_image_directory + 'parameters.mat', piv_simulation_parameters, appendmat=True,
-                    format='5',
-                    long_field_names=True)
-        sio.savemat(calibration_grid_image_directory + 'optical_system.mat', optical_system, appendmat=True, format='5',
-                    long_field_names=True)
+            ################################################################################################################
+            # render the image with density gradients
+            ################################################################################################################
 
-    # # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    # # % BOS pattern Simulation                                             %
-    # # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    #
-    # % This extracts the Boolean value stating whether to generate the calibration
-    # % images from the structure
-    generate_bos_pattern_images = piv_simulation_parameters['bos_pattern']['generate_bos_pattern_images']
-    # % This extracts the directory to save the calibration grid images from
-    # % parameters structure
-    bos_pattern_image_directory = piv_simulation_parameters['output_data']['bos_pattern_image_directory']
-    # % This extracts the number of lightrays to simulate per particle (this is roughly
-    # % equivalent to the power of the laser)
-    lightray_number_per_particle = piv_simulation_parameters['bos_pattern']['lightray_number_per_particle']
-    # % This extracts the number of lightrays to propogate per iteration (this is a
-    # % function of the RAM available on the computer)
-    lightray_process_number = piv_simulation_parameters['bos_pattern']['lightray_process_number']
-    # % This is the gain of the sensor in decibels to be used in the calibration
-    # % grid simulation
-    pixel_gain = piv_simulation_parameters['bos_pattern']['pixel_gain']
+            piv_simulation_parameters['density_gradients']['simulate_density_gradients'] = True
 
-    # % This generates the calibration grid images if specified by the parameters
-    # % structure
-    if generate_bos_pattern_images:
+            piv_simulation_parameters['output_data'][
+                'lightray_positions_filepath'] = os.path.join(bos_pattern_image_directory, 'light-ray-positions', 'im2')
+            piv_simulation_parameters['output_data'][
+                'lightray_directions_filepath'] = os.path.join(bos_pattern_image_directory, 'light-ray-directions', 'im2')
 
-        # % This displays that the calibration images are being simulated
-        # fprintf('\n\n');
-        print 'Simulating bos_pattern images . . . '
+            # create the directories if they don't exist
+            if not os.path.exists(piv_simulation_parameters['output_data']['lightray_positions_filepath']):
+                os.makedirs(piv_simulation_parameters['output_data']['lightray_positions_filepath'])
+            if not os.path.exists(piv_simulation_parameters['output_data']['lightray_directions_filepath']):
+                os.makedirs(piv_simulation_parameters['output_data']['lightray_directions_filepath'])
 
-        # % This sets the scattering type to diffuse for the calibration grid
-        # % simulation
-        scattering_type = 'diffuse'
-        # % This sets the scattering data to a Null value for the calibration grid
-        scattering_data = None
+            # % This performs the ray tracing to generate the sensor image
+            I, I_raw = perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain, scattering_data,
+                                              scattering_type, lightfield_source, field_type)
 
-        field_type = 'calibration'
+            # % This is the filename to save the image data to
+            image_filename_write = os.path.join(bos_pattern_image_directory, 'bos_pattern_image_2.tif')
 
-        # % This creates the lightfield data for performing the raytracing operation
-        # lightfield_source = generate_bos_image_lightfield_data(piv_simulation_parameters,optical_system)
-        lightfield_source, x_grid_point_coordinate_vector, y_grid_point_coordinate_vector = generate_bos_lightfield_data(piv_simulation_parameters, optical_system)
+             # % This saves the image to memory
+            TIFF.imsave(image_filename_write, I)
 
-        # modify number of dots generated in piv simulation parameters
-        piv_simulation_parameters['bos_pattern']['num_dots_generated'] = lightfield_source['x'].size
-        # % This adds the number of lightrays per particle to the
-        # % 'lightfield_source' data
-        lightfield_source['lightray_number_per_particle'] = lightray_number_per_particle
-        # % This adds the number of lightrays to simulateously process to the
-        # % 'lightfield_source' data
-        lightfield_source['lightray_process_number'] = lightray_process_number
-        # save data to mat file
-        # convert none to NAN just for MATLAB
-        scattering_data = np.NAN
+            # this is the filename to save the raw image data to
+            raw_image_filename_write = os.path.join(bos_pattern_image_directory, 'bos_pattern_image_2.bin')
 
-        ################################################################################################################
-        # generate random numbers for light ray intersection with lens
-        ################################################################################################################
+            # % This saves the image to memory
+            I_raw.tofile(raw_image_filename_write)
 
-        # path to the directory containing the cuda codes
-        cuda_codes_filepath = '../cuda_codes'
+            # save parameters to file
+            # save parameters to file
+            sio.savemat(os.path.join(bos_pattern_image_directory,'parameters.mat'), piv_simulation_parameters, appendmat=True, format='5',
+                        long_field_names=True)
+            sio.savemat(os.path.join(bos_pattern_image_directory,'optical_system.mat'), optical_system, appendmat=True, format='5',
+                        long_field_names=True)
 
-        # generate a set of random numbers using MT 19937
-        # % This creates random radial coordinates for the lightrays to intersect
-        # % on the lens
-        np.random.seed(1105)
-        r_temp = np.random.rand(1, int(lightray_number_per_particle)).astype('float32')
-        # r_temp = np.linspace(start=0, stop=1, num=int(lightray_number_per_particle)).astype('float32')
-        # r_temp = np.array([0.0, 0.5, 1.0]).astype('float32')
-        r_temp.tofile(cuda_codes_filepath + '/data/random1.bin')
-        # print 'first ten numbers for r_temp', r_temp[0, 0:10]
-
-        # % This creates random angular coordinates for the lightrays to
-        # % intersect on the lens
-        # np.random.seed(4092)
-        # psi_temp = np.random.rand(1, int(lightray_number_per_particle)).astype('float32')
-        # psi_temp = np.linspace(start=0, stop=1, num=int(lightray_number_per_particle)).astype('float32')
-        psi_temp = np.zeros(shape=(1,int(lightray_number_per_particle))).astype('float32')
-        psi_temp.tofile(cuda_codes_filepath + '/data/random2.bin')
-        # print 'first ten numbers for psi_temp', psi_temp[0, 0:10]
-        ################################################################################################################
-        # render the reference image without density gradients
-        ################################################################################################################
-
-        piv_simulation_parameters['density_gradients']['simulate_density_gradients'] = False
-
-        piv_simulation_parameters['output_data']['lightray_positions_filepath'] = bos_pattern_image_directory + 'light-ray-positions/im1/'
-        piv_simulation_parameters['output_data']['lightray_directions_filepath'] = bos_pattern_image_directory + 'light-ray-directions/im1/'
-
-        # create the directories if they don't exist
-        if not os.path.exists(piv_simulation_parameters['output_data']['lightray_positions_filepath']):
-            os.makedirs(piv_simulation_parameters['output_data']['lightray_positions_filepath'])
-        if not os.path.exists(piv_simulation_parameters['output_data']['lightray_directions_filepath']):
-            os.makedirs(piv_simulation_parameters['output_data']['lightray_directions_filepath'])
-
-        # % This performs the ray tracing to generate the sensor image
-        I, I_raw = perform_ray_tracing_03(piv_simulation_parameters,optical_system,pixel_gain,scattering_data,scattering_type,lightfield_source,field_type)
-
-        # % This is the filename to save the image data to
-        image_filename_write = bos_pattern_image_directory + 'bos_pattern_image_1.tif'
-
-        # % This saves the image to memory
-        TIFF.imsave(image_filename_write, I)
-
-        # this is the filename to save the raw image data to
-        raw_image_filename_write = bos_pattern_image_directory + 'bos_pattern_image_1.bin'
-
-        # % This saves the image to memory
-        I_raw.tofile(raw_image_filename_write)
-
-        ################################################################################################################
-        # render the image with density gradients
-        ################################################################################################################
-
-        piv_simulation_parameters['density_gradients']['simulate_density_gradients'] = True
-
-        piv_simulation_parameters['output_data'][
-            'lightray_positions_filepath'] = bos_pattern_image_directory + 'light-ray-positions/im2/'
-        piv_simulation_parameters['output_data'][
-            'lightray_directions_filepath'] = bos_pattern_image_directory + 'light-ray-directions/im2/'
-
-        # create the directories if they don't exist
-        if not os.path.exists(piv_simulation_parameters['output_data']['lightray_positions_filepath']):
-            os.makedirs(piv_simulation_parameters['output_data']['lightray_positions_filepath'])
-        if not os.path.exists(piv_simulation_parameters['output_data']['lightray_directions_filepath']):
-            os.makedirs(piv_simulation_parameters['output_data']['lightray_directions_filepath'])
-
-        # % This performs the ray tracing to generate the sensor image
-        I, I_raw = perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain, scattering_data,
-                                          scattering_type, lightfield_source, field_type)
-
-        # % This is the filename to save the image data to
-        image_filename_write = bos_pattern_image_directory + 'bos_pattern_image_2.tif'
-
-         # % This saves the image to memory
-        TIFF.imsave(image_filename_write, I)
-
-        # this is the filename to save the raw image data to
-        raw_image_filename_write = bos_pattern_image_directory + 'bos_pattern_image_2.bin'
-
-        # % This saves the image to memory
-        I_raw.tofile(raw_image_filename_write)
-
-        # save parameters to file
-        # save parameters to file
-        sio.savemat(bos_pattern_image_directory+'parameters.mat', piv_simulation_parameters, appendmat=True, format='5',
-                    long_field_names=True)
-        sio.savemat(bos_pattern_image_directory+'optical_system.mat', optical_system, appendmat=True, format='5',
-                    long_field_names=True)
-
-        # save grid point positions to file
-        positions = dict()
-        positions['x'] = x_grid_point_coordinate_vector
-        positions['y'] = y_grid_point_coordinate_vector
-        sio.savemat(bos_pattern_image_directory + 'positions.mat', positions, appendmat=True, format='5',
-                    long_field_names=True)
+            # save grid point positions to file
+            positions = dict()
+            positions['x'] = x_grid_point_coordinate_vector
+            positions['y'] = y_grid_point_coordinate_vector
+            sio.savemat(os.path.join(bos_pattern_image_directory, 'positions.mat'), positions, appendmat=True, format='5',
+                        long_field_names=True)
 
