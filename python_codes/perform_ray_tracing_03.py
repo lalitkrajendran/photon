@@ -1,6 +1,6 @@
 import numpy as np
 from numpy import linalg as la
-import run_piv_simulation_02
+import run_simulation_02
 import subprocess
 import os
 from sklearn.neighbors import NearestNeighbors
@@ -72,7 +72,7 @@ def create_single_element_parameters(optical_element):
     [element_center, element_pitch, element_plane_parameters] = create_element_coordinate_data(optical_element)
 
     # This calculates the rotation matrix
-    rotation_matrix = run_piv_simulation_02.calculate_rotation_matrix(x_rotation_angle, y_rotation_angle,
+    rotation_matrix = run_simulation_02.calculate_rotation_matrix(x_rotation_angle, y_rotation_angle,
                                                                       z_rotation_angle)
 
     # % This rotates the vector defining the plane of the current optical element
@@ -1930,7 +1930,7 @@ def prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, sc
 
     return I
 
-def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain, scattering_data, scattering_type,
+def perform_ray_tracing_03(simulation_parameters, optical_system, pixel_gain, scattering_data, scattering_type,
                            lightfield_source, field_type):
     # % This function calculates the ray tracing of the input lightrays
     # % generating the output image 'I'.
@@ -1941,27 +1941,27 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     # % version 02.
 
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    # % Extracts parameters from 'piv_simulation_parameters'                    %
+    # % Extracts parameters from 'simulation_parameters'                    %
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     #
     # % This extracts the object distance of the lens (ie the distance between
     # % the lens front principal plane and the center of the focal plane) to the
     # % design structure (in microns)
-    object_distance = piv_simulation_parameters['lens_design']['object_distance']
+    object_distance = simulation_parameters['lens_design']['object_distance']
     # % This extracts the lens focal length from the design structure (in microns)
-    focal_length = piv_simulation_parameters['lens_design']['focal_length']
+    focal_length = simulation_parameters['lens_design']['focal_length']
     # % This extracts the lens f/# from the design structure
-    aperture_f_number = piv_simulation_parameters['lens_design']['aperture_f_number']
+    aperture_f_number = simulation_parameters['lens_design']['aperture_f_number']
     # % This is the number of pixels in the x-direction
-    x_pixel_number = piv_simulation_parameters['camera_design']['x_pixel_number']
+    x_pixel_number = simulation_parameters['camera_design']['x_pixel_number']
     # % This is the number of pixels in the y-direction
-    y_pixel_number = piv_simulation_parameters['camera_design']['y_pixel_number']
+    y_pixel_number = simulation_parameters['camera_design']['y_pixel_number']
     # % This is the bit depth of the camera sensor (which must be an integer
     # % less then or equal to 16)
-    pixel_bit_depth = piv_simulation_parameters['camera_design']['pixel_bit_depth']
+    pixel_bit_depth = simulation_parameters['camera_design']['pixel_bit_depth']
     # % This is the wavelength of the laser used for illumination of the
     # % particles (in microns)
-    beam_wavelength = piv_simulation_parameters['particle_field']['beam_wavelength']
+    beam_wavelength = simulation_parameters['particle_field']['beam_wavelength']
     #
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # % Extracts parameters from 'optical_system'                               %
@@ -2008,12 +2008,12 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     z_sensor = 0.0
 
     # this perturbs the image distance by a small amount to see where the focal plane lies
-    if('perturbation' in piv_simulation_parameters['lens_design'].keys()):
-        z_sensor += (piv_simulation_parameters['lens_design']['perturbation']) * image_distance
+    if('perturbation' in simulation_parameters['lens_design'].keys()):
+        z_sensor += (simulation_parameters['lens_design']['perturbation']) * image_distance
         
-    piv_simulation_parameters['camera_design']['z_sensor'] = z_sensor
+    simulation_parameters['camera_design']['z_sensor'] = z_sensor
 
-    piv_simulation_parameters['camera_design']['pixel_gain'] = pixel_gain
+    simulation_parameters['camera_design']['pixel_gain'] = pixel_gain
 
     # % This is the Z position of the lens center
     z_lens = (v1_vertex_plane + v2_vertex_plane) / 2.0
@@ -2059,8 +2059,8 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     element_center[:,2] = element_center[:,2] + z_lens
 
     # set lens model 't' for thin lens, 'l' for general lens with non-paraxial rays and thickness
-    if 'lens_model' in piv_simulation_parameters['lens_design'].keys():
-        lens_model = piv_simulation_parameters['lens_design']['lens_model']
+    if 'lens_model' in simulation_parameters['lens_design'].keys():
+        lens_model = simulation_parameters['lens_design']['lens_model']
     else:
         lens_model = 'general'
 
@@ -2089,23 +2089,23 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
 #     psi_temp.tofile(cuda_codes_filepath + '/data/random2.bin')
 
     # this is the name of the file which contains the density dataset for the volume
-    simulate_density_gradients = piv_simulation_parameters['density_gradients']['simulate_density_gradients']
+    simulate_density_gradients = simulation_parameters['density_gradients']['simulate_density_gradients']
     if simulate_density_gradients:
-        density_grad_filename = piv_simulation_parameters['density_gradients']['density_gradient_filename']
-        ray_tracing_algorithm = int(piv_simulation_parameters['density_gradients']['ray_tracing_algorithm'])
+        density_grad_filename = simulation_parameters['density_gradients']['density_gradient_filename']
+        ray_tracing_algorithm = int(simulation_parameters['density_gradients']['ray_tracing_algorithm'])
     else:
         density_grad_filename = ''
         ray_tracing_algorithm = 0
 
 
-    if not 'implement_diffraction' in piv_simulation_parameters['camera_design'].keys():
-        piv_simulation_parameters['camera_design']['implement_diffraction'] = False
-        piv_simulation_parameters['camera_design']['diffraction_diameter'] = 0.0
+    if not 'implement_diffraction' in simulation_parameters['camera_design'].keys():
+        simulation_parameters['camera_design']['implement_diffraction'] = False
+        simulation_parameters['camera_design']['diffraction_diameter'] = 0.0
 
-    if not 'ray_cone_pitch_ratio' in piv_simulation_parameters['lens_design'].keys():
+    if not 'ray_cone_pitch_ratio' in simulation_parameters['lens_design'].keys():
         ray_cone_pitch_ratio = 1e-4
     else:
-        ray_cone_pitch_ratio = piv_simulation_parameters['lens_design']['ray_cone_pitch_ratio']
+        ray_cone_pitch_ratio = simulation_parameters['lens_design']['ray_cone_pitch_ratio']
 
     # default settigns for adding noise to the final light ray positions
     add_pos_noise = False
@@ -2113,10 +2113,10 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
 
     if simulate_density_gradients:
         # this checks if noise to be added to the final position of the light rays is specified.
-        if ('add_pos_noise' in piv_simulation_parameters['density_gradients'].keys()):
+        if ('add_pos_noise' in simulation_parameters['density_gradients'].keys()):
             print 'setting position noise'
-            add_pos_noise = piv_simulation_parameters['density_gradients']['add_pos_noise']
-            pos_noise_std = piv_simulation_parameters['density_gradients']['pos_noise_std']
+            add_pos_noise = simulation_parameters['density_gradients']['add_pos_noise']
+            pos_noise_std = simulation_parameters['density_gradients']['pos_noise_std']
 
     # default settigns for adding noise to the final light ray positions
     add_ngrad_noise = False
@@ -2124,35 +2124,35 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
 
     if simulate_density_gradients:
         # this checks if noise to be added to the final position of the light rays is specified.
-        if ('add_ngrad_noise' in piv_simulation_parameters['density_gradients'].keys()):
+        if ('add_ngrad_noise' in simulation_parameters['density_gradients'].keys()):
             print 'setting refractive index gradient noise'
-            add_ngrad_noise = piv_simulation_parameters['density_gradients']['add_ngrad_noise']
-            ngrad_noise_std = piv_simulation_parameters['density_gradients']['ngrad_noise_std']
+            add_ngrad_noise = simulation_parameters['density_gradients']['add_ngrad_noise']
+            ngrad_noise_std = simulation_parameters['density_gradients']['ngrad_noise_std']
 
 
     # filepaths to save final light ray positions and directions
-    if ('save_lightrays' not in piv_simulation_parameters['output_data'].keys()):
-        piv_simulation_parameters['output_data']['save_lightrays'] = True
-    if ('num_lightrays_save' not in piv_simulation_parameters['output_data'].keys()):
-        piv_simulation_parameters['output_data']['num_lightrays_save'] = 1000
-    if ('save_intermediate_ray_data' not in piv_simulation_parameters['output_data'].keys()):
-        piv_simulation_parameters['output_data']['save_intermediate_ray_data'] = False
-    if ('num_intermediate_positions_save' not in piv_simulation_parameters['output_data'].keys()):
-        piv_simulation_parameters['output_data']['num_intermediate_positions_save'] = 100
+    if ('save_lightrays' not in simulation_parameters['output_data'].keys()):
+        simulation_parameters['output_data']['save_lightrays'] = True
+    if ('num_lightrays_save' not in simulation_parameters['output_data'].keys()):
+        simulation_parameters['output_data']['num_lightrays_save'] = 1000
+    if ('save_intermediate_ray_data' not in simulation_parameters['output_data'].keys()):
+        simulation_parameters['output_data']['save_intermediate_ray_data'] = False
+    if ('num_intermediate_positions_save' not in simulation_parameters['output_data'].keys()):
+        simulation_parameters['output_data']['num_intermediate_positions_save'] = 100
         
-    if piv_simulation_parameters['output_data']['save_lightrays']:
-        lightray_positions_filepath = piv_simulation_parameters['output_data']['lightray_positions_filepath']
-        lightray_directions_filepath = piv_simulation_parameters['output_data']['lightray_directions_filepath']
+    if simulation_parameters['output_data']['save_lightrays']:
+        lightray_positions_filepath = simulation_parameters['output_data']['lightray_positions_filepath']
+        lightray_directions_filepath = simulation_parameters['output_data']['lightray_directions_filepath']
         # number of light rays to save positions and directions for
-        num_lightrays_save = int(piv_simulation_parameters['output_data']['num_lightrays_save'])
+        num_lightrays_save = int(simulation_parameters['output_data']['num_lightrays_save'])
     else:
         lightray_positions_filepath = ''
         lightray_directions_filepath = ''
         num_lightrays_save = 0
 
-    save_intermediate_ray_data = piv_simulation_parameters['output_data']['save_intermediate_ray_data']
+    save_intermediate_ray_data = simulation_parameters['output_data']['save_intermediate_ray_data']
     if save_intermediate_ray_data:
-        num_intermediate_positions_save = piv_simulation_parameters['output_data']['num_intermediate_positions_save']
+        num_intermediate_positions_save = simulation_parameters['output_data']['num_intermediate_positions_save']
     else:
         num_intermediate_positions_save = 0
 
@@ -2160,10 +2160,10 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     # convert the data to ctypes compatible format and call the CUDA function
     I = prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, scattering_type,
                            lightfield_source, lightray_number_per_particle, beam_wavelength,aperture_f_number, element_data, element_center,
-                           element_plane_parameters, element_system_index,piv_simulation_parameters['camera_design'],
+                           element_plane_parameters, element_system_index,simulation_parameters['camera_design'],
                                               I,density_grad_filename,simulate_density_gradients, lightray_positions_filepath
                                      , lightray_directions_filepath, num_lightrays_save, ray_tracing_algorithm, add_pos_noise, pos_noise_std,
-                                     add_ngrad_noise, ngrad_noise_std, ray_cone_pitch_ratio, piv_simulation_parameters['output_data']['save_lightrays'],
+                                     add_ngrad_noise, ngrad_noise_std, ray_cone_pitch_ratio, simulation_parameters['output_data']['save_lightrays'],
                                      save_intermediate_ray_data, num_intermediate_positions_save, lens_model)
 
     # this is the raw version of the original image
@@ -2173,14 +2173,14 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # % Adding image noise                                                      %
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    # piv_simulation_parameters['camera_design']['image_noise'] = 0.05
-    if(piv_simulation_parameters['camera_design']['image_noise'] > 0.0):
+    # simulation_parameters['camera_design']['image_noise'] = 0.05
+    if(simulation_parameters['camera_design']['image_noise'] > 0.0):
         np.random.seed()
-        print 'Adding image noise of', piv_simulation_parameters['camera_design']['image_noise']*100
+        print 'Adding image noise of', simulation_parameters['camera_design']['image_noise']*100
         # this generates random numbers from a normal distribution to add to the image array
-        # image_noise = np.random.normal(0.0, scale=piv_simulation_parameters['camera_design']['image_noise'] * I.max(),
+        # image_noise = np.random.normal(0.0, scale=simulation_parameters['camera_design']['image_noise'] * I.max(),
         #                                size=I.shape)
-        image_noise = np.random.normal(0.0, scale=piv_simulation_parameters['camera_design']['image_noise'] * 100.0,
+        image_noise = np.random.normal(0.0, scale=simulation_parameters['camera_design']['image_noise'] * 100.0,
                                        size=I.shape)
 
         # this adds the image noise only to elements of I that are non-zero
@@ -2195,10 +2195,10 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     I[I < 0.0] = 0.0
 
     # check if the user has specified that the intensity should be rescaled
-    if not 'intensity_rescaling' in piv_simulation_parameters['camera_design'].keys():
+    if not 'intensity_rescaling' in simulation_parameters['camera_design'].keys():
         intensity_rescaling = True
     else:
-        intensity_rescaling = piv_simulation_parameters['camera_design']['intensity_rescaling']
+        intensity_rescaling = simulation_parameters['camera_design']['intensity_rescaling']
 
     if intensity_rescaling:
         print 'rescaling intensity'
@@ -2224,10 +2224,10 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     I = np.uint16(I)
 
     # crops image if required
-    if piv_simulation_parameters['output_data']['crop_image']:
+    if simulation_parameters['output_data']['crop_image']:
         # size of the cropped image
-        nr_crop = int(piv_simulation_parameters['output_data']['r_crop'])
-        nc_crop = int(piv_simulation_parameters['output_data']['c_crop'])
+        nr_crop = int(simulation_parameters['output_data']['r_crop'])
+        nc_crop = int(simulation_parameters['output_data']['c_crop'])
 
         # size of the current image
         nr = I.shape[0]
@@ -2241,11 +2241,11 @@ def perform_ray_tracing_03(piv_simulation_parameters, optical_system, pixel_gain
     # # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # # % Adding image noise                                                      %
     # # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    # # piv_simulation_parameters['camera_design']['image_noise'] = 0.05
-    # if (piv_simulation_parameters['camera_design']['image_noise'] > 0.0):
-    #     print 'Adding image noise of', piv_simulation_parameters['camera_design']['image_noise']
+    # # simulation_parameters['camera_design']['image_noise'] = 0.05
+    # if (simulation_parameters['camera_design']['image_noise'] > 0.0):
+    #     print 'Adding image noise of', simulation_parameters['camera_design']['image_noise']
     #     # this generates random numbers from a normal distribution to add to the image array
-    #     image_noise = np.random.normal(0.0, scale=piv_simulation_parameters['camera_design']['image_noise'] * I.max(),
+    #     image_noise = np.random.normal(0.0, scale=simulation_parameters['camera_design']['image_noise'] * I.max(),
     #                                    size=I.shape)
     #
     #     # this adds the image noise only to elements of I that are non-zero
