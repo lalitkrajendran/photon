@@ -2,7 +2,7 @@
 import glob
 import numpy as np
 import scipy.io as sio
-from run_piv_simulation_02 import run_piv_simulation_02
+from run_simulation_02 import run_simulation_02
 import os
 import pickle
 import time
@@ -89,32 +89,32 @@ for i in range(starting_index,starting_index+number_of_parameter_files):
     # similarity in syntax from the matlab code, since since matlab structures and python objects
     # have similar syntax for accessing their contents
     mat_contents = sio.loadmat(parameter_filename_read, struct_as_record=False, squeeze_me=True)
-    if('piv_simulation_paramters' in mat_contents.keys()):
-        piv_simulation_parameters = mat_contents['piv_simulation_parameters']
+    if('simulation_paramters' in mat_contents.keys()):
+        simulation_parameters = mat_contents['simulation_parameters']
     else:
-        piv_simulation_parameters = mat_contents
+        simulation_parameters = mat_contents
 
     # TODO temp
-    #piv_simulation_parameters = piv_simulation_parameters['piv_simulation_parameters']
+    #simulation_parameters = simulation_parameters['simulation_parameters']
     # convert object to dictionary
-    if(type(piv_simulation_parameters)!=dict):
-        piv_simulation_parameters = _todict(piv_simulation_parameters)
+    if(type(simulation_parameters)!=dict):
+        simulation_parameters = _todict(simulation_parameters)
 
     # if there are nested mat_structs inside the dictionary, then convert them to dictionaries too
-    for key in piv_simulation_parameters.keys():
-        if(type(piv_simulation_parameters[key]) == sio.matlab.mio5_params.mat_struct):
-             piv_simulation_parameters[key] = _todict(piv_simulation_parameters[key])
+    for key in simulation_parameters.keys():
+        if(type(simulation_parameters[key]) == sio.matlab.mio5_params.mat_struct):
+             simulation_parameters[key] = _todict(simulation_parameters[key])
 
-    # if piv_simulation_parameters['bos_pattern']['generate_bos_pattern_images']:
-    if piv_simulation_parameters['simulation_type'] == 'piv':
-        top_image_directory = piv_simulation_parameters['output_data']['particle_image_directory']
+    # if simulation_parameters['bos_pattern']['generate_bos_pattern_images']:
+    if simulation_parameters['simulation_type'] == 'piv':
+        top_image_directory = simulation_parameters['output_data']['particle_image_directory']
 
-    elif piv_simulation_parameters['simulation_type'] == 'bos':
-        top_image_directory = piv_simulation_parameters['output_data']['bos_pattern_image_directory']
+    elif simulation_parameters['simulation_type'] == 'bos':
+        top_image_directory = simulation_parameters['output_data']['bos_pattern_image_directory']
 
-    # if piv_simulation_parameters['calibration_grid']['generate_calibration_grid_images']:
-    elif piv_simulation_parameters['simulation_type'] == 'calibration':
-        top_image_directory = piv_simulation_parameters['output_data']['calibration_grid_image_directory']
+    # if simulation_parameters['calibration_grid']['generate_calibration_grid_images']:
+    elif simulation_parameters['simulation_type'] == 'calibration':
+        top_image_directory = simulation_parameters['output_data']['calibration_grid_image_directory']
 
     # This creates the top level bos pattern image directory
     if not (os.path.exists(top_image_directory)):
@@ -124,24 +124,24 @@ for i in range(starting_index,starting_index+number_of_parameter_files):
     # create the directories to save final light ray positions and directions
     if not (os.path.exists(os.path.join(top_image_directory, 'light-ray-positions'))):
         os.makedirs(os.path.join(top_image_directory, 'light-ray-positions'))
-    piv_simulation_parameters['output_data'][
+    simulation_parameters['output_data'][
         'lightray_positions_filepath'] = os.path.join(top_image_directory, 'light-ray-positions')
 
     if not (os.path.exists(os.path.join(top_image_directory, 'light-ray-directions'))):
         os.makedirs(os.path.join(top_image_directory, 'light-ray-directions'))
-    piv_simulation_parameters['output_data'][
+    simulation_parameters['output_data'][
         'lightray_directions_filepath'] = os.path.join(top_image_directory, 'light-ray-directions')
 
     # convert int variables to float
-    for i in piv_simulation_parameters:
-        if(type(piv_simulation_parameters[i]) is str or type(piv_simulation_parameters[i]) is list or type(piv_simulation_parameters[i]) is unicode):
+    for i in simulation_parameters:
+        if(type(simulation_parameters[i]) is str or type(simulation_parameters[i]) is list or type(simulation_parameters[i]) is unicode):
             continue
-        for j in piv_simulation_parameters[i]:
-            if (type(piv_simulation_parameters[i][j]) is int):
-                piv_simulation_parameters[i][j] = float(piv_simulation_parameters[i][j])
+        for j in simulation_parameters[i]:
+            if (type(simulation_parameters[i][j]) is int):
+                simulation_parameters[i][j] = float(simulation_parameters[i][j])
 
     # This runs the camera simulation for the current camera
-    run_piv_simulation_02(piv_simulation_parameters)
+    run_simulation_02(simulation_parameters)
 
 end = time.time()
 print "TOTAL time taken (minutes): ", (end - start)/60
