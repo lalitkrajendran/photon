@@ -1590,6 +1590,7 @@ __global__ void check_trace_rays_through_density_gradients(light_ray_data_t* lig
 
 	int id;
 
+	printf("Hello\n");
 //	id = blockIdx.x*blockDim.x + threadIdx.x;
 	id = threadIdx.x;
 

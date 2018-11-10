@@ -3040,6 +3040,7 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	 */
 
 
+//	printf("z_offset: %f\n", float(lightfield_source_p->num_particles));
 	// this structure holds the scattering information
 	scattering_data_t scattering_data = *scattering_data_p;
 	// this structure holds the information about the lightfield source
@@ -3047,8 +3048,9 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 
 	// counter variable for all the for loops in this function
 	int k;
-	float z_offset = lightfield_source.z_offset;
+	float z_offset = lightfield_source_p->z_offset;
 	printf("z_offset: %f\n", z_offset);
+	exit(0);
 	//--------------------------------------------------------------------------------------
 	// allocate space on GPU for lightfield_source
 	//--------------------------------------------------------------------------------------
