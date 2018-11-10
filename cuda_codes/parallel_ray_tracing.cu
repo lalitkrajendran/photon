@@ -3039,8 +3039,6 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	 * ngrad_noise_std - standard deviation of the refractive index gradient noise (1/um)
 	 */
 
-
-//	printf("z_offset: %f\n", float(lightfield_source_p->num_particles));
 	// this structure holds the scattering information
 	scattering_data_t scattering_data = *scattering_data_p;
 	// this structure holds the information about the lightfield source
@@ -3048,9 +3046,9 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 
 	// counter variable for all the for loops in this function
 	int k;
-	float z_offset = lightfield_source_p->z_offset;
+	float z_offset = lightfield_source.z_offset;
 	printf("z_offset: %f\n", z_offset);
-	exit(0);
+	printf("Particle Location: %f, %f, %f\n", lightfield_source.x[0], lightfield_source.y[0], lightfield_source.z[0]);
 	//--------------------------------------------------------------------------------------
 	// allocate space on GPU for lightfield_source
 	//--------------------------------------------------------------------------------------
@@ -3089,6 +3087,7 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	lightfield_source.z = d_source_z;
 	lightfield_source.radiance = d_source_radiance;
 	lightfield_source.diameter_index = d_source_diameter_index;
+
 
 	//--------------------------------------------------------------------------------------
 	// allocate space on GPU for scattering_data
@@ -3316,7 +3315,7 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	printf("grid: %d, %d\n",grid_x,source_point_number);
 
 	//------------------------------------------------------------------------------------------
-	// intialize random number generator for addition position noise if required
+	// initialize random number generator for addition position noise if required
 	//------------------------------------------------------------------------------------------
 	curandState* states = 0;
 
@@ -3573,9 +3572,12 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 
 			// open the file
 			std::ofstream file_intermediate_dir(full_filename.c_str(),ios::out | ios::binary);
+			int dir_index;
+
 			// save all the pixel intensities to file
 			for(light_ray_index = 0; light_ray_index < num_intermediate_positions_save; light_ray_index++)
-					file_intermediate_dir.write((char*)&intermediate_dir[light_ray_index],sizeof(float3));
+				for(dir_index = 0; dir_index < num_intermediate_positions_save; dir_index++)
+					file_intermediate_dir.write((char*)&intermediate_dir[light_ray_index*num_intermediate_positions_save + dir_index],sizeof(float3));
 
 			// close the file
 			file_intermediate_dir.close();

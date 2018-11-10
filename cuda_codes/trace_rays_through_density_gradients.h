@@ -1449,7 +1449,6 @@ __device__ light_ray_data_t adams_bashforth(light_ray_data_t light_ray_data, den
 
 	}
 
-
 	return light_ray_data;
 }
 __device__ light_ray_data_t trace_rays_through_density_gradients(light_ray_data_t light_ray_data,
@@ -1477,6 +1476,7 @@ __device__ light_ray_data_t trace_rays_through_density_gradients(light_ray_data_
  	if(pos.x <= min_bound.x || pos.y <= min_bound.y || pos.z <= min_bound.z ||
  	pos.x >= max_bound.x || pos.y >= max_bound.y || pos.z >= max_bound.z )
  	{
+
  		// if the ray did not intersect the volume, then set all the properties to NAN
  		// and exit the function
  		if(!IntersectWithVolume(&pos, dir, params.min_bound, params.max_bound))
@@ -1491,6 +1491,14 @@ __device__ light_ray_data_t trace_rays_through_density_gradients(light_ray_data_
 
  			return light_ray_data;
  		}
+
+	// increment ray position by a small amount so it is inside the volume.
+//	pos = pos + dir * 1 * params.step_size/refractive_index;
+		if(dir.z > 0)
+			pos.z = params.min_bound.z;
+		else
+			pos.z = params.max_bound.z;
+
  	}
 
 	//--------------------------------------------------------------------------------------
@@ -1499,12 +1507,6 @@ __device__ light_ray_data_t trace_rays_through_density_gradients(light_ray_data_
 // 	light_ray_data.ray_source_coordinates = pos;
 // 	return light_ray_data;
 
-	// increment ray position by a small amount so it is inside the volume.
-//	pos = pos + dir * 1 * params.step_size/refractive_index;
-	if(dir.z > 0)
-		pos.z = params.min_bound.z;
-	else
-		pos.z = params.max_bound.z;
 
  	light_ray_data.ray_source_coordinates = pos;
 
