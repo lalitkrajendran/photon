@@ -1961,7 +1961,10 @@ def perform_ray_tracing_03(simulation_parameters, optical_system, pixel_gain, sc
     pixel_bit_depth = simulation_parameters['camera_design']['pixel_bit_depth']
     # % This is the wavelength of the laser used for illumination of the
     # % particles (in microns)
-    beam_wavelength = simulation_parameters['particle_field']['beam_wavelength']
+    if simulation_parameters['simulation_type'] == 'piv':
+        beam_wavelength = simulation_parameters['particle_field']['beam_wavelength']
+    else:
+        beam_wavelength = 0.0
     #
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # % Extracts parameters from 'optical_system'                               %

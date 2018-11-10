@@ -762,6 +762,11 @@ def load_lightfield_data(simulation_parameters,optical_system,mie_scattering_dat
     # lens
     optical_system_length = optical_system['design']['optical_element'][0]['optical_element'][0]['element_geometry']['vertex_distance']
 
+    # calculate magnification
+    M = simulation_parameters['lens_design']['focal_length'] \
+        / (simulation_parameters['lens_design']['object_distance'] - simulation_parameters['lens_design'][
+        'focal_length'])
+
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # % Extracts parameters from 'mie_scattering_data'                          %
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -864,9 +869,17 @@ def load_lightfield_data(simulation_parameters,optical_system,mie_scattering_dat
         # Z_Min = -5e4/1e1 #-7.5e3
         # Z_Max = 5e4/1e1 #+7.5e3
 
-        X = (X_Max - X_Min) * np.random.rand(int(particle_number)) + X_Min
-        Y = (Y_Max - Y_Min) * np.random.rand(int(particle_number)) + Y_Min
-        Z = (Z_Max - Z_Min) * np.random.rand(int(particle_number)) + Z_Min
+        # if only point is to be generated, then place it in the center of the FOV
+        if int(particle_number) == 1:
+            X = np.array([X_Min + 1 * (X_Max - X_Min) / 2.0 + simulation_parameters['camera_design']['pixel_pitch'] / M / 2.0])
+            Y = np.array([Y_Min + 1 * (Y_Max - Y_Min) / 2.0 + simulation_parameters['camera_design']['pixel_pitch'] / M / 2.0])
+            Z = np.array([-450e3]) #np.array([Y_Min + 1 * (Z_Max - Z_Min) / 2.0])
+        else:
+            # np.random.seed(2445)
+            np.random.seed()
+            X = (X_Max - X_Min) * np.random.rand(int(particle_number)) + X_Min
+            Y = (Y_Max - Y_Min) * np.random.rand(int(particle_number)) + Y_Min
+            Z = (Z_Max - Z_Min) * np.random.rand(int(particle_number)) + Z_Min
 
 
     # This calculates the standard deviation of the Gaussian beam function
@@ -885,6 +898,9 @@ def load_lightfield_data(simulation_parameters,optical_system,mie_scattering_dat
     # This translates the Z coordinates of the paricles to the focal plane
     Z = Z + z_object
 
+    # this is the offset along the z direction added by moving the origin to the sensor plane
+    z_offset = z_object - object_distance
+
     # This is the number of source points that will simulated in one call to the GPU. this is a function
 	# of the GPU memory, and threads-blocks-grids specifications
     lightfield_source['source_point_number'] = 10000
@@ -897,8 +913,8 @@ def load_lightfield_data(simulation_parameters,optical_system,mie_scattering_dat
     lightfield_source['y'] = Y
     lightfield_source['z'] = Z
     lightfield_source['radiance'] = np.array(R)
-    lightfield_source['diameter_index'] = particle_diameter_index_distribution
-
+    lightfield_source['diameter_index'] = np.ones(X.shape) # particle_diameter_index_distribution
+    lightfield_source['z_offset'] = z_offset
     return lightfield_source
 
 def calculate_sunflower_coordinates(grid_point_diameter,lightray_number_per_grid_point):
@@ -1321,7 +1337,7 @@ def generate_bos_lightfield_data(simulation_parameters,optical_system):
         / (simulation_parameters['lens_design']['object_distance'] - simulation_parameters['lens_design'][
         'focal_length'])
 
-    # # set the seed of the random number generator. this will be different for each simulation
+    # if only point is to be generated, then place it in the center of the FOV
     if grid_point_number == 1:
         x_grid_point_coordinate_vector = np.array([X_Min + 1*(X_Max - X_Min)/2.0 + simulation_parameters['camera_design']['pixel_pitch']/M/2.0])
         y_grid_point_coordinate_vector = np.array([Y_Min + 1*(Y_Max - Y_Min)/2.0 + simulation_parameters['camera_design']['pixel_pitch']/M/2.0])
@@ -1638,7 +1654,7 @@ def run_simulation_02(simulation_parameters):
 
         # % This adds the directory to save the particle images to parameters
         # % structure
-        particle_image_directory = simulation_parameters['output_data']['particle_image_directory']
+        image_directory = simulation_parameters['output_data']['image_directory']
 
         # % This extracts the number of lightrays to simulate per particle (this is roughly
         # % equivalent to the power of the laser)
@@ -1700,8 +1716,8 @@ def run_simulation_02(simulation_parameters):
                     scattering_data = np.NAN
                 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
-                simulation_parameters['output_data']['lightray_positions_filepath'] = os.path.join(particle_image_directory, 'light-ray-positions', 'im%04d' % frame_index) + '/'
-                simulation_parameters['output_data']['lightray_directions_filepath'] = os.path.join(particle_image_directory, 'light-ray-directions', 'im%04d' % frame_index) + '/'
+                simulation_parameters['output_data']['lightray_positions_filepath'] = os.path.join(image_directory, 'light-ray-positions', 'im%04d' % frame_index) + '/'
+                simulation_parameters['output_data']['lightray_directions_filepath'] = os.path.join(image_directory, 'light-ray-directions', 'im%04d' % frame_index) + '/'
 
                 # create the directories if they don't exist
                 if not os.path.exists(simulation_parameters['output_data']['lightray_positions_filepath']):
@@ -1713,23 +1729,23 @@ def run_simulation_02(simulation_parameters):
                 I, I_raw = perform_ray_tracing_03(simulation_parameters,optical_system,pixel_gain,scattering_data,scattering_type,lightfield_source,field_type)
 
                 # This is the filename to save the image data to
-                image_filename_write = os.path.join(particle_image_directory, 'particle_image_frame_' + '%04d' % frame_index + '.tif')
+                image_filename_write = os.path.join(image_directory, 'particle_image_frame_' + '%04d' % frame_index + '.tif')
 
                 # This saves the image to memory
                 TIFF.imsave(image_filename_write,I)
 
                 # this is the filename to sve the raw image data to
-                raw_image_filename_write = os.path.join(particle_image_directory, 'particle_image_frame_' + '%04d' % frame_index + '.bin')
+                raw_image_filename_write = os.path.join(image_directory, 'particle_image_frame_' + '%04d' % frame_index + '.bin')
 
                 # this saves the image to memory
                 I_raw.tofile(raw_image_filename_write)
 
 
             # save parameters to file
-            sio.savemat(os.path.join(particle_image_directory, 'parameters.mat'), simulation_parameters, appendmat=True,
+            sio.savemat(os.path.join(image_directory, 'parameters.mat'), simulation_parameters, appendmat=True,
                         format='5',
                         long_field_names=True)
-            sio.savemat(os.path.join(particle_image_directory, 'optical_system.mat'), optical_system, appendmat=True,
+            sio.savemat(os.path.join(image_directory, 'optical_system.mat'), optical_system, appendmat=True,
                         format='5',
                         long_field_names=True)
 
@@ -1745,7 +1761,7 @@ def run_simulation_02(simulation_parameters):
         calibration_plane_number = int(simulation_parameters['calibration_grid']['calibration_plane_number'])
         # % This extracts the directory to save the calibration grid images from
         # % parameters structure
-        calibration_grid_image_directory = simulation_parameters['output_data']['calibration_grid_image_directory']
+        image_directory = simulation_parameters['output_data']['image_directory']
         # % This extracts the number of lightrays to simulate per particle (this is roughly
         # % equivalent to the power of the laser)
         lightray_number_per_particle = simulation_parameters['calibration_grid']['lightray_number_per_particle']
@@ -1755,9 +1771,6 @@ def run_simulation_02(simulation_parameters):
         # % This is the gain of the sensor in decibels to be used in the calibration
         # % grid simulation
         pixel_gain = simulation_parameters['calibration_grid']['pixel_gain']
-        # % This extracts the directory to save the calibration grid images from
-        # % parameters structure
-        calibration_grid_image_directory = simulation_parameters['output_data']['calibration_grid_image_directory']
 
         # generate_calibration_grid_images = True
         # % This generates the calibration grid images if specified by the parameters
@@ -1796,7 +1809,7 @@ def run_simulation_02(simulation_parameters):
                 scattering_data = np.NAN
 
                 if simulation_parameters['output_data']['save_lightrays']:
-                    simulation_parameters['output_data']['lightray_positions_filepath'] = os.path.join(calibration_grid_image_directory, 'light-ray-positions', 'plane%02d' % (plane_index))
+                    simulation_parameters['output_data']['lightray_positions_filepath'] = os.path.join(image_directory, 'light-ray-positions', 'plane%02d' % (plane_index))
                     # if the write directory does not exist, create it
                     if (not (os.path.exists(simulation_parameters['output_data']['lightray_positions_filepath']))):
                         os.makedirs(simulation_parameters['output_data']['lightray_positions_filepath'])
@@ -1806,7 +1819,7 @@ def run_simulation_02(simulation_parameters):
                         for f in files:
                             os.remove(f)
 
-                    simulation_parameters['output_data']['lightray_directions_filepath'] = os.path.join(calibration_grid_image_directory, 'light-ray-directions', 'plane%02d' % (plane_index))
+                    simulation_parameters['output_data']['lightray_directions_filepath'] = os.path.join(image_directory, 'light-ray-directions', 'plane%02d' % (plane_index))
                     # if the write directory does not exist, create it
                     if (not (os.path.exists(simulation_parameters['output_data']['lightray_directions_filepath']))):
                         os.makedirs(simulation_parameters['output_data']['lightray_directions_filepath'])
@@ -1820,22 +1833,22 @@ def run_simulation_02(simulation_parameters):
                 I, I_raw = perform_ray_tracing_03(simulation_parameters,optical_system,pixel_gain,scattering_data,scattering_type,lightfield_source,field_type)
 
                 # % This is the filename to save the image data to
-                image_filename_write = os.path.join(calibration_grid_image_directory, 'calibration_image_plane_' + '%04d' % plane_index + '.tif')
+                image_filename_write = os.path.join(image_directory, 'calibration_image_plane_' + '%04d' % plane_index + '.tif')
 
                 # % This saves the image to memory
                 TIFF.imsave(image_filename_write, I)
 
                 # this is the filename to save the raw image data to
-                raw_image_filename_write = os.path.join(calibration_grid_image_directory, 'calibration_image_plane_' + '%04d' % plane_index + '.bin')
+                raw_image_filename_write = os.path.join(image_directory, 'calibration_image_plane_' + '%04d' % plane_index + '.bin')
 
                 # % This saves the image to memory
                 I_raw.tofile(raw_image_filename_write)
 
             # save parameters to file
-            sio.savemat(os.path.join(calibration_grid_image_directory, 'parameters.mat'), simulation_parameters, appendmat=True,
+            sio.savemat(os.path.join(image_directory, 'parameters.mat'), simulation_parameters, appendmat=True,
                         format='5',
                         long_field_names=True)
-            sio.savemat(os.path.join(calibration_grid_image_directory, 'optical_system.mat'), optical_system, appendmat=True, format='5',
+            sio.savemat(os.path.join(image_directory, 'optical_system.mat'), optical_system, appendmat=True, format='5',
                         long_field_names=True)
 
     elif simulation_parameters['simulation_type'] == 'bos':
@@ -1848,7 +1861,7 @@ def run_simulation_02(simulation_parameters):
         generate_bos_pattern_images = simulation_parameters['bos_pattern']['generate_bos_pattern_images']
         # % This extracts the directory to save the calibration grid images from
         # % parameters structure
-        bos_pattern_image_directory = simulation_parameters['output_data']['bos_pattern_image_directory']
+        image_directory = simulation_parameters['output_data']['image_directory']
         # % This extracts the number of lightrays to simulate per particle (this is roughly
         # % equivalent to the power of the laser)
         lightray_number_per_particle = simulation_parameters['bos_pattern']['lightray_number_per_particle']
@@ -1900,8 +1913,8 @@ def run_simulation_02(simulation_parameters):
 
             simulation_parameters['density_gradients']['simulate_density_gradients'] = False
 
-            simulation_parameters['output_data']['lightray_positions_filepath'] = os.path.join(bos_pattern_image_directory, 'light-ray-positions', 'im1')
-            simulation_parameters['output_data']['lightray_directions_filepath'] = os.path.join(bos_pattern_image_directory, 'light-ray-directions', 'im1')
+            simulation_parameters['output_data']['lightray_positions_filepath'] = os.path.join(image_directory, 'light-ray-positions', 'im1')
+            simulation_parameters['output_data']['lightray_directions_filepath'] = os.path.join(image_directory, 'light-ray-directions', 'im1')
 
             # create the directories if they don't exist
             if not os.path.exists(simulation_parameters['output_data']['lightray_positions_filepath']):
@@ -1913,13 +1926,13 @@ def run_simulation_02(simulation_parameters):
             I, I_raw = perform_ray_tracing_03(simulation_parameters,optical_system,pixel_gain,scattering_data,scattering_type,lightfield_source,field_type)
 
             # % This is the filename to save the image data to
-            image_filename_write = os.path.join(bos_pattern_image_directory, 'bos_pattern_image_1.tif')
+            image_filename_write = os.path.join(image_directory, 'bos_pattern_image_1.tif')
 
             # % This saves the image to memory
             TIFF.imsave(image_filename_write, I)
 
             # this is the filename to save the raw image data to
-            raw_image_filename_write = os.path.join(bos_pattern_image_directory, 'bos_pattern_image_1.bin')
+            raw_image_filename_write = os.path.join(image_directory, 'bos_pattern_image_1.bin')
 
             # % This saves the image to memory
             I_raw.tofile(raw_image_filename_write)
@@ -1931,9 +1944,9 @@ def run_simulation_02(simulation_parameters):
             simulation_parameters['density_gradients']['simulate_density_gradients'] = True
 
             simulation_parameters['output_data'][
-                'lightray_positions_filepath'] = os.path.join(bos_pattern_image_directory, 'light-ray-positions', 'im2')
+                'lightray_positions_filepath'] = os.path.join(image_directory, 'light-ray-positions', 'im2')
             simulation_parameters['output_data'][
-                'lightray_directions_filepath'] = os.path.join(bos_pattern_image_directory, 'light-ray-directions', 'im2')
+                'lightray_directions_filepath'] = os.path.join(image_directory, 'light-ray-directions', 'im2')
 
             # create the directories if they don't exist
             if not os.path.exists(simulation_parameters['output_data']['lightray_positions_filepath']):
@@ -1946,28 +1959,28 @@ def run_simulation_02(simulation_parameters):
                                               scattering_type, lightfield_source, field_type)
 
             # % This is the filename to save the image data to
-            image_filename_write = os.path.join(bos_pattern_image_directory, 'bos_pattern_image_2.tif')
+            image_filename_write = os.path.join(image_directory, 'bos_pattern_image_2.tif')
 
              # % This saves the image to memory
             TIFF.imsave(image_filename_write, I)
 
             # this is the filename to save the raw image data to
-            raw_image_filename_write = os.path.join(bos_pattern_image_directory, 'bos_pattern_image_2.bin')
+            raw_image_filename_write = os.path.join(image_directory, 'bos_pattern_image_2.bin')
 
             # % This saves the image to memory
             I_raw.tofile(raw_image_filename_write)
 
             # save parameters to file
             # save parameters to file
-            sio.savemat(os.path.join(bos_pattern_image_directory,'parameters.mat'), simulation_parameters, appendmat=True, format='5',
+            sio.savemat(os.path.join(image_directory,'parameters.mat'), simulation_parameters, appendmat=True, format='5',
                         long_field_names=True)
-            sio.savemat(os.path.join(bos_pattern_image_directory,'optical_system.mat'), optical_system, appendmat=True, format='5',
+            sio.savemat(os.path.join(image_directory,'optical_system.mat'), optical_system, appendmat=True, format='5',
                         long_field_names=True)
 
             # save grid point positions to file
             positions = dict()
             positions['x'] = x_grid_point_coordinate_vector
             positions['y'] = y_grid_point_coordinate_vector
-            sio.savemat(os.path.join(bos_pattern_image_directory, 'positions.mat'), positions, appendmat=True, format='5',
+            sio.savemat(os.path.join(image_directory, 'positions.mat'), positions, appendmat=True, format='5',
                         long_field_names=True)
 

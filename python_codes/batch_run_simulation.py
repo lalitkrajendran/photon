@@ -105,32 +105,23 @@ for i in range(starting_index,starting_index+number_of_parameter_files):
         if(type(simulation_parameters[key]) == sio.matlab.mio5_params.mat_struct):
              simulation_parameters[key] = _todict(simulation_parameters[key])
 
-    # if simulation_parameters['bos_pattern']['generate_bos_pattern_images']:
-    if simulation_parameters['simulation_type'] == 'piv':
-        top_image_directory = simulation_parameters['output_data']['particle_image_directory']
-
-    elif simulation_parameters['simulation_type'] == 'bos':
-        top_image_directory = simulation_parameters['output_data']['bos_pattern_image_directory']
-
-    # if simulation_parameters['calibration_grid']['generate_calibration_grid_images']:
-    elif simulation_parameters['simulation_type'] == 'calibration':
-        top_image_directory = simulation_parameters['output_data']['calibration_grid_image_directory']
+    image_directory = simulation_parameters['output_data']['image_directory']
 
     # This creates the top level bos pattern image directory
-    if not (os.path.exists(top_image_directory)):
+    if not (os.path.exists(image_directory)):
         # This creates the bos pattern image directory
-        os.makedirs(top_image_directory)
+        os.makedirs(image_directory)
 
     # create the directories to save final light ray positions and directions
-    if not (os.path.exists(os.path.join(top_image_directory, 'light-ray-positions'))):
-        os.makedirs(os.path.join(top_image_directory, 'light-ray-positions'))
+    if not (os.path.exists(os.path.join(image_directory, 'light-ray-positions'))):
+        os.makedirs(os.path.join(image_directory, 'light-ray-positions'))
     simulation_parameters['output_data'][
-        'lightray_positions_filepath'] = os.path.join(top_image_directory, 'light-ray-positions')
+        'lightray_positions_filepath'] = os.path.join(image_directory, 'light-ray-positions')
 
-    if not (os.path.exists(os.path.join(top_image_directory, 'light-ray-directions'))):
-        os.makedirs(os.path.join(top_image_directory, 'light-ray-directions'))
+    if not (os.path.exists(os.path.join(image_directory, 'light-ray-directions'))):
+        os.makedirs(os.path.join(image_directory, 'light-ray-directions'))
     simulation_parameters['output_data'][
-        'lightray_directions_filepath'] = os.path.join(top_image_directory, 'light-ray-directions')
+        'lightray_directions_filepath'] = os.path.join(image_directory, 'light-ray-directions')
 
     # convert int variables to float
     for i in simulation_parameters:

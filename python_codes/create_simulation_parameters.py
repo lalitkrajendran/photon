@@ -185,6 +185,7 @@ def create_simulation_parameters(simulation_type):
         # % This adds the grid point number to the calibration structure
         simulation_parameters['bos_pattern']['x_grid_point_number'] = 150
         simulation_parameters['bos_pattern']['y_grid_point_number'] = 150
+        simulation_parameters['bos_pattern']['grid_point_number'] = 1000
         # % This adds the number of 'particles' (ie lightray source points) per grid
         # % point to the calibration structure
         simulation_parameters['bos_pattern']['particle_number_per_grid_point'] = 100
@@ -222,19 +223,10 @@ def create_simulation_parameters(simulation_type):
 
     # % This adds the output data parameters structure
     simulation_parameters['output_data'] = {}
-    # % This adds the directory to save the particle images to parameters
+    # % This adds the directory to save the images to parameters
     # % structure
     # %simulation_parameters.output_data.particle_image_directory='/mnt/current_storage/Projects2/Tomo_PIV/Camera_Simulation_GUI/camera_simulation_package_01/test_directory/particle_images/';
-    simulation_parameters['output_data']['particle_image_directory'] = ''
-    # % This adds the directory to save the calibration grid images to
-    # % parameters structure
-    # %simulation_parameters.output_data.calibration_grid_image_directory='/mnt/current_storage/Projects2/Tomo_PIV/Camera_Simulation_GUI/camera_simulation_package_01/test_directory/calibration_images/';
-    simulation_parameters['output_data']['calibration_grid_image_directory'] = ''
-
-    # % This adds the directory to save the bos pattern images to
-    # % parameters structure
-    # %simulation_parameters.output_data.calibration_grid_image_directory='/mnt/current_storage/Projects2/Tomo_PIV/Camera_Simulation_GUI/camera_simulation_package_01/test_directory/calibration_images/';
-    simulation_parameters['output_data']['bos_pattern_image_directory'] = ''
+    simulation_parameters['output_data']['image_directory'] = ''
 
     # option to crop final image
     simulation_parameters['output_data']['crop_image'] = False
