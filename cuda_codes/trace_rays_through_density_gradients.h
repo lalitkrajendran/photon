@@ -779,6 +779,7 @@ __device__ light_ray_data_t euler(light_ray_data_t light_ray_data,
 			{
 				intermediate_pos[thread_id*num_intermediate_positions_save + loop_ctr] = pos; //make_float3(val.x, lookup.z, pos.z); //pos;
 				intermediate_dir[thread_id*num_intermediate_positions_save + loop_ctr] = dir;
+
 			}
 
 			lookup = calculate_lookup_index(pos, params, lookup_scale);
@@ -814,6 +815,7 @@ __device__ light_ray_data_t euler(light_ray_data_t light_ray_data,
 			// if not, propagate the ray further.
 			if(!access_refractive_index(pos, params, lookup))
 			{
+//				printf("cannot access refractive index. Loop: %d\n", loop_ctr);
 //				pos = pos + params.step_size * dir;
 				pos = pos + params.step_size/(1 + params.data_min) * dir;
 				light_ray_data.ray_source_coordinates = pos;
@@ -829,6 +831,7 @@ __device__ light_ray_data_t euler(light_ray_data_t light_ray_data,
 			if(val.w < params.data_min)
 			{
 //				printf("loop_ctr: %d, lookup.z: %f, val.x: %f, val.w= %f < 0\n", loop_ctr, lookup.z, val.x, val.w);
+//				printf("val.w < params.data_min. Loop: %d\n", loop_ctr);
 				if(val_prev.w == 0)
 				{
 					val_temp = tex3D(tex_data, lookup.x, lookup.y, lookup.z-1);
@@ -872,7 +875,6 @@ __device__ light_ray_data_t euler(light_ray_data_t light_ray_data,
 //			if (loop_ctr == 100)
 //				printf("dn_dx: %.8G\n", val.x);
 
-//			normal = make_float3( 8.38088077232e-10, 8.38088077232e-10, 0.0);
 			// update the ray direction
 //			dir = dir + params.step_size*normal; ///current_refractive_index;
 			dir = dir + params.step_size*normal/current_refractive_index;
@@ -1835,10 +1837,10 @@ density_grad_params_t setData(float* data, density_grad_params_t _params)
 
 	// save the refractive index gradient data to file.
 //	std::string filename = "/home/shannon/c/aether/Projects/BOS/error-analysis/analysis/src/photon/cuda_codes/data/gradient_backward.bin";
-	std::string filename = "/home/shannon/c/aether/Projects/BOS/error-analysis/analysis/src/photon/cuda_codes/data/gradient_central.bin";
+//	std::string filename = "/home/shannon/c/aether/Projects/BOS/error-analysis/analysis/src/photon/cuda_codes/data/gradient_central.bin";
 
-	std::ofstream file;
-	file.open(filename.c_str(), ios::out | ios::binary);
+//	std::ofstream file;
+//	file.open(filename.c_str(), ios::out | ios::binary);
 //	float4 data_out;
 //	float4 data_out_2;
 
@@ -1880,7 +1882,7 @@ density_grad_params_t setData(float* data, density_grad_params_t _params)
 				lookup = make_float3(x+2,y,z);
 				sample3 = data[size_t(lookup.z*data_width*data_height + lookup.y*data_width + lookup.x)];
 
-				normal.x = (-3/2 * sample1 + 2 * sample2 - 1/2 * sample3)/grid_x;
+				normal.x = (-3.0/2 * sample1 + 2 * sample2 - 1.0/2 * sample3)/grid_x;
 			}
 			else if(lookup.x >= data_width-DELTA)
 			{
@@ -1891,7 +1893,7 @@ density_grad_params_t setData(float* data, density_grad_params_t _params)
 				lookup = make_float3(x-2,y,z);
 				sample3 = data[size_t(lookup.z*data_width*data_height + lookup.y*data_width + lookup.x)];
 
-				normal.x = (3/2 * sample1 - 2 * sample2 + 1/2 * sample3)/grid_x;
+				normal.x = (3.0/2 * sample1 - 2 * sample2 + 1.0/2 * sample3)/grid_x;
 			}
 			else
 			{
@@ -1915,7 +1917,7 @@ density_grad_params_t setData(float* data, density_grad_params_t _params)
 				lookup = make_float3(x,y+2,z);
 				sample3 = data[size_t(lookup.z*data_width*data_height + lookup.y*data_width + lookup.x)];
 
-				normal.y = (-3/2 * sample1 + 2 * sample2 - 1/2 * sample3)/grid_y;
+				normal.y = (-3.0/2 * sample1 + 2 * sample2 - 1.0/2 * sample3)/grid_y;
 			}
 			else if(lookup.y >= data_height-DELTA)
 			{
@@ -1926,7 +1928,7 @@ density_grad_params_t setData(float* data, density_grad_params_t _params)
 				lookup = make_float3(x,y-2,z);
 				sample3 = data[size_t(lookup.z*data_width*data_height + lookup.y*data_width + lookup.x)];
 
-				normal.y = (3/2 * sample1 - 2 * sample2 + 1/2 * sample3)/grid_y;
+				normal.y = (3.0/2 * sample1 - 2 * sample2 + 1.0/2 * sample3)/grid_y;
 			}
 			else
 			{
@@ -1951,7 +1953,9 @@ density_grad_params_t setData(float* data, density_grad_params_t _params)
 				lookup = make_float3(x,y,z+2);
 				sample3 = data[size_t(lookup.z*data_width*data_height + lookup.y*data_width + lookup.x)];
 
-				normal.z = (-3/2 * sample1 + 2 * sample2 - 1/2 * sample3)/grid_z;
+				normal.z = (-3.0/2 * sample1 + 2 * sample2 - 1.0/2 * sample3)/grid_z;
+//				if(normal.z > 5e-6)
+//					printf("sample1: %f, sample2: %f, sample3: %f, normal.z: %G\n", sample1, sample2, sample3, normal.z);
 			}
 			else if(lookup.z >= data_depth-DELTA)
 			{
@@ -1962,7 +1966,9 @@ density_grad_params_t setData(float* data, density_grad_params_t _params)
 				lookup = make_float3(x,y,z-2);
 				sample3 = data[size_t(lookup.z*data_width*data_height + lookup.y*data_width + lookup.x)];
 
-				normal.z = (3/2 * sample1 - 2 * sample2 + 1/2 * sample3)/grid_z;
+				normal.z = (3.0/2 * sample1 - 2 * sample2 + 1.0/2 * sample3)/grid_z;
+//				if(normal.z > 5e-6)
+//					printf("sample1: %f, sample2: %f, sample3: %f, normal.z: %G\n", sample1, sample2, sample3, normal.z);
 			}
 			else
 			{
@@ -1985,12 +1991,12 @@ density_grad_params_t setData(float* data, density_grad_params_t _params)
 			if(_params.data[data_loc].w == 0)
 				printf("_params.data[data_loc].w == 0 at data_loc: %d\n", data_loc);
 
-			file.write((char*)&_params.data[data_loc], sizeof(float)*4);
+//			file.write((char*)&_params.data[data_loc], sizeof(float)*4);
 		  }
 		}
 	}
 
-	file.close();
+//	file.close();
 	printf("Minimum Refractive Index: %f\n", _params.data_min);
 	printf("loop ctr: %d\n", loop_ctr);
 

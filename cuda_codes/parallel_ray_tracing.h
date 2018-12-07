@@ -48,12 +48,12 @@ typedef struct lightfield_source_t
 	float* y;
 	// this is the z location of each particle
 	float* z;
-	// this is the number of rays
-	int num_rays;
 	// number of particles to simulate
 	int num_particles;
 	// offset along z
 	float z_offset;
+	// object distance
+	float object_distance;
 }lightfield_source_t;
 
 // this structure contains the light field data for all the particles
@@ -181,6 +181,10 @@ typedef struct camera_design_t
 	float diffraction_diameter;
 	// flag to set whether diffraction is to be implemented or not
 	bool implement_diffraction;
+	// rotation matrix
+	float rotation_matrix[9];
+	// inverse rotation matrix
+	float inverse_rotation_matrix[9];
 }camera_design_t;
 
 // this structure contains the data about the pixels whose intensity will be incremented

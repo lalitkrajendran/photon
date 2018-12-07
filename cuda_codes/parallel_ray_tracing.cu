@@ -121,8 +121,9 @@ __device__ light_ray_data_t generate_lightfield_angular_data(float lens_pitch, f
 
 	// calculate the x angles for the light rays
 	float theta_temp = -(x_lens - x_current) / (image_distance - z_current);
+//	float theta_temp = (random_number_1 - 0.5) * 1e-3;
 	// calculate the y angles for the light rays
-	float phi_temp = -(y_lens - y_current) / (image_distance - z_current);
+	float phi_temp = 0; //-(y_lens - y_current) / (image_distance - z_current);
 
 //	float theta_temp = M_PI/180.0 * 1e-2;
 //	float phi_temp = M_PI/180.0 * 1e-2;
@@ -1537,11 +1538,12 @@ __device__ light_ray_data_t create_apparent_image(light_ray_data_t light_ray_dat
 	//# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	//# % Propagation of the light rays to the sensor                         %
 	//# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 	//# % This extracts the propagation direction of the light rays
 	float3 ray_propagation_direction = light_ray_data.ray_propagation_direction;
 	// reverse ray propagation direction
+//	printf("original ray direction: %.2f, %.2f, %.2f \n", ray_propagation_direction.x, ray_propagation_direction.y, ray_propagation_direction.z);
 	ray_propagation_direction = -ray_propagation_direction;
+//	printf("reversed ray direction: %.2f, %.2f, %.2f \n", ray_propagation_direction.x, ray_propagation_direction.y, ray_propagation_direction.z);
 	//# % This extracts the light ray source coordinates
 	float3 ray_source_coordinates = light_ray_data.ray_source_coordinates;
 
@@ -1555,11 +1557,29 @@ __device__ light_ray_data_t create_apparent_image(light_ray_data_t light_ray_dat
 	//# % the first plane of the aperture stop
 	float intersection_time = -(dot(make_float3(a,b,c),ray_source_coordinates) + d)/
 			dot(make_float3(a,b,c),ray_propagation_direction);
-
+//	float intersection_time = fabs(ray_source_coordinates.z - z_object);
 	//# % This calculates the intersection points
 	float3 pos_intersect = ray_source_coordinates + ray_propagation_direction * intersection_time;
 
-	// calculate magnfication
+//	printf("pos_intersect: %.2f, %.2f, %.2f\n", pos_intersect.x, pos_intersect.y, pos_intersect.z);
+	float l = fabs(ray_source_coordinates.z - z_object);
+	float3 pos_intersect_2 = ray_source_coordinates + ray_propagation_direction * l;
+
+//	printf("err_x: %.2f, err_y: %.2f, err_z: %.2f\n", pos_intersect.x - pos_intersect_2.x,
+//			pos_intersect.y - pos_intersect_2.y, pos_intersect.z - pos_intersect_2.z);
+//	printf("x: %.2f, %.2f, y: %.2f,  %.2f, z: %.2f, %.2f\n", pos_intersect.x, pos_intersect_2.x,
+//			pos_intersect.y, pos_intersect_2.y, pos_intersect.z, pos_intersect_2.z);
+
+//	printf("difference in z: %.2f, intersection_time: %.2f\n", (pos_intersect.z - ray_source_coordinates.z), intersection_time);
+//	float err_z = fabs(intersection_time - (z_object - ray_source_coordinates.z));
+//	printf("error in z: %.2f, error in x: %.2f\n", err_z, err_z * ray_propagation_direction.x);
+
+
+//	light_ray_data.ray_source_coordinates = pos_intersect;
+//	light_ray_data.ray_propagation_direction = ray_propagation_direction;
+//	return light_ray_data;
+
+	// calculate magnification
 	float element_focal_length = optical_element.element_properties.thin_lens_focal_length;
 	float magnification = element_focal_length/(z_object - z_offset - element_focal_length);
 
@@ -1970,6 +1990,14 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 	float3 temp_pos;
 	float3 temp_dir;
 
+//	if(local_ray_id == 0)
+//		light_ray_data.ray_propagation_direction = normalize(make_float3(-1e-3, 0.0, -1));
+//	else if(local_ray_id == 1)
+//		light_ray_data.ray_propagation_direction = normalize(make_float3(1e-3, 0.0, -1));
+//	else
+//		return;
+
+
 	if(global_ray_id < num_lightrays_save && save_lightrays)
 	{
 //		final_dir[global_ray_id] = light_ray_data.ray_propagation_direction;
@@ -1979,13 +2007,89 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 		temp_dir = light_ray_data.ray_propagation_direction;
 	}
 //	return;
+
+	// this structure contains the camera design information
+	camera_design_t camera_design = *camera_design_p;
+
 	// trace the light ray through a medium containing density gradients
 	if(simulate_density_gradients)
 	{
-//		density_grad_params_t params = *density_grad_params_p;
+
+		float3 ray_direction_vector, temp_vector, ray_direction_orig, pos_orig, ray_position_vector;
+		float dot_vector[3], dot_vector_2[3];
+		ray_position_vector = light_ray_data.ray_source_coordinates;
+		ray_direction_vector = light_ray_data.ray_propagation_direction;
+		ray_direction_orig = ray_direction_vector;
+		pos_orig = light_ray_data.ray_source_coordinates;
+
+		// ---------------------------------------------------------------
+		// Rotate light ray from camera co-ordinates to world co-ordinates
+		// using the inverse rotation matrix.
+		// This is done because the density gradient field is specifed in
+		// world co-ordinates.
+		// ---------------------------------------------------------------
+
+//		printf("ray position before first rotation: %f, %f, %f\n", ray_position_vector.x, ray_position_vector.y, ray_position_vector.z);
+//		printf("ray direction before first rotation: %f, %f, %f\n", ray_direction_vector.x, ray_direction_vector.y, ray_direction_vector.z);
+
+		// % This rotates the light rays direction vectors by the inverse of the
+        // % camera rotation array so that the ray is now in the world coordinate
+        // % system
+		for(int i = 0; i < 3; i++)
+		{
+
+			temp_vector.x = camera_design.inverse_rotation_matrix[i*3 + 0];
+			temp_vector.y = camera_design.inverse_rotation_matrix[i*3 + 1];
+			temp_vector.z = camera_design.inverse_rotation_matrix[i*3 + 2];
+
+			dot_vector[i] = dot(temp_vector,ray_direction_vector);
+			dot_vector_2[i] = dot(temp_vector,ray_position_vector);
+		}
+
+		ray_direction_vector = make_float3(dot_vector[0],dot_vector[1],dot_vector[2]);
+		ray_position_vector = make_float3(dot_vector_2[0],dot_vector_2[1],dot_vector_2[2]);
+
+//		printf("ray position after first rotation: %f, %f, %f\n", ray_position_vector.x, ray_position_vector.y, ray_position_vector.z);
+//		printf("ray direction after first rotation: %f, %f, %f\n", ray_direction_vector.x, ray_direction_vector.y, ray_direction_vector.z);
+
+		light_ray_data.ray_propagation_direction = ray_direction_vector;
+		light_ray_data.ray_source_coordinates = ray_position_vector;
+
 		light_ray_data = trace_rays_through_density_gradients(light_ray_data,params,
 				global_ray_id, add_ngrad_noise, ngrad_noise_std, states, intermediate_pos, intermediate_dir,
 				save_intermediate_ray_data, num_intermediate_positions_save);
+
+		ray_position_vector = light_ray_data.ray_source_coordinates;
+		ray_direction_vector = light_ray_data.ray_propagation_direction;
+
+		// ---------------------------------------------------------------
+		// Rotate light ray back from world to camera co-ordinates using the
+		// rotation matrix.
+		// ---------------------------------------------------------------
+
+//		printf("ray position before second rotation: %f, %f, %f\n", ray_position_vector.x, ray_position_vector.y, ray_position_vector.z);
+//		printf("ray direction before second rotation: %f, %f, %f\n", ray_direction_vector.x, ray_direction_vector.y, ray_direction_vector.z);
+
+		// % This rotates the light rays direction vectors back to the camera co-ordinates
+		for(int i = 0; i < 3; i++)
+		{
+			temp_vector.x = camera_design.rotation_matrix[i*3 + 0];
+			temp_vector.y = camera_design.rotation_matrix[i*3 + 1];
+			temp_vector.z = camera_design.rotation_matrix[i*3 + 2];
+
+			dot_vector[i] = dot(temp_vector,ray_direction_vector);
+			dot_vector_2[i] = dot(temp_vector,ray_position_vector);
+		}
+		ray_direction_vector = make_float3(dot_vector[0],dot_vector[1],dot_vector[2]);
+		ray_position_vector = make_float3(dot_vector_2[0],dot_vector_2[1],dot_vector_2[2]);
+
+//		printf("ray position after second rotation: %f, %f, %f\n", ray_position_vector.x, ray_position_vector.y, ray_position_vector.z);
+//		printf("ray direction after second rotation: %f, %f, %f\n", ray_direction_vector.x, ray_direction_vector.y, ray_direction_vector.z);
+
+		light_ray_data.ray_propagation_direction = ray_direction_vector;
+//		light_ray_data.ray_propagation_direction = normalize(ray_direction_orig);
+		light_ray_data.ray_source_coordinates = ray_position_vector;
+//		light_ray_data.ray_source_coordinates = pos_orig;
 
 		// ignore rays that did not pass through the density gradients
 		if(isnan(light_ray_data.ray_propagation_direction.x) || isnan(light_ray_data.ray_propagation_direction.y)
@@ -2002,23 +2106,22 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 //		return;
 	}
 
-	if(save_intermediate_ray_data && !simulate_density_gradients && global_ray_id < num_intermediate_positions_save && save_lightrays)
-	{
-		intermediate_pos[global_ray_id * num_intermediate_positions_save] = temp_pos;
-		intermediate_dir[global_ray_id * num_intermediate_positions_save] = temp_dir;
-//		final_pos[global_ray_id] = light_ray_data.ray_source_coordinates;
-//		return;
-	}
+//	if(save_intermediate_ray_data && !simulate_density_gradients && global_ray_id < num_intermediate_positions_save && save_lightrays)
+//	{
+//		intermediate_pos[global_ray_id * num_intermediate_positions_save] = temp_pos;
+//		intermediate_dir[global_ray_id * num_intermediate_positions_save] = temp_dir;
+////		final_pos[global_ray_id] = light_ray_data.ray_source_coordinates;
+////		return;
+//	}
 
-	// this structure contains the camera design information
-	camera_design_t camera_design = *camera_design_p;
 
 	if (element_data[0].element_type == 'n')
 	{
 		// create an apparent image without ray tracing through lens
+		float updated_object_distance = lightfield_source.object_distance + lightfield_source.z_offset;
 		light_ray_data = create_apparent_image(light_ray_data, camera_design,
 						lightray_number_per_particle,num_rays, add_pos_noise, noise_std, states, global_ray_id, camera_design.diffraction_diameter, image_array,
-						lightfield_source_shared.z, lightfield_source_shared.z_offset, element_data[0]);
+						updated_object_distance, lightfield_source.z_offset, element_data[0]);
 
 		if(global_ray_id < num_lightrays_save && save_lightrays)
 		{
@@ -3048,6 +3151,7 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	int k;
 	float z_offset = lightfield_source.z_offset;
 	printf("z_offset: %f\n", z_offset);
+	printf("object distance: %f\n", lightfield_source.object_distance);
 	printf("Particle Location: %f, %f, %f\n", lightfield_source.x[0], lightfield_source.y[0], lightfield_source.z[0]);
 	//--------------------------------------------------------------------------------------
 	// allocate space on GPU for lightfield_source
@@ -3575,7 +3679,7 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 			int dir_index;
 
 			// save all the pixel intensities to file
-			for(light_ray_index = 0; light_ray_index < num_intermediate_positions_save; light_ray_index++)
+			for(light_ray_index = 0; light_ray_index < num_lightrays_save; light_ray_index++)
 				for(dir_index = 0; dir_index < num_intermediate_positions_save; dir_index++)
 					file_intermediate_dir.write((char*)&intermediate_dir[light_ray_index*num_intermediate_positions_save + dir_index],sizeof(float3));
 
