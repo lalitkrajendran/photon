@@ -46,17 +46,17 @@ def _todict(matobj):
             dict[strg] = elem
     return dict
 
-# # get the starting index, and the number of parameter files to read at a time
-# script, filepath, starting_index, number_of_parameter_files = argv
-#
-# # convert string variables to integers
-# starting_index = int(starting_index)
-# number_of_parameter_files = int(number_of_parameter_files)
-# print 'number of parameter files to run in one simulation', number_of_parameter_files
+# get the starting index, and the number of parameter files to read at a time
+script, filepath, starting_index, number_of_parameter_files = argv
 
-filepath = '/home/shannon/c/aether/Projects/BOS/error-analysis/analysis/data/parameters/piv/'
-starting_index = 1
-number_of_parameter_files = 1
+# convert string variables to integers
+starting_index = int(starting_index)
+number_of_parameter_files = int(number_of_parameter_files)
+print 'number of parameter files to run in one simulation', number_of_parameter_files
+
+# filepath = '/home/shannon/c/aether/Projects/BOS/error-analysis/analysis/data/parameters/piv/'
+# starting_index = 1
+# number_of_parameter_files = 1
 
 # specify directory where parameters are stored
 bos_simulation_parameters_read_directory = filepath

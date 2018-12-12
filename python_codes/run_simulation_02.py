@@ -322,7 +322,7 @@ def create_camera_optical_system(simulation_parameters):
     # This is the equivalent thin lens focal length for the current element (if
     # this value is defined - if not, then the value is Null)
     optical_system['design']['optical_element'][0]['optical_element'][0]['element_properties']['thin_lens_focal_length'] = focal_length
-    
+
     # display lens properties to user
     print 'n: %.4f, t: %.2f, R: %.2f' % (refractive_index, lens_thickness, lens_radius_of_curvature)
     # exit()
@@ -786,6 +786,10 @@ def load_lightfield_data(simulation_parameters,optical_system,mie_scattering_dat
         # This sets the irradiance constant for not using Mie scattering
         irradiance_constant = 1e4
 
+
+    # this overrides the irradiance constant set above, if there is a user specified value
+    if 'lightray_radiance' in simulation_parameters['particle_field'].keys():
+        irradiance_constant = simulation_parameters['particle_field']['lightray_radiance']
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # % Calculates optical system properties                                    %
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -862,18 +866,15 @@ def load_lightfield_data(simulation_parameters,optical_system,mie_scattering_dat
         else:
             Z_Max = +7.5e3 #+7.5e3
 
-        # X_Min = -5e4/1e1 #-7.5e4
-        # X_Max = 5e4/1e1 #+7.5e4
-        # Y_Min = -5e4/1e1 #-7.5e4
-        # Y_Max = 5e4/1e1 #+7.5e4
-        # Z_Min = -5e4/1e1 #-7.5e3
-        # Z_Max = 5e4/1e1 #+7.5e3
 
         # if only point is to be generated, then place it in the center of the FOV
         if int(particle_number) == 1:
             X = np.array([X_Min + 1 * (X_Max - X_Min) / 2.0 + simulation_parameters['camera_design']['pixel_pitch'] / M / 2.0])
             Y = np.array([Y_Min + 1 * (Y_Max - Y_Min) / 2.0 + simulation_parameters['camera_design']['pixel_pitch'] / M / 2.0])
-            Z = np.array([-450e3]) #np.array([Y_Min + 1 * (Z_Max - Z_Min) / 2.0])
+            if 'particle_depth' in simulation_parameters['particle_field'].keys():
+                Z = np.array([simulation_parameters['particle_field']['particle_depth']])
+            else:
+                Z = np.array([0.0]) #np.array([Y_Min + 1 * (Z_Max - Z_Min) / 2.0])
         else:
             # np.random.seed(2445)
             np.random.seed()
@@ -885,6 +886,7 @@ def load_lightfield_data(simulation_parameters,optical_system,mie_scattering_dat
     # This calculates the standard deviation of the Gaussian beam function
     # based upon the Full Width Half Maximum
     gaussian_sigma = gaussian_beam_fwhm/(2.0*np.sqrt(2.0*np.log(2.0)))
+
 
     # This calculates the intensity of the particles based upon the
     # Gaussian beam distribution (the scale factor coefficient is to ensure
@@ -915,6 +917,7 @@ def load_lightfield_data(simulation_parameters,optical_system,mie_scattering_dat
     lightfield_source['radiance'] = np.array(R)
     lightfield_source['diameter_index'] = np.ones(X.shape) # particle_diameter_index_distribution
     lightfield_source['z_offset'] = z_offset
+    lightfield_source['object_distance'] = object_distance
     return lightfield_source
 
 def calculate_sunflower_coordinates(grid_point_diameter,lightray_number_per_grid_point):
@@ -1637,6 +1640,19 @@ def run_simulation_02(simulation_parameters):
     # optical_system['design']['optical_element'][0]['optical_element'][0]['element_properties']['abbe_number'] = np.NAN
     # optical_system['design']['optical_element'][0]['element_geometry'] = np.NAN
     # optical_system['design']['optical_element'][0]['element_properties'] = np.NAN
+
+
+    # This calculates the rotation matrix that transforms between the the world
+    # coordinate system and the camera coordinate system
+    rotation_matrix = calculate_rotation_matrix(simulation_parameters['camera_design']['x_camera_angle'], simulation_parameters['camera_design']['y_camera_angle'], 0.0)
+
+
+    # This computes the inverse rotation matrix (ie the transpose of the
+    # rotation matrix)
+    inverse_rotation_matrix = rotation_matrix.transpose()
+
+    simulation_parameters['camera_design']['rotation_matrix'] = rotation_matrix
+    simulation_parameters['camera_design']['inverse_rotation_matrix'] = inverse_rotation_matrix
 
     if simulation_parameters['simulation_type'] == 'piv':
         # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

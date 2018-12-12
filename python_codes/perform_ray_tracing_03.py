@@ -1712,10 +1712,9 @@ def prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, sc
             ('x', _floatp),
             ('y', _floatp),
             ('z', _floatp),
-            ('num_rays', ctypes.c_int),
             ('num_particles',ctypes.c_int),
-            ('z_offset', ctypes.c_float)
-
+            ('z_offset', ctypes.c_float),
+            ('object_distance', ctypes.c_float)
         ]
 
     lightfield_source['x'] = np.asarray(lightfield_source['x'].astype('float32'))
@@ -1740,6 +1739,7 @@ def prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, sc
     lightfield_source_ctypes.num_rays = lightfield_source['x'].size
     lightfield_source_ctypes.num_particles = lightfield_source['diameter_index'].size
     lightfield_source_ctypes.z_offset = float(lightfield_source['z_offset'])
+    lightfield_source_ctypes.object_distance = float(lightfield_source['object_distance'])
 
     # -------------------------------------------------------------------------------------------------------------------
     # inputs for propagating light rays through the optical setup
@@ -1844,7 +1844,9 @@ def prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, sc
             ('y_pixel_number', ctypes.c_int),
             ('z_sensor', ctypes.c_float),
             ('diffraction_diameter', ctypes.c_float),
-            ('implement_diffraction', ctypes.c_bool)
+            ('implement_diffraction', ctypes.c_bool),
+            ('rotation_matrix', ctypes.c_float * 9),
+            ('inverse_rotation_matrix', ctypes.c_float * 9)
         ]
 
     # create an instance of the class
@@ -1862,10 +1864,19 @@ def prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, sc
     camera_design_ctypes_struct.diffraction_diameter = camera_design['diffraction_diameter']
     camera_design_ctypes_struct.implement_diffraction = camera_design['implement_diffraction']
 
+    for i in range(0, 3):
+        for j in range(0, 3):
+            camera_design_ctypes_struct.inverse_rotation_matrix[i * 3 + j] = camera_design['inverse_rotation_matrix'][
+                i, j].astype('float32')
+            camera_design_ctypes_struct.rotation_matrix[i * 3 + j] = camera_design['rotation_matrix'][
+                i, j].astype('float32')
+
     # convert the 2D image array to a 1D array because they are easier to handle in CUDA
     # I2 = np.reshape(I,(1,1024*1024)).astype(np.float32)
     I2 = np.reshape(I,(1,camera_design['x_pixel_number']*camera_design['y_pixel_number'])).astype(np.float32)
 
+    print 'rotation matrix', camera_design['rotation_matrix']
+    print 'inverse rotation matrix', camera_design['inverse_rotation_matrix']
     # -------------------------------------------------------------------------------------------------------------------
     # call cuda code
     # -------------------------------------------------------------------------------------------------------------------
@@ -1965,7 +1976,7 @@ def perform_ray_tracing_03(simulation_parameters, optical_system, pixel_gain, sc
         beam_wavelength = simulation_parameters['particle_field']['beam_wavelength']
     else:
         beam_wavelength = 0.0
-    #
+
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # % Extracts parameters from 'optical_system'                               %
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

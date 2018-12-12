@@ -217,6 +217,7 @@ def create_simulation_parameters(simulation_type):
     simulation_parameters['density_gradients']['density_gradient_filename'] = ''
     # ray tracing algorithm (1 - euler, 2 - rk4, 3 - rk45, 4 - adams-bashforth)
     simulation_parameters['density_gradients']['ray_tracing_algorithm'] = 1
+
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # % Image Writing Parameters                                                %
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -232,8 +233,11 @@ def create_simulation_parameters(simulation_type):
     simulation_parameters['output_data']['crop_image'] = False
     # option to save light ray
     simulation_parameters['output_data']['save_lightrays'] = False
-
-    # option to save light ray positions inside density gradient volume
+    # number of light rays to be saved
+    simulation_parameters['output_data']['num_lightrays_save'] = 100
+    # option to save light ray positions inside density gradient volume (for each light ray that is being saved)
     simulation_parameters['output_data']['save_intermediate_ray_data'] = False
+    # number of intermediate light ray positions to be saved (for each light ray)
+    simulation_parameters['output_data']['num_intermediate_positions_save'] = 100
     return simulation_parameters
 
