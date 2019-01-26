@@ -123,7 +123,7 @@ __device__ light_ray_data_t generate_lightfield_angular_data(float lens_pitch, f
 	float theta_temp = -(x_lens - x_current) / (image_distance - z_current);
 //	float theta_temp = (random_number_1 - 0.5) * 1e-3;
 	// calculate the y angles for the light rays
-	float phi_temp = 0; //-(y_lens - y_current) / (image_distance - z_current);
+	float phi_temp = -(y_lens - y_current) / (image_distance - z_current);
 
 //	float theta_temp = M_PI/180.0 * 1e-2;
 //	float phi_temp = M_PI/180.0 * 1e-2;
@@ -216,8 +216,8 @@ __device__ light_ray_data_t generate_lightfield_angular_data(float lens_pitch, f
 	// this is the wavelength of the light ray
 	light_ray_data.ray_wavelength = beam_wavelength;
 	// this is the radiance of the light ray
-//	light_ray_data.ray_radiance = 1/(aperture_f_number*aperture_f_number)*irradiance_current;
-	light_ray_data.ray_radiance = irradiance_current;
+	light_ray_data.ray_radiance = 1/(aperture_f_number*aperture_f_number)*irradiance_current;
+//	light_ray_data.ray_radiance = irradiance_current;
 
 	return light_ray_data;
 }
@@ -1655,19 +1655,19 @@ __device__ light_ray_data_t create_apparent_image(light_ray_data_t light_ray_dat
 	//% This is a multiple of the particle
 	//% diameter that specifies how far away from the
 	//% particle center to render.
-	float render_fraction = 0.75;
+	float render_fraction = 1.00;
 
 	//% Determine the miniumum and maximum columns (leftmost and rightmost pixels) in the image
 	//% to which each particle contributes some intensity,
 	//% fractional values
 	int minRenderedCols = floor(X - render_fraction * PARTICLE_DIAMETERS);
-	int maxRenderedCols =  ceil(X + render_fraction * PARTICLE_DIAMETERS);
+	int maxRenderedCols = ceil(X + render_fraction * PARTICLE_DIAMETERS);
 
 	//% Determine the minimum and maximum rows (topmost and bottommost pixels) in
 	//% the image to which each particle contributes some intensity,
 	//% fractional values
 	int minRenderedRows = floor(Y - render_fraction * PARTICLE_DIAMETERS);
-	int maxRenderedRows =  ceil(Y + render_fraction * PARTICLE_DIAMETERS);
+	int maxRenderedRows = ceil(Y + render_fraction * PARTICLE_DIAMETERS);
 
 //	printf("render rows: %d, %d, cols: %d, %d\n", minRenderedRows, maxRenderedRows,
 //			minRenderedCols, maxRenderedCols);
@@ -1685,7 +1685,9 @@ __device__ light_ray_data_t create_apparent_image(light_ray_data_t light_ray_dat
 	        bool render_pixel = col >= 0 && col <= (camera_design.x_pixel_number-1)
 	        		&& row >= 0 && row <= (camera_design.y_pixel_number-1)
 	            && (render_radius <= render_fraction * PARTICLE_DIAMETERS);
-
+//	        printf("particle_intensities: %.2f\n", PARTICLE_MAX_INTENSITIES);
+//	        printf((render_radius <= render_fraction * PARTICLE_DIAMETERS) ? "true" : "false");
+//			printf(render_pixel ? "true" : "false");
 	        //% Render the pixel if it meets the criteria
 	        if(render_pixel)
 	        {
@@ -1989,7 +1991,7 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 				beam_wavelength,aperture_f_number,rand_array_1[local_ray_id],rand_array_2[local_ray_id], ray_cone_pitch_ratio);
 	float3 temp_pos;
 	float3 temp_dir;
-
+//
 //	if(local_ray_id == 0)
 //		light_ray_data.ray_propagation_direction = normalize(make_float3(-1e-3, 0.0, -1));
 //	else if(local_ray_id == 1)
@@ -3593,7 +3595,7 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 			std::sprintf(num2str, "%04d.bin", k);
 
 			filename_2 = num2str;
-			full_filename = filepath + filename_1 + filename_2;
+			full_filename = filepath + "/" + filename_1 + filename_2;
 			// open the file
 			std::ofstream file_final_pos(full_filename.c_str(), ios::out | ios::binary);
 
@@ -3617,7 +3619,7 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 			std::sprintf(num2str, "%04d.bin", k);
 
 			filename_2 = num2str;
-			full_filename = filepath + filename_1 + filename_2;
+			full_filename = filepath + "/" + filename_1 + filename_2;
 
 			// open the file
 			std::ofstream file_final_dir(full_filename.c_str(),ios::out | ios::binary);
@@ -3644,7 +3646,7 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 			std::sprintf(num2str, "%04d.bin", k);
 
 			filename_2 = num2str;
-			full_filename = filepath + filename_1 + filename_2;
+			full_filename = filepath + "/" + filename_1 + filename_2;
 
 			// open the file
 			std::ofstream file_intermediate_pos(full_filename.c_str(), ios::out | ios::binary);
@@ -3672,7 +3674,7 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 			std::sprintf(num2str, "%04d.bin", k);
 
 			filename_2 = num2str;
-			full_filename = filepath + filename_1 + filename_2;
+			full_filename = filepath + "/" + filename_1 + filename_2;
 
 			// open the file
 			std::ofstream file_intermediate_dir(full_filename.c_str(),ios::out | ios::binary);

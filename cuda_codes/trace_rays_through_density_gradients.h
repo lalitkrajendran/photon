@@ -885,7 +885,7 @@ __device__ light_ray_data_t euler(light_ray_data_t light_ray_data,
 //			dir = angles_to_cosines(theta);
 
 			// normalize the direction to ensure that it is a unit vector
-			dir = normalize(dir);
+//			dir = normalize(dir);
 //			dir.z = -sqrt(1.0 - dir.x*dir.x - dir.y*dir.y);
 
 			// get the refractive index at the current location
@@ -1837,12 +1837,10 @@ density_grad_params_t setData(float* data, density_grad_params_t _params)
 
 	// save the refractive index gradient data to file.
 //	std::string filename = "/home/shannon/c/aether/Projects/BOS/error-analysis/analysis/src/photon/cuda_codes/data/gradient_backward.bin";
-//	std::string filename = "/home/shannon/c/aether/Projects/BOS/error-analysis/analysis/src/photon/cuda_codes/data/gradient_central.bin";
+	std::string filename = "/home/shannon/c/aether/Projects/BOS/error-analysis/analysis/src/photon/cuda_codes/data/gradient_central.bin";
 
-//	std::ofstream file;
-//	file.open(filename.c_str(), ios::out | ios::binary);
-//	float4 data_out;
-//	float4 data_out_2;
+	std::ofstream file;
+	file.open(filename.c_str(), ios::out | ios::binary);
 
 	// calculate grid spacings for gradient calculation
 	float grid_x = _params.grid_spacing.x;
@@ -1937,7 +1935,7 @@ density_grad_params_t setData(float* data, density_grad_params_t _params)
 				lookup = make_float3(x,y+1,z);
 				sample2 = data[size_t(lookup.z*data_width*data_height + lookup.y*data_width + lookup.x)];
 
-				normal.y = (sample2 - sample1)/(2*grid_y);
+				normal.y = (sample2 - sample1)/(2.0*grid_y);
 			}
 
 
@@ -1991,7 +1989,7 @@ density_grad_params_t setData(float* data, density_grad_params_t _params)
 			if(_params.data[data_loc].w == 0)
 				printf("_params.data[data_loc].w == 0 at data_loc: %d\n", data_loc);
 
-//			file.write((char*)&_params.data[data_loc], sizeof(float)*4);
+			file.write((char*)&_params.data[data_loc], sizeof(float)*4);
 		  }
 		}
 	}

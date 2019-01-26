@@ -1450,6 +1450,7 @@ def generate_bos_lightfield_data(simulation_parameters,optical_system):
 	# of the GPU memory, and threads-blocks-grids specifications
     lightfield_source['source_point_number'] = 10000
     lightfield_source['z_offset'] = z_offset
+    lightfield_source['object_distance'] = object_distance
     return lightfield_source, x_grid_point_coordinate_vector, y_grid_point_coordinate_vector
 
 

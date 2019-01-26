@@ -3,8 +3,9 @@ import scipy.io as sio
 
 def create_simulation_parameters(simulation_type):
     # % This function is designed to create a basic parameters structure for
-    # % controlling simulating PIV data using the thick lens camera simulation
+    # % controlling simulating data using the thick lens camera simulation
     # % code.
+    # specify simulation type as "piv"/"bos"/"calibration"
 
     # % This initializes the simulation parameters structure
     simulation_parameters = {}
@@ -53,6 +54,9 @@ def create_simulation_parameters(simulation_type):
     simulation_parameters['camera_design']['image_noise'] = 0.00
     # option to turn on scaling intensity to full bit depth
     simulation_parameters['camera_design']['intensity_rescaling'] = True
+    # option to implement diffraction on the camera sensor
+    simulation_parameters['camera_design']['implement_diffraction'] = True
+    
     if simulation_type == 'piv':
         # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         # % Particle Field Simulation Parameters                                    %
@@ -217,7 +221,10 @@ def create_simulation_parameters(simulation_type):
     simulation_parameters['density_gradients']['density_gradient_filename'] = ''
     # ray tracing algorithm (1 - euler, 2 - rk4, 3 - rk45, 4 - adams-bashforth)
     simulation_parameters['density_gradients']['ray_tracing_algorithm'] = 1
-
+    # gladstone dale constant (m^3/kg)
+    simulation_parameters['density_gradients']['gladstone_dale'] = 0.225e-3
+    # ambient density (kg/m^3)
+    simulation_parameters['density_gradients']['rho_0'] = 1.225
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # % Image Writing Parameters                                                %
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
