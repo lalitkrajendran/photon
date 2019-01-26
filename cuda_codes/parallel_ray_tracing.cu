@@ -3153,6 +3153,7 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	int k;
 	float z_offset = lightfield_source.z_offset;
 	printf("z_offset: %f\n", z_offset);
+
 	printf("object distance: %f\n", lightfield_source.object_distance);
 	printf("Particle Location: %f, %f, %f\n", lightfield_source.x[0], lightfield_source.y[0], lightfield_source.z[0]);
 	//--------------------------------------------------------------------------------------
@@ -3681,7 +3682,11 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 			int dir_index;
 
 			// save all the pixel intensities to file
+<<<<<<< HEAD
 			for(light_ray_index = 0; light_ray_index < num_lightrays_save; light_ray_index++)
+=======
+			for(light_ray_index = 0; light_ray_index < num_intermediate_positions_save; light_ray_index++)
+>>>>>>> refs/remotes/origin/parallel_ray_tracing
 				for(dir_index = 0; dir_index < num_intermediate_positions_save; dir_index++)
 					file_intermediate_dir.write((char*)&intermediate_dir[light_ray_index*num_intermediate_positions_save + dir_index],sizeof(float3));
 
