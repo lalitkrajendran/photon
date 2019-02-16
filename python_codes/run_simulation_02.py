@@ -1355,13 +1355,31 @@ def generate_bos_lightfield_data(simulation_parameters,optical_system):
             y_grid_point_coordinate_vector = Y_Min + (Y_Max - Y_Min) * random_numbers[grid_point_number:]
         else:
             # create non-overlapped dots
-            grid_point_coordinates = create_non_overlapping_dot_coordinates(simulation_parameters)
+            if simulation_parameters['bos_pattern']['dot_distribution'] == 'regular':
+                # create regular grid of dots
+                # calculate magnification
+                M = simulation_parameters['lens_design']['focal_length'] \
+                    / (simulation_parameters['lens_design']['object_distance'] - simulation_parameters['lens_design']['focal_length'])
+                dot_spacing_microns = simulation_parameters['bos_pattern']['dot_spacing'] * simulation_parameters['camera_design']['pixel_pitch'] / M
+                # number of grid points that can be accommodated in the field of view                
+                x_grid_point_number = (simulation_parameters['bos_pattern']['X_Max'] - simulation_parameters['bos_pattern']['X_Min'])/dot_spacing_microns
+                y_grid_point_number = (simulation_parameters['bos_pattern']['Y_Max'] - simulation_parameters['bos_pattern']['Y_Min'])/dot_spacing_microns
+                
+                x_grid_point_coordinate_vector = np.linspace(start=simulation_parameters['bos_pattern']['X_Min'], stop=simulation_parameters['bos_pattern']['X_Max'], num=x_grid_point_number, endpoint=False)
+                y_grid_point_coordinate_vector = np.linspace(start=simulation_parameters['bos_pattern']['Y_Min'], stop=simulation_parameters['bos_pattern']['Y_Max'], num=y_grid_point_number, endpoint=False)
+                                
+                X,Y = np.meshgrid(x_grid_point_coordinate_vector, y_grid_point_coordinate_vector, indexing='xy')
+                
+                grid_point_coordinates = np.empty((X.size,2), dtype=X.dtype)
+                grid_point_coordinates[:,0] = X.flatten('C') #np.reshape(X, (X.size, 1))
+                grid_point_coordinates[:,1] = Y.flatten('C') #np.reshape(Y, (Y.size, 1))
+                
+            else:
+                grid_point_coordinates = create_non_overlapping_dot_coordinates(simulation_parameters)
+
             x_grid_point_coordinate_vector = grid_point_coordinates[:, 0]
             y_grid_point_coordinate_vector = grid_point_coordinates[:, 1]
             grid_point_number = x_grid_point_coordinate_vector.size
-        # x_grid_point_coordinate_vector = X_Min + np.linspace(start=0, stop=1.0, num=11, endpoint=True) * (X_Max - X_Min)
-        # y_grid_point_coordinate_vector = np.zeros(shape=x_grid_point_coordinate_vector.shape)
-
 
     # % This generates a series of points that fill the circle of the grid point
     # % uniformly

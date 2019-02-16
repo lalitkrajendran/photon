@@ -210,6 +210,13 @@ def create_simulation_parameters(simulation_type):
         simulation_parameters['bos_pattern']['Y_Max'] = +7.5e4
         # number of light ray positions and directions to save
         simulation_parameters['bos_pattern']['num_lightrays_save'] = 1e6
+        # option to create overlapping dots
+        simulation_parameters['bos_pattern']['dot_overlap'] = False
+        # option to specify if dot distribution should be regular or random 
+        simulation_parameters['bos_pattern']['dot_distribution'] = 'random'
+        # option to specify dot spacing in pixels (if the distribution is regular)
+        simulation_parameters['bos_pattern']['dot_spacing'] = 6.0
+        
 
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # % Density Gradient Parameters
