@@ -1718,9 +1718,6 @@ def run_simulation_02(simulation_parameters):
             print('Simulating particle images . . . ')
 
 
-            # generate random numbers for light ray intersection with lens
-            generate_random_numbers_for_lightrays(lightray_number_per_particle)
-
             # This calculates the Mie scattering data if specified in the parameters
             # data structure, otherwise the Mie scattering data is set to a Null value
             if perform_mie_scattering:
@@ -1823,9 +1820,6 @@ def run_simulation_02(simulation_parameters):
             scattering_data = None
 
             field_type = 'calibration'
-
-            # generate random numbers for light ray intersection with lens
-            generate_random_numbers_for_lightrays(lightray_number_per_particle)
 
             # % This iterates through the calibration grid planes performing the ray
             # % tracing operations for each plane
@@ -1938,9 +1932,6 @@ def run_simulation_02(simulation_parameters):
             # save data to mat file
             # convert none to NAN just for MATLAB
             scattering_data = np.NAN
-
-            # generate random numbers for light ray intersection with lens
-            generate_random_numbers_for_lightrays(lightray_number_per_particle)
 
             ################################################################################################################
             # render the reference image without density gradients
