@@ -17,8 +17,8 @@ OBJS += \
 %.o: ../%.cu
 	@echo 'Building file: $<'
 	@echo 'Invoking: NVCC Compiler'
-	/opt/cuda/7.0/bin/nvcc -I/usr/include -I/home/barracuda/a/lrajendr/Projects/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/examples/cuda5_fix -I/home/barracuda/a/lrajendr/Projects/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/code -I/usr/lib64 -I/usr/local/lib -I../ -G -g -O0 -maxrregcount 32 -Xcompiler -fPIC -gencode arch=compute_20,code=sm_20  -odir "." -M -o "$(@:%.o=%.d)" "$<"
-	/opt/cuda/7.0/bin/nvcc -I/usr/include -I/home/barracuda/a/lrajendr/Projects/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/examples/cuda5_fix -I/home/barracuda/a/lrajendr/Projects/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/code -I/usr/lib64 -I/usr/local/lib -I../ -G -g -O0 -maxrregcount 32 -Xcompiler -fPIC --compile --relocatable-device-code=false -gencode arch=compute_20,code=compute_20 -gencode arch=compute_20,code=sm_20  -x cu -o  "$@" "$<"
+	/opt/cuda/7.0/bin/nvcc -I/usr/include -I/scratch/shannon/c/aether/Projects/BOS/error-analysis/analysis/src/photon/cuda_codes -I/home/barracuda/a/lrajendr/Projects/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/examples/cuda5_fix -I/home/barracuda/a/lrajendr/Projects/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/code -I/usr/lib64 -I/usr/local/lib -I../ -G -g -O0 -maxrregcount 32 -Xcompiler -fPIC -gencode arch=compute_20,code=sm_20  -odir "." -M -o "$(@:%.o=%.d)" "$<"
+	/opt/cuda/7.0/bin/nvcc -I/usr/include -I/scratch/shannon/c/aether/Projects/BOS/error-analysis/analysis/src/photon/cuda_codes -I/home/barracuda/a/lrajendr/Projects/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/examples/cuda5_fix -I/home/barracuda/a/lrajendr/Projects/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/code -I/usr/lib64 -I/usr/local/lib -I../ -G -g -O0 -maxrregcount 32 -Xcompiler -fPIC --compile --relocatable-device-code=false -gencode arch=compute_20,code=compute_20 -gencode arch=compute_20,code=sm_20  -x cu -o  "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 

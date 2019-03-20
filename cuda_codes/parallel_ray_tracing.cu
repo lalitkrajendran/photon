@@ -96,7 +96,7 @@ __device__ light_ray_data_t generate_lightfield_angular_data(float lens_pitch, f
 						radiance of the light ray
 	*/
 
-
+//	printf("random number 1: %.2f, 2: %.2f\n", random_number_1, random_number_2);
 	// get source coordinates of the light ray
 	float x_current = lightfield_source.x;
 	float y_current = lightfield_source.y;
@@ -113,8 +113,13 @@ __device__ light_ray_data_t generate_lightfield_angular_data(float lens_pitch, f
 	float lens_pitch_scaling_factor = ray_cone_pitch_ratio; //1; //1e-1; //1e-4; //0.3; //1e-4;
 
 	// generate random points on the lens where the rays should intersect
-	float x_lens = 0.5*lens_pitch_scaling_factor*lens_pitch*sqrt(random_number_1)*cos(2*M_PI*random_number_2);
-	float y_lens = 0.5*lens_pitch_scaling_factor*lens_pitch*sqrt(random_number_1)*sin(2*M_PI*random_number_2);
+//	float x_lens = lens_pitch_scaling_factor*lens_pitch*sqrt(random_number_1)*cos(2*M_PI*random_number_2);
+//	float y_lens = lens_pitch_scaling_factor*lens_pitch*sqrt(random_number_1)*sin(2*M_PI*random_number_2);
+	float x_lens = lens_pitch_scaling_factor*lens_pitch*random_number_1*cos(2*M_PI*random_number_2);
+	float y_lens = lens_pitch_scaling_factor*lens_pitch*random_number_1*sin(2*M_PI*random_number_2);
+
+//	float x_lens = sqrt(random_number_1)*cos(2*M_PI*random_number_2);
+//	float y_lens = sqrt(random_number_1)*sin(2*M_PI*random_number_2);
 //	float x_lens = 0.0; //0.5*lens_pitch_scaling_factor*(random_number_1 - 0.5);
 //	float y_lens = 0.0;
 //	image_distance = 217514.0;
@@ -1984,7 +1989,7 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 		final_dir[global_ray_id].z = CUDART_NAN_F;
 
 	}
-
+//	printf("random number 1: %.2f, 2: %.2f\n", rand_array_1[local_ray_id], rand_array_2[local_ray_id]);
 	// generate light rays
 	light_ray_data_t light_ray_data = generate_lightfield_angular_data(lens_pitch, image_distance,scattering_data,
 				scattering_type, lightfield_source_shared,lightray_number_per_particle,
@@ -3241,23 +3246,19 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	cudaMalloc((void**)&d_rand1,sizeof(float)*lightray_number_per_particle);
 	cudaMalloc((void**)&d_rand2,sizeof(float)*lightray_number_per_particle);
 
-	// open files
-	string filename = "/home/shannon/c/aether/Projects/BOS/error-analysis/analysis/src/photon/cuda_codes/data/random1.bin";
-	std::ifstream file_rand1(filename.c_str(),ios::in|ios::binary);
+	// initialize random number generator
+	srand(10);
 
-	filename = "/home/shannon/c/aether/Projects/BOS/error-analysis/analysis/src/photon/cuda_codes/data/random2.bin";
-	std::ifstream file_rand2(filename.c_str(),ios::in|ios::binary);
+	// generate random numbers
+	printf("generating random numbers for light ray intersection points...");
+	/* Show result */
+	for(k = 0; k < lightray_number_per_particle; k++) {
+		h_rand1[k] = ((double) rand() / (RAND_MAX));
+		h_rand2[k] = ((double) rand() / (RAND_MAX));
 
-	// read random numbers from file
-	for(k = 0; k < lightray_number_per_particle; k++)
-	{
-		file_rand1.read((char*)&h_rand1[k],sizeof(float));
-		file_rand2.read((char*)&h_rand2[k],sizeof(float));
+//		printf("%1.4f, %1.4f\n ", h_rand1[k], h_rand2[k]);
 	}
-
-	// close files
-	file_rand1.close();
-	file_rand2.close();
+	printf("done\n");
 
 	// copy data to device
 	cudaMemcpy(d_rand1,h_rand1,sizeof(float)*lightray_number_per_particle,cudaMemcpyHostToDevice);

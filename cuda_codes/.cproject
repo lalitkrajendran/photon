@@ -33,6 +33,7 @@
 								<option id="nvcc.compiler.pic.7668004" name="Position Independent Code (-fPIC)" superClass="nvcc.compiler.pic" value="true" valueType="boolean"/>
 								<option id="nvcc.compiler.include.paths.1077436147" name="Include paths (-I)" superClass="nvcc.compiler.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="/usr/include"/>
+									<listOptionValue builtIn="false" value="/scratch/shannon/c/aether/Projects/BOS/error-analysis/analysis/src/photon/cuda_codes"/>
 									<listOptionValue builtIn="false" value="/home/barracuda/a/lrajendr/Projects/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/examples/cuda5_fix"/>
 									<listOptionValue builtIn="false" value="/home/barracuda/a/lrajendr/Projects/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/code"/>
 									<listOptionValue builtIn="false" value="/usr/lib64"/>
@@ -78,6 +79,7 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
+					<fileInfo id="com.nvidia.cuda.ide.configuration.so.debug.1095736804.1594293474" name="trace_rays_through_density_gradients.h" rcbsApplicability="disable" resourcePath="trace_rays_through_density_gradients.h" toolsToInvoke=""/>
 				</configuration>
 			</storageModule>
 			<storageModule moduleId="com.nvidia.cuda.ide.build.project.ICudaProjectConfiguration">
@@ -174,6 +176,18 @@
 		</configuration>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
+	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets">
+		<buildTargets>
+			<target name="parallel_ray_tracing.cu" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
+				<buildCommand>make</buildCommand>
+				<buildArguments/>
+				<buildTarget>parallel_ray_tracing.cu</buildTarget>
+				<stopOnError>true</stopOnError>
+				<useDefaultCommand>true</useDefaultCommand>
+				<runAllBuilders>true</runAllBuilders>
+			</target>
+		</buildTargets>
+	</storageModule>
 	<storageModule moduleId="scannerConfiguration">
 		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		<scannerConfigBuildInfo instanceId="com.nvidia.cuda.ide.configuration.so.release.582358932;com.nvidia.cuda.ide.configuration.so.release.582358932.;nvcc.compiler.base.604876087;nvcc.compiler.input.cpp.203924285">
@@ -215,17 +229,5 @@
 		<scannerConfigBuildInfo instanceId="com.nvidia.cuda.ide.configuration.so.release.582358932;com.nvidia.cuda.ide.configuration.so.release.582358932.;nvcc.compiler.base.604876087;nvcc.compiler.input.cu.58295553">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="com.nvidia.cuda.ide.build.NVCCPerProjectProfile"/>
 		</scannerConfigBuildInfo>
-	</storageModule>
-	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets">
-		<buildTargets>
-			<target name="parallel_ray_tracing.cu" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
-				<buildCommand>make</buildCommand>
-				<buildArguments/>
-				<buildTarget>parallel_ray_tracing.cu</buildTarget>
-				<stopOnError>true</stopOnError>
-				<useDefaultCommand>true</useDefaultCommand>
-				<runAllBuilders>true</runAllBuilders>
-			</target>
-		</buildTargets>
 	</storageModule>
 </cproject>

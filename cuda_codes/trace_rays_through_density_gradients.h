@@ -1479,6 +1479,9 @@ __device__ light_ray_data_t trace_rays_through_density_gradients(light_ray_data_
  	pos.x >= max_bound.x || pos.y >= max_bound.y || pos.z >= max_bound.z )
  	{
 
+// 		IntersectWithVolume(&pos, dir, params.min_bound, params.max_bound);
+// 		light_ray_data.ray_source_coordinates = pos;
+// 		return light_ray_data;
  		// if the ray did not intersect the volume, then set all the properties to NAN
  		// and exit the function
  		if(!IntersectWithVolume(&pos, dir, params.min_bound, params.max_bound))
@@ -1506,9 +1509,6 @@ __device__ light_ray_data_t trace_rays_through_density_gradients(light_ray_data_
 	//--------------------------------------------------------------------------------------
  	// trace light ray through the variable density medium
  	//--------------------------------------------------------------------------------------
-// 	light_ray_data.ray_source_coordinates = pos;
-// 	return light_ray_data;
-
 
  	light_ray_data.ray_source_coordinates = pos;
 
