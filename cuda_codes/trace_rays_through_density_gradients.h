@@ -769,45 +769,46 @@ __device__ light_ray_data_t euler(light_ray_data_t light_ray_data,
 		while(inside_box)
 		{
 
+			// if loop counter is more than the max number iterations, exit.
 			if(loop_ctr > loop_ctr_max)
 				break;
 
+			// extract current position and direction of the light ray
 			pos = light_ray_data.ray_source_coordinates;
 			dir = light_ray_data.ray_propagation_direction;
 
+			// save current position and direction of light ray
 			if(save_intermediate_ray_data && loop_ctr < num_intermediate_positions_save)
 			{
-				intermediate_pos[thread_id*num_intermediate_positions_save + loop_ctr] = pos; //make_float3(val.x, lookup.z, pos.z); //pos;
+				// save intermediate position
+				intermediate_pos[thread_id*num_intermediate_positions_save + loop_ctr] = pos;
+				// save intermediate direction
 				intermediate_dir[thread_id*num_intermediate_positions_save + loop_ctr] = dir;
-
 			}
 
+			// calculate co-ordinate indices in the refractive index grid corresponding to
+			// current position of the light ray
 			lookup = calculate_lookup_index(pos, params, lookup_scale);
 
 			// check if ray is inside volume
 			if(!ray_inside_box(pos, params, lookup) && loop_ctr!=0)
 			{
-//				if(save_intermediate_ray_data && loop_ctr < num_intermediate_positions_save)
-//				{
-//					intermediate_pos[loop_ctr] = lookup; //make_float3(val.x, val.y, pos.z); //pos;
-//					intermediate_dir[loop_ctr] = dir;
-//				}
 
-//				// flag rays that exit through the sides of the volume
-//				if(pos.x < params.min_bound.x || pos.y < params.min_bound.y ||
-//						pos.x >= params.max_bound.x || pos.y >= params.max_bound.y||
-//						lookup.x < 0 || lookup.y < 0 ||	lookup.x >= params.data_width
-//						|| lookup.y >= params.data_height)
-//				{
-//					//# % This sets any of the light ray positions outside of the domain
-//					//# % to NaN values
-//					light_ray_data.ray_source_coordinates = make_float3(CUDART_NAN_F,CUDART_NAN_F,CUDART_NAN_F);
-//
-//					//# % This sets any of the light ray directions outside of the domain
-//					//# % to NaN values
-//					light_ray_data.ray_propagation_direction = make_float3(CUDART_NAN_F,CUDART_NAN_F,CUDART_NAN_F);
-//
-//				}
+				// flag rays that exit through the sides of the volume
+				if(pos.x < params.min_bound.x || pos.y < params.min_bound.y ||
+						pos.x >= params.max_bound.x || pos.y >= params.max_bound.y||
+						lookup.x < 0 || lookup.y < 0 ||	lookup.x >= params.data_width
+						|| lookup.y >= params.data_height)
+				{
+					//# % This sets any of the light ray positions outside of the domain
+					//# % to NaN values
+					light_ray_data.ray_source_coordinates = make_float3(CUDART_NAN_F,CUDART_NAN_F,CUDART_NAN_F);
+
+					//# % This sets any of the light ray directions outside of the domain
+					//# % to NaN values
+					light_ray_data.ray_propagation_direction = make_float3(CUDART_NAN_F,CUDART_NAN_F,CUDART_NAN_F);
+
+				}
 
 				break;
 			}
@@ -815,8 +816,6 @@ __device__ light_ray_data_t euler(light_ray_data_t light_ray_data,
 			// if not, propagate the ray further.
 			if(!access_refractive_index(pos, params, lookup))
 			{
-//				printf("cannot access refractive index. Loop: %d\n", loop_ctr);
-//				pos = pos + params.step_size * dir;
 				pos = pos + params.step_size/(1 + params.data_min) * dir;
 				light_ray_data.ray_source_coordinates = pos;
 				increment_arc_length(&params, thread_id);
@@ -868,32 +867,17 @@ __device__ light_ray_data_t euler(light_ray_data_t light_ray_data,
 
 			}
 
-//			if (loop_ctr%100 == 0)
-//				printf("loop_ctr: %d, val.x: %g, val.y: %g, val.w: %f\n", loop_ctr, val.x, val.y, val.w);
 			// calculate the change in ray direction
 			normal = make_float3(val.x,val.y,val.z);
-//			if (loop_ctr == 100)
-//				printf("dn_dx: %.8G\n", val.x);
 
 			// update the ray direction
-//			dir = dir + params.step_size*normal; ///current_refractive_index;
-			dir = dir + params.step_size*normal/current_refractive_index;
-
-//			float3 theta = cosines_to_angles(dir);
-//			theta = theta + params.step_size*normal/current_refractive_index;
-//
-//			dir = angles_to_cosines(theta);
-
-			// normalize the direction to ensure that it is a unit vector
-//			dir = normalize(dir);
-//			dir.z = -sqrt(1.0 - dir.x*dir.x - dir.y*dir.y);
+			dir = dir + params.step_size*normal;
 
 			// get the refractive index at the current location
 			refractive_index = 1 + val.w;
 
 			// update the ray position
-			pos = pos + dir*params.step_size;
-//			pos = pos + params.step_size/current_refractive_index * dir;
+			pos = pos + params.step_size/current_refractive_index * dir;
 
 //			pos_temp = pos + params.step_size/current_refractive_index * dir;
 //			lookup = calculate_lookup_index(pos_temp, params, lookup_scale);
@@ -912,9 +896,7 @@ __device__ light_ray_data_t euler(light_ray_data_t light_ray_data,
 			loop_ctr += 1;
 
 		}
-//		light_ray_data.ray_propagation_direction = normal;
 	}
-//	params.arc_length = 0;
 
 	// perform cubic interpolation to calculate density gradient
 	else
@@ -1594,7 +1576,7 @@ __global__ void check_trace_rays_through_density_gradients(light_ray_data_t* lig
 
 	int id;
 
-	printf("Hello\n");
+//	printf("Hello\n");
 //	id = blockIdx.x*blockDim.x + threadIdx.x;
 	id = threadIdx.x;
 
