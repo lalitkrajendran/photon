@@ -1819,7 +1819,7 @@ density_grad_params_t setData(float* data, density_grad_params_t _params)
 
 	// save the refractive index gradient data to file.
 //	std::string filename = "/home/shannon/c/aether/Projects/BOS/error-analysis/analysis/src/photon/cuda_codes/data/gradient_backward.bin";
-	std::string filename = "/home/shannon/c/aether/Projects/BOS/error-analysis/analysis/src/photon/cuda_codes/data/gradient_central.bin";
+	std::string filename = "/scratch/shannon/c/aether/Projects/BOS/error-analysis/analysis/src/photon/cuda_codes/data/gradient_central.bin";
 
 	std::ofstream file;
 	file.open(filename.c_str(), ios::out | ios::binary);

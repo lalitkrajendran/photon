@@ -115,8 +115,8 @@ __device__ light_ray_data_t generate_lightfield_angular_data(float lens_pitch, f
 	// generate random points on the lens where the rays should intersect
 //	float x_lens = lens_pitch_scaling_factor*lens_pitch*sqrt(random_number_1)*cos(2*M_PI*random_number_2);
 //	float y_lens = lens_pitch_scaling_factor*lens_pitch*sqrt(random_number_1)*sin(2*M_PI*random_number_2);
-	float x_lens = lens_pitch_scaling_factor*lens_pitch*random_number_1*cos(2*M_PI*random_number_2);
-	float y_lens = lens_pitch_scaling_factor*lens_pitch*random_number_1*sin(2*M_PI*random_number_2);
+	float x_lens = lens_pitch_scaling_factor*0.5*lens_pitch*random_number_1*cos(2*M_PI*random_number_2);
+	float y_lens = lens_pitch_scaling_factor*0.5*lens_pitch*random_number_1*sin(2*M_PI*random_number_2);
 
 //	float x_lens = sqrt(random_number_1)*cos(2*M_PI*random_number_2);
 //	float y_lens = sqrt(random_number_1)*sin(2*M_PI*random_number_2);

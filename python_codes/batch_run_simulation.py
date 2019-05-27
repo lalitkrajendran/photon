@@ -54,7 +54,7 @@ starting_index = int(starting_index)
 number_of_parameter_files = int(number_of_parameter_files)
 print 'number of parameter files to run in one simulation', number_of_parameter_files
 
-# filepath = '/scratch/shannon/c/aether/Projects/BOS/error-analysis/analysis/data/parameters/piv/'
+# filepath = '/scratch/shannon/c/aether/Projects/BOS/error-analysis/analysis/data/parameters/gaussian/'
 # starting_index = 1
 # number_of_parameter_files = 1
 

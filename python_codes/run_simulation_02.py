@@ -1265,7 +1265,7 @@ def generate_bos_lightfield_data(simulation_parameters,optical_system):
     # % This extracts the grid point diameter from the structure
     grid_point_diameter = simulation_parameters['bos_pattern']['grid_point_diameter']
     # % This extracts the grid point number from the calibration structure
-    grid_point_number = simulation_parameters['bos_pattern']['grid_point_number']
+    grid_point_number = int(simulation_parameters['bos_pattern']['grid_point_number'])
     # % This extracts the number of light source partciles per grid point from
     # % the calibration structure
     particle_number_per_grid_point = simulation_parameters['bos_pattern']['particle_number_per_grid_point']
@@ -1350,7 +1350,6 @@ def generate_bos_lightfield_data(simulation_parameters,optical_system):
         if simulation_parameters['bos_pattern']['dot_overlap']:
             # create overlapped dots
             random_numbers = np.random.rand(int(grid_point_number) * 2)
-            np.random.rand()
             x_grid_point_coordinate_vector = X_Min + (X_Max - X_Min) * random_numbers[:grid_point_number]
             y_grid_point_coordinate_vector = Y_Min + (Y_Max - Y_Min) * random_numbers[grid_point_number:]
         else:
@@ -1718,6 +1717,9 @@ def run_simulation_02(simulation_parameters):
             print('Simulating particle images . . . ')
 
 
+            # generate random numbers for light ray intersection with lens
+            generate_random_numbers_for_lightrays(lightray_number_per_particle)
+
             # This calculates the Mie scattering data if specified in the parameters
             # data structure, otherwise the Mie scattering data is set to a Null value
             if perform_mie_scattering:
@@ -1820,6 +1822,9 @@ def run_simulation_02(simulation_parameters):
             scattering_data = None
 
             field_type = 'calibration'
+
+            # generate random numbers for light ray intersection with lens
+            generate_random_numbers_for_lightrays(lightray_number_per_particle)
 
             # % This iterates through the calibration grid planes performing the ray
             # % tracing operations for each plane
@@ -1932,6 +1937,9 @@ def run_simulation_02(simulation_parameters):
             # save data to mat file
             # convert none to NAN just for MATLAB
             scattering_data = np.NAN
+
+            # generate random numbers for light ray intersection with lens
+            generate_random_numbers_for_lightrays(lightray_number_per_particle)
 
             ################################################################################################################
             # render the reference image without density gradients
