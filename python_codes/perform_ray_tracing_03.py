@@ -1873,7 +1873,7 @@ def prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, sc
 
     # convert the 2D image array to a 1D array because they are easier to handle in CUDA
     # I2 = np.reshape(I,(1,1024*1024)).astype(np.float32)
-    I2 = np.reshape(I,(1,camera_design['x_pixel_number']*camera_design['y_pixel_number'])).astype(np.float32)
+    I2 = np.reshape(I,(1,int(camera_design['x_pixel_number']*camera_design['y_pixel_number']))).astype(np.float32)
 
     print 'rotation matrix', camera_design['rotation_matrix']
     print 'inverse rotation matrix', camera_design['inverse_rotation_matrix']
@@ -1937,7 +1937,7 @@ def prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, sc
 
     # reshape the image back into a 2D array
     # I = np.reshape(I2,(1024,1024))
-    I = np.reshape(I2,(camera_design['y_pixel_number'],camera_design['x_pixel_number']))
+    I = np.reshape(I2,(int(camera_design['y_pixel_number']),int(camera_design['x_pixel_number'])))
 
     return I
 
