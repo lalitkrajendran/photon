@@ -1,3 +1,9 @@
+This code package implements the image generation methodology outlined in:
+
+Rajendran, L. K., Bane, S., & Vlachos, P. (2019). PIV/BOS synthetic image generation in variable density environments for error analysis and experiment design. Measurement Science and Technology.
+
+Please cite the above paper if you use this code package for your work.
+
 Instructions for running the software.
 - Compile parallel_ray_tracing.cu under cuda_codes (see dependencies below).
 - Use create_simulation_parameters.py to create a set of parameters in a python dictionary and save to a .mat file.
