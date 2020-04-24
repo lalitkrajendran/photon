@@ -16,16 +16,16 @@
 #include <vector_functions.h>
 #include <iostream>
 #include <stdlib.h>
+#include <cstdlib>
 #include <numeric>
 #include <time.h>
 #include <teem/nrrd.h>
+//#include "/scratch/shannon/c/aether/Projects/BOS/image-generation/analysis/src/SchlierenRayVis/teem/teem-1.11.0/include/teem/nrrd.h"
 
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <curand.h>
 #include <curand_kernel.h>
-
-
 
 #include "trace_rays_through_density_gradients.h"
 #include "parallel_ray_tracing.h"
@@ -2913,7 +2913,7 @@ void saxpy_check()
 	  float *x, *y, *d_x, *d_y;
 	  x = (float*)malloc(N*sizeof(float));
 	  y = (float*)malloc(N*sizeof(float));
-
+	  float temp;
 	  cudaMalloc(&d_x, N*sizeof(float));
 	  cudaDeviceSynchronize();
 	  cudaMalloc(&d_y, N*sizeof(float));
@@ -2936,7 +2936,10 @@ void saxpy_check()
 	  cudaDeviceSynchronize();
 	  float maxError = 0.0f;
 	  for (int i = 0; i < N; i++)
-	    maxError = max(maxError, abs(y[i]-4.0f));
+	  {
+		  temp = y[i]-4.0f;
+		  maxError = max(maxError, sqrt(temp * temp));
+	  }
 	  printf("Max error: %f\n", maxError);
 
 	  cudaFree(d_x);

@@ -1,17 +1,19 @@
 ./parallel_ray_tracing.o : ../parallel_ray_tracing.cu \
-    /opt/cuda/7.0/bin/..//include/cuda_runtime.h \
-    /opt/cuda/7.0/bin/..//include/host_config.h \
+    /usr/include/stdc-predef.h \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/cuda_runtime.h \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/crt/host_config.h \
     /usr/include/features.h \
     /usr/include/sys/cdefs.h \
     /usr/include/bits/wordsize.h \
     /usr/include/gnu/stubs.h \
     /usr/include/gnu/stubs-64.h \
-    /opt/cuda/7.0/bin/..//include/builtin_types.h \
-    /opt/cuda/7.0/bin/..//include/device_types.h \
-    /opt/cuda/7.0/bin/..//include/host_defines.h \
-    /opt/cuda/7.0/bin/..//include/driver_types.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/include/limits.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/include/syslimits.h \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/builtin_types.h \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/device_types.h \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/crt/host_defines.h \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/driver_types.h \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/vector_types.h \
+    /usr/lib/gcc/x86_64-redhat-linux/4.8.5/include/limits.h \
+    /usr/lib/gcc/x86_64-redhat-linux/4.8.5/include/syslimits.h \
     /usr/include/limits.h \
     /usr/include/bits/posix1_lim.h \
     /usr/include/bits/local_lim.h \
@@ -19,34 +21,35 @@
     /usr/include/bits/posix2_lim.h \
     /usr/include/bits/xopen_lim.h \
     /usr/include/bits/stdio_lim.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/include/stddef.h \
-    /opt/cuda/7.0/bin/..//include/surface_types.h \
-    /opt/cuda/7.0/bin/..//include/texture_types.h \
-    /opt/cuda/7.0/bin/..//include/vector_types.h \
-    /opt/cuda/7.0/bin/..//include/channel_descriptor.h \
-    /opt/cuda/7.0/bin/..//include/cuda_runtime_api.h \
-    /opt/cuda/7.0/bin/..//include/cuda_device_runtime_api.h \
-    /opt/cuda/7.0/bin/..//include/driver_functions.h \
-    /opt/cuda/7.0/bin/..//include/vector_functions.h \
-    /opt/cuda/7.0/bin/..//include/vector_functions.hpp \
-    /opt/cuda/7.0/bin/..//include/common_functions.h \
+    /usr/lib/gcc/x86_64-redhat-linux/4.8.5/include/stddef.h \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/surface_types.h \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/texture_types.h \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/library_types.h \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/channel_descriptor.h \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/cuda_runtime_api.h \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/cuda_device_runtime_api.h \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/driver_functions.h \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/vector_functions.h \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/vector_functions.hpp \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/crt/common_functions.h \
     /usr/include/string.h \
     /usr/include/xlocale.h \
     /usr/include/time.h \
     /usr/include/bits/time.h \
     /usr/include/bits/types.h \
     /usr/include/bits/typesizes.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/new \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/cstddef \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/x86_64-redhat-linux/bits/c++config.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/x86_64-redhat-linux/bits/os_defines.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/x86_64-redhat-linux/bits/cpu_defines.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/exception \
+    /usr/include/bits/timex.h \
+    /usr/include/c++/4.8.2/new \
+    /usr/include/c++/4.8.2/x86_64-redhat-linux/bits/c++config.h \
+    /usr/include/c++/4.8.2/x86_64-redhat-linux/bits/os_defines.h \
+    /usr/include/c++/4.8.2/x86_64-redhat-linux/bits/cpu_defines.h \
+    /usr/include/c++/4.8.2/exception \
+    /usr/include/c++/4.8.2/bits/atomic_lockfree_defines.h \
     /usr/include/stdio.h \
     /usr/include/libio.h \
     /usr/include/_G_config.h \
     /usr/include/wchar.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/include/stdarg.h \
+    /usr/lib/gcc/x86_64-redhat-linux/4.8.5/include/stdarg.h \
     /usr/include/bits/sys_errlist.h \
     /usr/include/stdlib.h \
     /usr/include/bits/waitflags.h \
@@ -54,6 +57,7 @@
     /usr/include/endian.h \
     /usr/include/bits/endian.h \
     /usr/include/bits/byteswap.h \
+    /usr/include/bits/byteswap-16.h \
     /usr/include/sys/types.h \
     /usr/include/sys/select.h \
     /usr/include/bits/select.h \
@@ -61,8 +65,9 @@
     /usr/include/sys/sysmacros.h \
     /usr/include/bits/pthreadtypes.h \
     /usr/include/alloca.h \
+    /usr/include/bits/stdlib-float.h \
     /usr/include/assert.h \
-    /opt/cuda/7.0/bin/..//include/math_functions.h \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/crt/math_functions.h \
     /usr/include/math.h \
     /usr/include/bits/huge_val.h \
     /usr/include/bits/huge_valf.h \
@@ -71,183 +76,182 @@
     /usr/include/bits/nan.h \
     /usr/include/bits/mathdef.h \
     /usr/include/bits/mathcalls.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/cmath \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/bits/cpp_type_traits.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/ext/type_traits.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/bits/cmath.tcc \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/cstdlib \
-    /opt/cuda/7.0/bin/..//include/math_functions.hpp \
-    /opt/cuda/7.0/bin/..//include/math_functions_dbl_ptx3.h \
-    /opt/cuda/7.0/bin/..//include/math_functions_dbl_ptx3.hpp \
-    /opt/cuda/7.0/bin/..//include/cuda_surface_types.h \
-    /opt/cuda/7.0/bin/..//include/cuda_texture_types.h \
-    /opt/cuda/7.0/bin/..//include/device_functions.h \
-    /opt/cuda/7.0/bin/..//include/device_functions.hpp \
-    /opt/cuda/7.0/bin/..//include/device_atomic_functions.h \
-    /opt/cuda/7.0/bin/..//include/device_atomic_functions.hpp \
-    /opt/cuda/7.0/bin/..//include/device_double_functions.h \
-    /opt/cuda/7.0/bin/..//include/device_double_functions.hpp \
-    /opt/cuda/7.0/bin/..//include/sm_20_atomic_functions.h \
-    /opt/cuda/7.0/bin/..//include/sm_20_atomic_functions.hpp \
-    /opt/cuda/7.0/bin/..//include/sm_32_atomic_functions.h \
-    /opt/cuda/7.0/bin/..//include/sm_32_atomic_functions.hpp \
-    /opt/cuda/7.0/bin/..//include/sm_35_atomic_functions.h \
-    /opt/cuda/7.0/bin/..//include/sm_20_intrinsics.h \
-    /opt/cuda/7.0/bin/..//include/sm_20_intrinsics.hpp \
-    /opt/cuda/7.0/bin/..//include/sm_30_intrinsics.h \
-    /opt/cuda/7.0/bin/..//include/sm_30_intrinsics.hpp \
-    /opt/cuda/7.0/bin/..//include/sm_32_intrinsics.h \
-    /opt/cuda/7.0/bin/..//include/sm_32_intrinsics.hpp \
-    /opt/cuda/7.0/bin/..//include/sm_35_intrinsics.h \
-    /opt/cuda/7.0/bin/..//include/surface_functions.h \
-    /opt/cuda/7.0/bin/..//include/surface_functions.hpp \
-    /opt/cuda/7.0/bin/..//include/texture_fetch_functions.h \
-    /opt/cuda/7.0/bin/..//include/texture_fetch_functions.hpp \
-    /opt/cuda/7.0/bin/..//include/texture_indirect_functions.h \
-    /opt/cuda/7.0/bin/..//include/texture_indirect_functions.hpp \
-    /opt/cuda/7.0/bin/..//include/surface_indirect_functions.h \
-    /opt/cuda/7.0/bin/..//include/surface_indirect_functions.hpp \
-    /opt/cuda/7.0/bin/..//include/device_launch_parameters.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/fstream \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/istream \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/ios \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/iosfwd \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/bits/stringfwd.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/bits/postypes.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/cwchar \
+    /usr/include/c++/4.8.2/cmath \
+    /usr/include/c++/4.8.2/bits/cpp_type_traits.h \
+    /usr/include/c++/4.8.2/ext/type_traits.h \
+    /usr/include/c++/4.8.2/cstdlib \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/crt/math_functions.hpp \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/cuda_surface_types.h \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/cuda_texture_types.h \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/crt/device_functions.h \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/crt/device_functions.hpp \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/device_atomic_functions.h \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/device_atomic_functions.hpp \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/crt/device_double_functions.h \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/crt/device_double_functions.hpp \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/sm_20_atomic_functions.h \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/sm_20_atomic_functions.hpp \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/sm_32_atomic_functions.h \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/sm_32_atomic_functions.hpp \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/sm_35_atomic_functions.h \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/sm_60_atomic_functions.h \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/sm_60_atomic_functions.hpp \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/sm_20_intrinsics.h \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/sm_20_intrinsics.hpp \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/sm_30_intrinsics.h \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/sm_30_intrinsics.hpp \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/sm_32_intrinsics.h \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/sm_32_intrinsics.hpp \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/sm_35_intrinsics.h \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/sm_61_intrinsics.h \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/sm_61_intrinsics.hpp \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/crt/sm_70_rt.h \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/crt/sm_70_rt.hpp \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/surface_functions.h \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/texture_fetch_functions.h \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/texture_indirect_functions.h \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/surface_indirect_functions.h \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/device_launch_parameters.h \
+    /usr/include/c++/4.8.2/fstream \
+    /usr/include/c++/4.8.2/istream \
+    /usr/include/c++/4.8.2/ios \
+    /usr/include/c++/4.8.2/iosfwd \
+    /usr/include/c++/4.8.2/bits/stringfwd.h \
+    /usr/include/c++/4.8.2/bits/memoryfwd.h \
+    /usr/include/c++/4.8.2/bits/postypes.h \
+    /usr/include/c++/4.8.2/cwchar \
     /usr/include/bits/wchar.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/bits/char_traits.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/bits/stl_algobase.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/bits/functexcept.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/exception_defines.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/ext/numeric_traits.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/bits/stl_pair.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/bits/move.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/bits/concept_check.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/bits/stl_iterator_base_types.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/bits/stl_iterator_base_funcs.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/bits/stl_iterator.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/debug/debug.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/bits/localefwd.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/x86_64-redhat-linux/bits/c++locale.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/clocale \
+    /usr/include/c++/4.8.2/bits/char_traits.h \
+    /usr/include/c++/4.8.2/bits/stl_algobase.h \
+    /usr/include/c++/4.8.2/bits/functexcept.h \
+    /usr/include/c++/4.8.2/bits/exception_defines.h \
+    /usr/include/c++/4.8.2/ext/numeric_traits.h \
+    /usr/include/c++/4.8.2/bits/stl_pair.h \
+    /usr/include/c++/4.8.2/bits/move.h \
+    /usr/include/c++/4.8.2/bits/concept_check.h \
+    /usr/include/c++/4.8.2/bits/stl_iterator_base_types.h \
+    /usr/include/c++/4.8.2/bits/stl_iterator_base_funcs.h \
+    /usr/include/c++/4.8.2/debug/debug.h \
+    /usr/include/c++/4.8.2/bits/stl_iterator.h \
+    /usr/include/c++/4.8.2/bits/localefwd.h \
+    /usr/include/c++/4.8.2/x86_64-redhat-linux/bits/c++locale.h \
+    /usr/include/c++/4.8.2/clocale \
     /usr/include/locale.h \
     /usr/include/bits/locale.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/cctype \
+    /usr/include/c++/4.8.2/cctype \
     /usr/include/ctype.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/bits/ios_base.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/ext/atomicity.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/x86_64-redhat-linux/bits/gthr.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/x86_64-redhat-linux/bits/gthr-default.h \
+    /usr/include/c++/4.8.2/bits/ios_base.h \
+    /usr/include/c++/4.8.2/ext/atomicity.h \
+    /usr/include/c++/4.8.2/x86_64-redhat-linux/bits/gthr.h \
+    /usr/include/c++/4.8.2/x86_64-redhat-linux/bits/gthr-default.h \
     /usr/include/pthread.h \
     /usr/include/sched.h \
     /usr/include/bits/sched.h \
     /usr/include/bits/setjmp.h \
-    /usr/include/unistd.h \
-    /usr/include/bits/posix_opt.h \
-    /usr/include/bits/environments.h \
-    /usr/include/bits/confname.h \
-    /usr/include/getopt.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/x86_64-redhat-linux/bits/atomic_word.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/bits/locale_classes.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/string \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/bits/allocator.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/x86_64-redhat-linux/bits/c++allocator.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/ext/new_allocator.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/bits/ostream_insert.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/cxxabi-forced.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/bits/stl_function.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/backward/binders.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/bits/basic_string.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/initializer_list \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/bits/basic_string.tcc \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/bits/locale_classes.tcc \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/streambuf \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/bits/streambuf.tcc \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/bits/basic_ios.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/bits/locale_facets.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/cwctype \
+    /usr/include/c++/4.8.2/x86_64-redhat-linux/bits/atomic_word.h \
+    /usr/include/c++/4.8.2/bits/locale_classes.h \
+    /usr/include/c++/4.8.2/string \
+    /usr/include/c++/4.8.2/bits/allocator.h \
+    /usr/include/c++/4.8.2/x86_64-redhat-linux/bits/c++allocator.h \
+    /usr/include/c++/4.8.2/ext/new_allocator.h \
+    /usr/include/c++/4.8.2/bits/ostream_insert.h \
+    /usr/include/c++/4.8.2/bits/cxxabi_forced.h \
+    /usr/include/c++/4.8.2/bits/stl_function.h \
+    /usr/include/c++/4.8.2/backward/binders.h \
+    /usr/include/c++/4.8.2/bits/range_access.h \
+    /usr/include/c++/4.8.2/bits/basic_string.h \
+    /usr/include/c++/4.8.2/bits/basic_string.tcc \
+    /usr/include/c++/4.8.2/bits/locale_classes.tcc \
+    /usr/include/c++/4.8.2/streambuf \
+    /usr/include/c++/4.8.2/bits/streambuf.tcc \
+    /usr/include/c++/4.8.2/bits/basic_ios.h \
+    /usr/include/c++/4.8.2/bits/locale_facets.h \
+    /usr/include/c++/4.8.2/cwctype \
     /usr/include/wctype.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/x86_64-redhat-linux/bits/ctype_base.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/bits/streambuf_iterator.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/x86_64-redhat-linux/bits/ctype_inline.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/bits/locale_facets.tcc \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/bits/basic_ios.tcc \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/ostream \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/bits/ostream.tcc \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/bits/istream.tcc \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/bits/codecvt.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/cstdio \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/x86_64-redhat-linux/bits/basic_file.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/x86_64-redhat-linux/bits/c++io.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/bits/fstream.tcc \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/iostream \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/numeric \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/bits/stl_numeric.h \
-    /usr/local/include/teem/nrrd.h \
+    /usr/include/c++/4.8.2/x86_64-redhat-linux/bits/ctype_base.h \
+    /usr/include/c++/4.8.2/bits/streambuf_iterator.h \
+    /usr/include/c++/4.8.2/x86_64-redhat-linux/bits/ctype_inline.h \
+    /usr/include/c++/4.8.2/bits/locale_facets.tcc \
+    /usr/include/c++/4.8.2/bits/basic_ios.tcc \
+    /usr/include/c++/4.8.2/ostream \
+    /usr/include/c++/4.8.2/bits/ostream.tcc \
+    /usr/include/c++/4.8.2/bits/istream.tcc \
+    /usr/include/c++/4.8.2/bits/codecvt.h \
+    /usr/include/c++/4.8.2/cstdio \
+    /usr/include/c++/4.8.2/x86_64-redhat-linux/bits/basic_file.h \
+    /usr/include/c++/4.8.2/x86_64-redhat-linux/bits/c++io.h \
+    /usr/include/c++/4.8.2/bits/fstream.tcc \
+    /usr/include/c++/4.8.2/iostream \
+    /usr/include/c++/4.8.2/numeric \
+    /usr/include/c++/4.8.2/bits/stl_numeric.h \
+    /scratch/shannon/a/lrajendr/usr/include/teem/nrrd.h \
     /usr/include/errno.h \
     /usr/include/bits/errno.h \
     /usr/include/linux/errno.h \
     /usr/include/asm/errno.h \
     /usr/include/asm-generic/errno.h \
     /usr/include/asm-generic/errno-base.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/include/float.h \
-    /usr/local/include/teem/air.h \
-    /usr/local/include/teem/hest.h \
-    /usr/local/include/teem/biff.h \
-    /usr/local/include/teem/nrrdDefines.h \
-    /usr/local/include/teem/nrrdMacros.h \
-    /usr/local/include/teem/nrrdEnums.h \
-    /opt/cuda/7.0/bin/..//include/cuda.h \
-    /opt/cuda/7.0/bin/..//include/curand.h \
-    /opt/cuda/7.0/bin/..//include/curand_kernel.h \
-    /opt/cuda/7.0/bin/..//include/curand_discrete.h \
-    /opt/cuda/7.0/bin/..//include/curand_precalc.h \
-    /opt/cuda/7.0/bin/..//include/curand_mrg32k3a.h \
-    /opt/cuda/7.0/bin/..//include/curand_mtgp32_kernel.h \
-    /usr/include/memory.h \
-    /opt/cuda/7.0/bin/..//include/curand_mtgp32.h \
-    /opt/cuda/7.0/bin/..//include/curand_philox4x32_x.h \
-    /opt/cuda/7.0/bin/..//include/curand_globals.h \
-    /opt/cuda/7.0/bin/..//include/curand_uniform.h \
-    /opt/cuda/7.0/bin/..//include/curand_normal.h \
-    /opt/cuda/7.0/bin/..//include/curand_normal_static.h \
-    /opt/cuda/7.0/bin/..//include/curand_lognormal.h \
-    /opt/cuda/7.0/bin/..//include/curand_poisson.h \
-    /opt/cuda/7.0/bin/..//include/curand_discrete2.h \
-    ../trace_rays_through_density_gradients.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/vector \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/bits/stl_construct.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/bits/stl_uninitialized.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/bits/stl_vector.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/bits/stl_bvector.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/bits/vector.tcc \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/sstream \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/bits/sstream.tcc \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/cstring \
+    /usr/lib/gcc/x86_64-redhat-linux/4.8.5/include/float.h \
+    /scratch/shannon/a/lrajendr/usr/include/teem/air.h \
+    /scratch/shannon/a/lrajendr/usr/include/teem/airExistsConf.h \
+    /scratch/shannon/a/lrajendr/usr/include/teem/hest.h \
+    /scratch/shannon/a/lrajendr/usr/include/teem/biff.h \
+    /scratch/shannon/a/lrajendr/usr/include/teem/nrrdDefines.h \
+    /scratch/shannon/a/lrajendr/usr/include/teem/nrrdMacros.h \
+    /scratch/shannon/a/lrajendr/usr/include/teem/nrrdEnums.h \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/cuda.h \
+    /usr/lib/gcc/x86_64-redhat-linux/4.8.5/include/stdint.h \
     /usr/include/stdint.h \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/curand.h \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/curand_kernel.h \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/curand_discrete.h \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/curand_precalc.h \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/curand_mrg32k3a.h \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/curand_mtgp32_kernel.h \
+    /usr/include/memory.h \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/curand_mtgp32.h \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/curand_philox4x32_x.h \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/curand_globals.h \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/curand_uniform.h \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/curand_normal.h \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/curand_normal_static.h \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/curand_lognormal.h \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/curand_poisson.h \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/curand_discrete2.h \
+    ../trace_rays_through_density_gradients.h \
+    /usr/include/c++/4.8.2/vector \
+    /usr/include/c++/4.8.2/bits/stl_construct.h \
+    /usr/include/c++/4.8.2/ext/alloc_traits.h \
+    /usr/include/c++/4.8.2/bits/stl_uninitialized.h \
+    /usr/include/c++/4.8.2/bits/stl_vector.h \
+    /usr/include/c++/4.8.2/bits/stl_bvector.h \
+    /usr/include/c++/4.8.2/bits/vector.tcc \
+    /usr/include/c++/4.8.2/sstream \
+    /usr/include/c++/4.8.2/bits/sstream.tcc \
+    /usr/include/c++/4.8.2/cstring \
     ../float3_operators.h \
     ../parallel_ray_tracing.h \
     ../helper_cuda.h \
     ../helper_string.h \
     /usr/include/strings.h \
-    /home/barracuda/a/lrajendr/Projects/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/code/memcpy.cu \
-    /home/barracuda/a/lrajendr/Projects/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/examples/cuda5_fix/cutil.h \
-    /opt/cuda/7.0/bin/..//include/cuda_gl_interop.h \
+    /scratch/shannon/c/aether/Projects/BOS/image-generation/analysis/src/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/code/memcpy.cu \
+    /scratch/shannon/c/aether/Projects/BOS/image-generation/analysis/src/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/examples/cuda5_fix/cutil.h \
+    /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/cuda_gl_interop.h \
     /usr/include/GL/gl.h \
     /usr/include/GL/glext.h \
+    /usr/include/KHR/khrplatform.h \
     /usr/include/inttypes.h \
-    /home/barracuda/a/lrajendr/Projects/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/examples/cuda5_fix/helper_timer.h \
-    /home/barracuda/a/lrajendr/Projects/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/examples/cuda5_fix/exception.h \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/stdexcept \
-    /usr/lib/gcc/x86_64-redhat-linux/4.4.7/../../../../include/c++/4.4.7/ctime \
+    /scratch/shannon/c/aether/Projects/BOS/image-generation/analysis/src/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/examples/cuda5_fix/helper_timer.h \
+    /scratch/shannon/c/aether/Projects/BOS/image-generation/analysis/src/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/examples/cuda5_fix/exception.h \
+    /usr/include/c++/4.8.2/stdexcept \
+    /usr/include/c++/4.8.2/ctime \
     /usr/include/sys/time.h \
-    /home/barracuda/a/lrajendr/Projects/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/code/internal/math_func.cu \
-    /home/barracuda/a/lrajendr/Projects/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/code/internal/version.cu \
-    /home/barracuda/a/lrajendr/Projects/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/code/cubicTex3D.cu \
-    /home/barracuda/a/lrajendr/Projects/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/code/internal/bspline_kernel.cu \
-    /home/barracuda/a/lrajendr/Projects/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/code/internal/cutil_math_bugfixes.h \
-    /home/barracuda/a/lrajendr/Projects/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/code/internal/cubicTex3D_kernel.cu \
-    /home/barracuda/a/lrajendr/Projects/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/code/cubicPrefilter3D.cu \
-    /home/barracuda/a/lrajendr/Projects/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/code/internal/cubicPrefilter_kernel.cu \
+    /scratch/shannon/c/aether/Projects/BOS/image-generation/analysis/src/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/code/internal/math_func.cu \
+    /scratch/shannon/c/aether/Projects/BOS/image-generation/analysis/src/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/code/internal/version.cu \
+    /scratch/shannon/c/aether/Projects/BOS/image-generation/analysis/src/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/code/cubicTex3D.cu \
+    /scratch/shannon/c/aether/Projects/BOS/image-generation/analysis/src/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/code/internal/bspline_kernel.cu \
+    /scratch/shannon/c/aether/Projects/BOS/image-generation/analysis/src/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/code/internal/cutil_math_bugfixes.h \
+    /scratch/shannon/c/aether/Projects/BOS/image-generation/analysis/src/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/code/internal/cubicTex3D_kernel.cu \
+    /scratch/shannon/c/aether/Projects/BOS/image-generation/analysis/src/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/code/cubicPrefilter3D.cu \
+    /scratch/shannon/c/aether/Projects/BOS/image-generation/analysis/src/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/code/internal/cubicPrefilter_kernel.cu \
     ../cubic_interpolation_functions.h

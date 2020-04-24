@@ -10,6 +10,9 @@
 #ifndef PARALLEL_RAY_TRACING_H_
 #define PARALLEL_RAY_TRACING_H_
 
+#include <curand.h>
+#include <curand_kernel.h>
+
 // this structure holds the mie scattering data information
 typedef struct scattering_data_t
 {
