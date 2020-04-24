@@ -55,6 +55,9 @@
 #include <stdint.h>
 #include <cuda_runtime.h>
 #include <cuda.h>
+#include <curand.h>
+#include <curand_kernel.h>
+
 #include <vector_types.h>
 #include "float3_operators.h"
 #include "parallel_ray_tracing.h"
@@ -999,28 +1002,57 @@ __device__ light_ray_data_t rk4(light_ray_data_t light_ray_data, density_grad_pa
 	float4 val_temp;
 	float4 val_prev = make_float4(0.0, 0.0, 0.0, 0.0);
 
+	// ===================================
+	// linear interpolation
+	// ===================================
 	if(params.interpolation_scheme == 1)
 	{
+		// ===================================
+		// propagate ray through the box
+		// ===================================
 		while(inside_box)
 		{
-
+			// exit if max number of iterations is exceeded
 			if(loop_ctr > loop_ctr_max)
 				break;
 
+			// save intermediate light ray positions
 			if(save_intermediate_ray_data && loop_ctr < num_intermediate_positions_save)
 			{
 				intermediate_pos[thread_id*num_intermediate_positions_save + loop_ctr] = light_ray_data.ray_source_coordinates;
 				intermediate_dir[thread_id*num_intermediate_positions_save + loop_ctr] = light_ray_data.ray_propagation_direction;
 			}
 
+			// ===================================
+			// calculate first coefficient
+			// ===================================
+			// extraction current position and direction of the light ray
 			pos = light_ray_data.ray_source_coordinates;
 			dir = light_ray_data.ray_propagation_direction;
+
 			// calculate lookup index to access refractive index gradient value
 			lookup = calculate_lookup_index(pos, params, lookup_scale);
+
 			// check if ray is inside volume
 			if(!ray_inside_box(pos, params, lookup) && loop_ctr!=0)
-				break;
+			{
+				// flag rays that exit through the sides of the volume
+				if(pos.x < params.min_bound.x || pos.y < params.min_bound.y ||
+						pos.x >= params.max_bound.x || pos.y >= params.max_bound.y||
+						lookup.x < 0 || lookup.y < 0 ||	lookup.x >= params.data_width
+						|| lookup.y >= params.data_height)
+				{
+					//# % This sets any of the light ray positions outside of the domain
+					//# % to NaN values
+					light_ray_data.ray_source_coordinates = make_float3(CUDART_NAN_F,CUDART_NAN_F,CUDART_NAN_F);
 
+					//# % This sets any of the light ray directions outside of the domain
+					//# % to NaN values
+					light_ray_data.ray_propagation_direction = make_float3(CUDART_NAN_F,CUDART_NAN_F,CUDART_NAN_F);
+
+				}
+				break;
+			}
 			// check if light ray is sufficiently inside the volume to get a non-zero refractive index.
 			// if not, propagate the ray further.
 			if(!access_refractive_index(pos, params, lookup))
@@ -1038,7 +1070,6 @@ __device__ light_ray_data_t rk4(light_ray_data_t light_ray_data, density_grad_pa
 			// before accessing the density gradient data
 			if(val.w < params.data_min)
 			{
-//				printf("loop_ctr: %d, lookup.z: %f, val.x: %f, val.w= %f < 0\n", loop_ctr, lookup.z, val.x, val.w);
 				if(val_prev.w == 0)
 				{
 					val_temp = tex3D(tex_data, lookup.x, lookup.y, lookup.z-1);
@@ -1046,15 +1077,11 @@ __device__ light_ray_data_t rk4(light_ray_data_t light_ray_data, density_grad_pa
 				}
 				else
 					val = val_prev;
-//				printf("loop_ctr: %d, lookup.z: %f, val.x: %g, val.w= %f < 0\n", loop_ctr, lookup.z, val.x, val.w);
-
-//				pos = pos + params.max_step_size/params.data_min * dir;
-//				pos = pos + params.step_size/(1 + params.data_min) * dir;
-//				light_ray_data.ray_source_coordinates = pos;
-//				continue;
 			}
 
+			// increment loop index
 			loop_ctr += 1;
+			// increment refractive index
 			val.w += 1;
 			current_refractive_index = val.w;
 
@@ -1069,24 +1096,33 @@ __device__ light_ray_data_t rk4(light_ray_data_t light_ray_data, density_grad_pa
 			D = make_float3(val.w * val.x, val.w * val.y, val.w * val.z);
 			A = delta_t * D;
 
+			// ===================================
+			// calculate second coefficient
+			// ===================================
+			// increment position
 			pos = R_n + delta_t/2.0 * T_n + 1/8.0 * delta_t * A;
 
+			// access look up index
 			lookup = calculate_lookup_index(pos, params, lookup_scale);
+
 			// check if ray is inside volume
 			if(!ray_inside_box(pos, params, lookup))
 			{
+				// calculate distance between current ray position and exit
 				light_ray_data.ray_source_coordinates = light_ray_data.ray_source_coordinates
 						+ params.step_size/(current_refractive_index) * light_ray_data.ray_propagation_direction;
-				break;
+				continue; //break;
 			}
 
+			// record current refractive index before accessing
+			// the next one
 			val_prev = val;
 			val_prev.w -= 1;
-
+			// access refractive index
 			val = tex3D(tex_data, lookup.x, lookup.y, lookup.z);
+			// if it is invalid, then use the previous value
 			if(val.w < params.data_min)
 			{
-//				printf("loop_ctr: %d, lookup.z: %f, val.x: %f, val.w= %f < 0\n", loop_ctr, lookup.z, val.x, val.w);
 				if(val_prev.w == 0)
 				{
 					val_temp = tex3D(tex_data, lookup.x, lookup.y, lookup.z-1);
@@ -1094,37 +1130,37 @@ __device__ light_ray_data_t rk4(light_ray_data_t light_ray_data, density_grad_pa
 				}
 				else
 					val = val_prev;
-//				printf("loop_ctr: %d, lookup.z: %f, val.x: %g, val.w= %f < 0\n", loop_ctr, lookup.z, val.x, val.w);
-
-//				pos = pos + params.max_step_size/params.data_min * dir;
-//				pos = pos + params.step_size/(1 + params.data_min) * dir;
-//				light_ray_data.ray_source_coordinates = pos;
-//				continue;
 			}
-
+			// add 1 to make it a true refractive index value
 			val.w += 1;
 
+			// access refracrive index gradient at an intermediate step
 			D = make_float3(val.w * val.x, val.w * val.y, val.w * val.z);
 			B = delta_t * D;
 
+			// ===================================
+			// calculate third coefficient
+			// ===================================
+			// increment position based on this gradient
 			pos = R_n + delta_t * T_n + 1/2.0 * delta_t * B;
+			// calculate look up index
 			lookup = calculate_lookup_index(pos, params, lookup_scale);
 			// check if ray is inside volume
 			if(!ray_inside_box(pos, params, lookup))
 			{
 				light_ray_data.ray_source_coordinates = light_ray_data.ray_source_coordinates
 						+ params.step_size/(current_refractive_index) * light_ray_data.ray_propagation_direction;
-				break;
+				continue; //break;
 			}
-
+			// store current refractive index
 			val_prev = val;
 			val_prev.w -= 1;
 
+			// access refractive index at the next intermediate location
 			val = tex3D(tex_data, lookup.x, lookup.y, lookup.z);
-
+			// ensure that the refractive index value is valid
 			if(val.w < params.data_min)
 			{
-//				printf("loop_ctr: %d, lookup.z: %f, val.x: %f, val.w= %f < 0\n", loop_ctr, lookup.z, val.x, val.w);
 				if(val_prev.w == 0)
 				{
 					val_temp = tex3D(tex_data, lookup.x, lookup.y, lookup.z-1);
@@ -1132,24 +1168,21 @@ __device__ light_ray_data_t rk4(light_ray_data_t light_ray_data, density_grad_pa
 				}
 				else
 					val = val_prev;
-//				printf("loop_ctr: %d, lookup.z: %f, val.x: %g, val.w= %f < 0\n", loop_ctr, lookup.z, val.x, val.w);
-
-//				pos = pos + params.max_step_size/params.data_min * dir;
-//				pos = pos + params.step_size/(1 + params.data_min) * dir;
-//				light_ray_data.ray_source_coordinates = pos;
-//				continue;
 			}
 
+			// calculate true value of the refractive index
 			val.w += 1;
 
+			// calculate estimate of the refractive index gradient at this
+			// intermediate location
 			D = make_float3(val.w * val.x, val.w * val.y, val.w * val.z);
 			C = delta_t * D;
 
 			// calculate new positions and directions
 			R_n = R_n + delta_t * (T_n + 1/6.0 * (A + 2*B));
-	// 		float3 T_n_increment = 1/6.
 			T_n = T_n + 1/6.0 * (A + 4*B + C);
 
+			// store current refractive index
 			val_prev = val;
 			val_prev.w -= 1;
 
@@ -1157,8 +1190,6 @@ __device__ light_ray_data_t rk4(light_ray_data_t light_ray_data, density_grad_pa
 			light_ray_data.ray_source_coordinates = R_n;
 			light_ray_data.ray_propagation_direction = normalize(T_n/current_refractive_index);
 
-//			if(loop_ctr > 100)
-//				break;
 		}
 	}
 
@@ -1435,6 +1466,7 @@ __device__ light_ray_data_t adams_bashforth(light_ray_data_t light_ray_data, den
 
 	return light_ray_data;
 }
+
 __device__ light_ray_data_t trace_rays_through_density_gradients(light_ray_data_t light_ray_data,
 		density_grad_params_t params, int thread_id, bool add_ngrad_noise, float ngrad_noise_std, curandState* states,
 		float3* intermediate_pos, float3* intermediate_dir, bool save_intermediate_ray_data, int num_intermediate_positions_save)
