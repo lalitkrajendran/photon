@@ -3,12 +3,12 @@ from numpy import linalg as la
 import run_simulation_02
 import subprocess
 import os
-from sklearn.neighbors import NearestNeighbors
+# from sklearn.neighbors import NearestNeighbors
 import scipy.integrate as siint
 from scipy.interpolate import interp1d
 import ctypes
 import numpy.ctypeslib as npct
-from skimage import exposure
+# from skimage import exposure
 
 def create_element_coordinate_data(optical_element):
     # % This function creates data to describe the location of the current
@@ -1351,7 +1351,7 @@ def propogate_rays_through_multiple_elements(optical_element, element_center, el
         # % incorrect match since the intersection points used here are based
         # % upon the center points of the lenses and not the front surfaces, but
         # % this should work well for the large majority of possible systems)
-        nbrs = NearestNeighbors(n_neighbors=1, metric='euclidean').fit([xc_current, yc_current, zc_current])
+        # nbrs = NearestNeighbors(n_neighbors=1, metric='euclidean').fit([xc_current, yc_current, zc_current])
         distances, indices = nbrs.kneighbors(
             [x_intersect_approxiate_current, y_intersect_approxiate_current, z_intersect_approxiate_current])
 

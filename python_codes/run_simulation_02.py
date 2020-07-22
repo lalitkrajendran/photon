@@ -9,7 +9,7 @@ import scipy.special as scispec
 from bhmie import bhmie
 import tifffile as TIFF
 import matplotlib.image as mpimg
-import skimage.io as ski_io
+# import skimage.io as ski_io
 import matplotlib.pyplot as plt
 
 def create_single_lens_optical_system():

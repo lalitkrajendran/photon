@@ -1,3 +1,5 @@
+# hidden files
+._*
 #object files
 *.o
 
