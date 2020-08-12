@@ -2158,7 +2158,8 @@ def perform_ray_tracing_03(simulation_parameters, optical_system, pixel_gain, sc
         lightray_positions_filepath = simulation_parameters['output_data']['lightray_positions_filepath']
         lightray_directions_filepath = simulation_parameters['output_data']['lightray_directions_filepath']
         # number of light rays to save positions and directions for
-        num_lightrays_save = int(simulation_parameters['output_data']['num_lightrays_save'])
+        # num_lightrays_save = int(simulation_parameters['output_data']['num_lightrays_save'])
+        num_lightrays_save = lightfield_source['x'].size * int(lightfield_source['lightray_number_per_particle'])
     else:
         lightray_positions_filepath = ''
         lightray_directions_filepath = ''
@@ -2170,7 +2171,6 @@ def perform_ray_tracing_03(simulation_parameters, optical_system, pixel_gain, sc
     else:
         num_intermediate_positions_save = 0
 
-    
     # convert the data to ctypes compatible format and call the CUDA function
     I = prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, scattering_type,
                            lightfield_source, lightray_number_per_particle, beam_wavelength,aperture_f_number, element_data, element_center,

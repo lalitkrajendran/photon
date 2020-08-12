@@ -3401,7 +3401,8 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 			num_particles, source_point_number, lightray_number_per_particle, num_rays);
 
 	// allocate number of threads per block
-	dim3 block(500,1);
+//	dim3 block(500,1);
+	dim3 block(250,1);
 
 	//------------------------------------------------------------------------------------------
 	// calculate number of blocks required

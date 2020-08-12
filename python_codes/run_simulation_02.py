@@ -1992,6 +1992,7 @@ def run_simulation_02(simulation_parameters):
             I, I_raw = perform_ray_tracing_03(simulation_parameters, optical_system, pixel_gain, scattering_data,
                                               scattering_type, lightfield_source, field_type)
 
+            print 'image shape: %d, %d' % (I.shape[0], I.shape[1])
             # % This is the filename to save the image data to
             image_filename_write = os.path.join(image_directory, 'bos_pattern_image_2.tif')
 
@@ -2008,8 +2009,8 @@ def run_simulation_02(simulation_parameters):
             # save parameters to file
             sio.savemat(os.path.join(image_directory,'parameters.mat'), simulation_parameters, appendmat=True, format='5',
                         long_field_names=True)
-            sio.savemat(os.path.join(image_directory,'optical_system.mat'), optical_system, appendmat=True, format='5',
-                        long_field_names=True)
+            # sio.savemat(os.path.join(image_directory,'optical_system.mat'), optical_system, appendmat=True, format='5',
+            #             long_field_names=True)
 
             # save grid point positions to file
             positions = dict()
