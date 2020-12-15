@@ -205,11 +205,11 @@ __device__ float3 calculate_lookup_index(float3 pos, density_grad_params_t param
 	lookupfn.z = lookup_scale.z*offset.z;
 
 	// calculate the lookup index
-//	float3 lookup = {static_cast<float>(lookupfn.x*params.data_width), static_cast<float>(lookupfn.y*params.data_height), static_cast<float>(lookupfn.z*params.data_depth)};
-//	float3 lookup = {static_cast<float>(lookupfn.x*(params.data_width-1)), static_cast<float>(lookupfn.y*(params.data_height-1)), static_cast<float>(lookupfn.z*(params.data_depth-1))};
-//	float3 lookup = {static_cast<float>(1.5 + lookupfn.x*(params.data_width-2.5)), static_cast<float>(1.5 + lookupfn.y*(params.data_height-2.5)), static_cast<float>(1.5 + lookupfn.z*(params.data_depth-2.5))};
+	// float3 lookup = {static_cast<float>(lookupfn.x*params.data_width), static_cast<float>(lookupfn.y*params.data_height), static_cast<float>(lookupfn.z*params.data_depth)};
+	// float3 lookup = {static_cast<float>(lookupfn.x*(params.data_width-1)), static_cast<float>(lookupfn.y*(params.data_height-1)), static_cast<float>(lookupfn.z*(params.data_depth-1))};
+	// float3 lookup = {static_cast<float>(1.5 + lookupfn.x*(params.data_width-2.5)), static_cast<float>(1.5 + lookupfn.y*(params.data_height-2.5)), static_cast<float>(1.5 + lookupfn.z*(params.data_depth-2.5))};
 	float3 lookup = {static_cast<float>(1 + lookupfn.x*(params.data_width-2)), static_cast<float>(1 + lookupfn.y*(params.data_height-2)), static_cast<float>(1 + lookupfn.z*(params.data_depth-2))};
-//	float3 lookup = {static_cast<float>(0.5 + lookupfn.x*(params.data_width-1.5)), static_cast<float>(0.5 + lookupfn.y*(params.data_height-1.5)), static_cast<float>(0.5 + lookupfn.z*(params.data_depth-1.5))};
+	// float3 lookup = {static_cast<float>(0.5 + lookupfn.x*(params.data_width-1.5)), static_cast<float>(0.5 + lookupfn.y*(params.data_height-1.5)), static_cast<float>(0.5 + lookupfn.z*(params.data_depth-1.5))};
 
 	return lookup;
 }
@@ -223,14 +223,14 @@ __device__ bool ray_inside_box(float3 pos, density_grad_params_t params,
 	 */
 
 
-//	// if the lookup index lies outside the volume, exit the loop
-//	if(pos.x <= params.min_bound.x || pos.y <= params.min_bound.y || pos.z <= params.min_bound.z ||
-//			pos.x >= params.max_bound.x || pos.y >= params.max_bound.y || pos.z >= params.max_bound.z )
-//		return false;
-//
-//	if(lookup.x <= 0 || lookup.y <= 0 || lookup.z <= 0 ||
-//			lookup.x >= params.data_width-1 || lookup.y >= params.data_height-1 || lookup.z >= params.data_depth)
-//		return false;
+	// if the lookup index lies outside the volume, exit the loop
+	// if(pos.x <= params.min_bound.x || pos.y <= params.min_bound.y || pos.z <= params.min_bound.z ||
+	// 		pos.x >= params.max_bound.x || pos.y >= params.max_bound.y || pos.z >= params.max_bound.z )
+	// 	return false;
+
+	// if(lookup.x <= 0 || lookup.y <= 0 || lookup.z <= 0 ||
+	// 		lookup.x >= params.data_width-1 || lookup.y >= params.data_height-1 || lookup.z >= params.data_depth)
+	// 	return false;
 
 	// if the lookup index lies outside the volume, exit the loop
 	if(pos.x < params.min_bound.x || pos.y < params.min_bound.y || pos.z < params.min_bound.z ||
@@ -238,13 +238,13 @@ __device__ bool ray_inside_box(float3 pos, density_grad_params_t params,
 		return false;
 
 	if(lookup.x < 0 || lookup.y < 0 || lookup.z < 0 ||
-//			lookup.x > params.data_width-1 || lookup.y > params.data_height-1 || lookup.z > params.data_depth-1)
+			// lookup.x > params.data_width-1 || lookup.y > params.data_height-1 || lookup.z > params.data_depth-1)
 			lookup.x >= params.data_width || lookup.y >= params.data_height || lookup.z >= params.data_depth)
 		return false;
-//	if(lookup.x < 0.5 || lookup.y < 0.5 || lookup.z < 0.5 ||
-////			lookup.x > params.data_width-1 || lookup.y > params.data_height-1 || lookup.z > params.data_depth-1)
-//			lookup.x >= params.data_width-0.5 || lookup.y >= params.data_height-0.5 || lookup.z >= params.data_depth-0.5)
-//		return false;
+	// if(lookup.x < 0.5 || lookup.y < 0.5 || lookup.z < 0.5 ||
+			// lookup.x > params.data_width-1 || lookup.y > params.data_height-1 || lookup.z > params.data_depth-1)
+		// 	lookup.x >= params.data_width-0.5 || lookup.y >= params.data_height-0.5 || lookup.z >= params.data_depth-0.5)
+		// return false;
 
 	return true;
 
@@ -260,13 +260,13 @@ __device__ bool access_refractive_index(float3 pos, density_grad_params_t params
 	 */
 
 
-//	if(floor(lookup.x) <= 0 || floor(lookup.y) <= 0 || floor(lookup.z) <= 0 ||
-//			ceil(lookup.x) >= params.data_width-1 || ceil(lookup.y) >= params.data_height-1 || ceil(lookup.z) >= params.data_depth-1 )
-//		return false;
+	// if(floor(lookup.x) <= 0 || floor(lookup.y) <= 0 || floor(lookup.z) <= 0 ||
+	// 		ceil(lookup.x) >= params.data_width-1 || ceil(lookup.y) >= params.data_height-1 || ceil(lookup.z) >= params.data_depth-1 )
+	// 	return false;
 
-//	if(floor(lookup.x) < 0 || floor(lookup.y) < 0 || floor(lookup.z) < 0 ||
-//				ceil(lookup.x) > params.data_width-1 || ceil(lookup.y) > params.data_height-1 || ceil(lookup.z) > params.data_depth-1 )
-//		return false;
+	// if(floor(lookup.x) < 0 || floor(lookup.y) < 0 || floor(lookup.z) < 0 ||
+	// 			ceil(lookup.x) > params.data_width-1 || ceil(lookup.y) > params.data_height-1 || ceil(lookup.z) > params.data_depth-1 )
+	// 	return false;
 
 	if(lookup.x < 0 || lookup.y < 0 || lookup.z < 0 ||
 				lookup.x >= params.data_width || lookup.y >= params.data_height || lookup.z >= params.data_depth )
@@ -320,17 +320,17 @@ __device__ light_ray_data_t rk45(light_ray_data_t light_ray_data, density_grad_p
 	float3 pos = light_ray_data.ray_source_coordinates;
 	float3 dir = light_ray_data.ray_propagation_direction;
 
-//	// calculate lookup index to access refractive index gradient value
-//	float3 lookup = calculate_lookup_index(pos, params, lookup_scale);
-//
-//	// check if ray is inside volume
-//	if(!ray_inside_box(pos, params, lookup))
-//		return light_ray_data;
-//
-//	// extract refractive index gradients as well as the local refractive index
-//	float4 val = tex3D(tex_data, lookup.x, lookup.y, lookup.z);
-//
-//	refractive_index = val.w;
+	// calculate lookup index to access refractive index gradient value
+	// float3 lookup = calculate_lookup_index(pos, params, lookup_scale);
+
+	// check if ray is inside volume
+	// if(!ray_inside_box(pos, params, lookup))
+	// 	return light_ray_data;
+
+	// extract refractive index gradients as well as the local refractive index
+	// float4 val = tex3D(tex_data, lookup.x, lookup.y, lookup.z);
+
+	// refractive_index = val.w;
 
 	float3 lookup;
 	float4 val;
@@ -354,34 +354,34 @@ __device__ light_ray_data_t rk45(light_ray_data_t light_ray_data, density_grad_p
 	float3 T_n;
 	float a,b,c;
 
-//	h = 0.1;
-//	float h1, h2, h3, hmin;
+	// h = 0.1;
+	// float h1, h2, h3, hmin;
     while (inside_box)
     {
         loop_ctr += 1;
-//		if(loop_ctr==1)
-//			pos = pos + dir * params.step_size/refractive_index * 0.1;
+		// if(loop_ctr==1)
+		// 	pos = pos + dir * params.step_size/refractive_index * 0.1;
 
         // criterion to prevent infinite looping
         if(loop_ctr > 100000)
             break;
 
-//        // ensure that the x position does not exceed the upper limit
-//        if(h > fabs(xmax - x))
-//        {
-//            if(fabs(xmax - x) > tol)
-//                h = fabs(xmax - x);
-//            else
-//                break;
-//        }
+       // ensure that the x position does not exceed the upper limit
+    //    if(h > fabs(xmax - x))
+    //    {
+    //        if(fabs(xmax - x) > tol)
+    //            h = fabs(xmax - x);
+    //        else
+    //            break;
+    //    }
 
 
         // calculate coefficients
 
         //**************** k1 and l1  ***************************//
 
-//        k1 = h * dydx_1(x, y[0], y[1]);
-//        l1 = h * dydx_2(x, y[0], y[1]);
+    //    k1 = h * dydx_1(x, y[0], y[1]);
+    //    l1 = h * dydx_2(x, y[0], y[1]);
 
         R_n = pos;
         T_n = refractive_index * dir;
@@ -395,20 +395,20 @@ __device__ light_ray_data_t rk45(light_ray_data_t light_ray_data, density_grad_p
 		if(!ray_inside_box(R_n, params, lookup))
 		{
 
-//			lookup = calculate_lookup_index(pos, params, lookup_scale);
-//
-//			h1 = fabs(params.data_width -1 - lookup.x);
-//			h2 = fabs(params.data_height - 1 - lookup.y);
-//			h3 = fabs(params.data_depth - lookup.z);
-//
-//			hmin = (h1<h2 ? h1:h2) < h3 ? (h1<h2 ? h1:h2):h3;
-//			if(hmin > tol)
-//			{
-//				h = hmin;
-//				continue;
-//			}
-//			else
-//				return light_ray_data;
+			// lookup = calculate_lookup_index(pos, params, lookup_scale);
+
+			// h1 = fabs(params.data_width -1 - lookup.x);
+			// h2 = fabs(params.data_height - 1 - lookup.y);
+			// h3 = fabs(params.data_depth - lookup.z);
+
+			// hmin = (h1<h2 ? h1:h2) < h3 ? (h1<h2 ? h1:h2):h3;
+			// if(hmin > tol)
+			// {
+			// 	h = hmin;
+			// 	continue;
+			// }
+			// else
+			// 	return light_ray_data;
 			h /= 10.0;
 			if(h >= 0.1 * params.step_size)
 				continue;
@@ -431,8 +431,8 @@ __device__ light_ray_data_t rk45(light_ray_data_t light_ray_data, density_grad_p
 
         //**************** k2 and l2  ***************************//
 
-//        k2 = h * dydx_1(x + h/4.0, y[0] + k1/4.0, y[1] + l1/4.0);
-//        l2 = h * dydx_2(x + h/4.0, y[0] + k1/4.0, y[1] + l1/4.0);
+    //    k2 = h * dydx_1(x + h/4.0, y[0] + k1/4.0, y[1] + l1/4.0);
+    //    l2 = h * dydx_2(x + h/4.0, y[0] + k1/4.0, y[1] + l1/4.0);
 
     	R_n = pos + k1/4.0;
     	T_n = refractive_index * dir + l1/4.0;
@@ -445,20 +445,20 @@ __device__ light_ray_data_t rk45(light_ray_data_t light_ray_data, density_grad_p
     	// check if ray is inside volume
 		if(!ray_inside_box(R_n, params, lookup))
 		{
-//			lookup = calculate_lookup_index(pos, params, lookup_scale);
-//
-//			h1 = fabs(params.data_width -1 - lookup.x);
-//			h2 = fabs(params.data_height - 1 - lookup.y);
-//			h3 = fabs(params.data_depth - lookup.z);
-//
-//			hmin = (h1<h2 ? h1:h2) < h3 ? (h1<h2 ? h1:h2):h3;
-//			if(hmin > tol)
-//			{
-//				h = hmin;
-//				continue;
-//			}
-//			else
-//				return light_ray_data;
+			// lookup = calculate_lookup_index(pos, params, lookup_scale);
+
+			// h1 = fabs(params.data_width -1 - lookup.x);
+			// h2 = fabs(params.data_height - 1 - lookup.y);
+			// h3 = fabs(params.data_depth - lookup.z);
+
+			// hmin = (h1<h2 ? h1:h2) < h3 ? (h1<h2 ? h1:h2):h3;
+			// if(hmin > tol)
+			// {
+			// 	h = hmin;
+			// 	continue;
+			// }
+			// else
+			// 	return light_ray_data;
 			h /= 10.0;
 			if(h >= 0.1 * params.step_size)
 				continue;
@@ -472,8 +472,8 @@ __device__ light_ray_data_t rk45(light_ray_data_t light_ray_data, density_grad_p
 
         //**************** k3 and l3  ***************************//
 
-//        k3 = h * dydx_1(x + 3.0/8.0*h, y[0] + 3.0/32.0 * k1 + 9.0/32.0 * k2, y[1] + 3.0/32.0 * l1 + 9.0/32.0 * l2);
-//        l3 = h * dydx_2(x + 3.0/8.0*h, y[0] + 3.0/32.0 * k1 + 9.0/32.0 * k2, y[1] + 3.0/32.0 * l1 + 9.0/32.0 * l2);
+    //    k3 = h * dydx_1(x + 3.0/8.0*h, y[0] + 3.0/32.0 * k1 + 9.0/32.0 * k2, y[1] + 3.0/32.0 * l1 + 9.0/32.0 * l2);
+    //    l3 = h * dydx_2(x + 3.0/8.0*h, y[0] + 3.0/32.0 * k1 + 9.0/32.0 * k2, y[1] + 3.0/32.0 * l1 + 9.0/32.0 * l2);
 
     	R_n = pos + 3.0/32.0 * k1 + 9.0/32.0 * k2;
     	T_n = refractive_index * dir + 3.0/32.0 * l1 + 9.0/32.0 * l2;
@@ -487,20 +487,20 @@ __device__ light_ray_data_t rk45(light_ray_data_t light_ray_data, density_grad_p
     	// check if ray is inside volume
 		if(!ray_inside_box(R_n, params, lookup))
 		{
-//			lookup = calculate_lookup_index(pos, params, lookup_scale);
-//
-//			h1 = fabs(params.data_width -1 - lookup.x);
-//			h2 = fabs(params.data_height - 1 - lookup.y);
-//			h3 = fabs(params.data_depth - lookup.z);
-//
-//			hmin = (h1<h2 ? h1:h2) < h3 ? (h1<h2 ? h1:h2):h3;
-//			if(hmin > tol)
-//			{
-//				h = hmin;
-//				continue;
-//			}
-//			else
-//				return light_ray_data;
+			// lookup = calculate_lookup_index(pos, params, lookup_scale);
+
+			// h1 = fabs(params.data_width -1 - lookup.x);
+			// h2 = fabs(params.data_height - 1 - lookup.y);
+			// h3 = fabs(params.data_depth - lookup.z);
+
+			// hmin = (h1<h2 ? h1:h2) < h3 ? (h1<h2 ? h1:h2):h3;
+			// if(hmin > tol)
+			// {
+			// 	h = hmin;
+			// 	continue;
+			// }
+			// else
+			// 	return light_ray_data;
 
 			h /= 10.0;
 			if(h >= 0.1 * params.step_size)
@@ -515,8 +515,8 @@ __device__ light_ray_data_t rk45(light_ray_data_t light_ray_data, density_grad_p
 
         //**************** k4 and l4  ***************************//
 
-//        k4 = h * dydx_1(x + 12.0/13.0*h,  y[0] + 1932.0/2197.0 * k1 - 7200.0/2197.0 * k2 + 7296.0/2197.0 * k3, y[1] + 1932.0/2197.0 * l1 - 7200.0/2197.0 * l2 + 7296.0/2197.0 * l3);
-//        l4 = h * dydx_2(x + 12.0/13.0*h,  y[0] + 1932.0/2197.0 * k1 - 7200.0/2197.0 * k2 + 7296.0/2197.0 * k3, y[1] + 1932.0/2197.0 * l1 - 7200.0/2197.0 * l2 + 7296.0/2197.0 * l3);
+    //    k4 = h * dydx_1(x + 12.0/13.0*h,  y[0] + 1932.0/2197.0 * k1 - 7200.0/2197.0 * k2 + 7296.0/2197.0 * k3, y[1] + 1932.0/2197.0 * l1 - 7200.0/2197.0 * l2 + 7296.0/2197.0 * l3);
+    //    l4 = h * dydx_2(x + 12.0/13.0*h,  y[0] + 1932.0/2197.0 * k1 - 7200.0/2197.0 * k2 + 7296.0/2197.0 * k3, y[1] + 1932.0/2197.0 * l1 - 7200.0/2197.0 * l2 + 7296.0/2197.0 * l3);
 
     	R_n = pos + 1932.0/2197.0 * k1 - 7200.0/2197.0 * k2 + 7296.0/2197.0 * k3;
     	T_n = refractive_index * dir + 1932.0/2197.0 * l1 - 7200.0/2197.0 * l2 + 7296.0/2197.0 * l3;
@@ -529,20 +529,20 @@ __device__ light_ray_data_t rk45(light_ray_data_t light_ray_data, density_grad_p
     	// check if ray is inside volume
 		if(!ray_inside_box(R_n, params, lookup))
 		{
-//			lookup = calculate_lookup_index(pos, params, lookup_scale);
-//
-//			h1 = fabs(params.data_width -1 - lookup.x);
-//			h2 = fabs(params.data_height - 1 - lookup.y);
-//			h3 = fabs(params.data_depth - lookup.z);
-//
-//			hmin = (h1<h2 ? h1:h2) < h3 ? (h1<h2 ? h1:h2):h3;
-//			if(hmin > tol)
-//			{
-//				h = hmin;
-//				continue;
-//			}
-//			else
-//				return light_ray_data;
+			// lookup = calculate_lookup_index(pos, params, lookup_scale);
+
+			// h1 = fabs(params.data_width -1 - lookup.x);
+			// h2 = fabs(params.data_height - 1 - lookup.y);
+			// h3 = fabs(params.data_depth - lookup.z);
+
+			// hmin = (h1<h2 ? h1:h2) < h3 ? (h1<h2 ? h1:h2):h3;
+			// if(hmin > tol)
+			// {
+			// 	h = hmin;
+			// 	continue;
+			// }
+			// else
+			// 	return light_ray_data;
 
 			h /= 10.0;
 			if(h >= 0.1 * params.step_size)
@@ -557,10 +557,10 @@ __device__ light_ray_data_t rk45(light_ray_data_t light_ray_data, density_grad_p
 
         //**************** k5 and l5  ***************************//
 
-//        k5 = h * dydx_1(x + h, y[0] + 439.0/216.0 * k1 - 8.0 * k2 + 3680.0/513.0 * k3 - 845.0/4104.0 * k4,
-//        				y[1] + 439.0/216.0 * l1 - 8.0 * l2 + 3680.0/513.0 * l3 - 845.0/4104.0 * l4);
-//        l5 = h * dydx_2(x + h, y[0] + 439.0/216.0 * k1 - 8.0 * k2 + 3680.0/513.0 * k3 - 845.0/4104.0 * k4,
-//        				y[1] + 439.0/216.0 * l1 - 8.0 * l2 + 3680.0/513.0 * l3 - 845.0/4104.0 * l4);
+    //    k5 = h * dydx_1(x + h, y[0] + 439.0/216.0 * k1 - 8.0 * k2 + 3680.0/513.0 * k3 - 845.0/4104.0 * k4,
+    //    				y[1] + 439.0/216.0 * l1 - 8.0 * l2 + 3680.0/513.0 * l3 - 845.0/4104.0 * l4);
+    //    l5 = h * dydx_2(x + h, y[0] + 439.0/216.0 * k1 - 8.0 * k2 + 3680.0/513.0 * k3 - 845.0/4104.0 * k4,
+    //    				y[1] + 439.0/216.0 * l1 - 8.0 * l2 + 3680.0/513.0 * l3 - 845.0/4104.0 * l4);
 
     	R_n = pos + 439.0/216.0 * k1 - 8.0 * k2 + 3680.0/513.0 * k3 - 845.0/4104.0 * k4;
     	T_n = refractive_index * dir + 439.0/216.0 * l1 - 8.0 * l2 + 3680.0/513.0 * l3 - 845.0/4104.0 * l4;
@@ -573,20 +573,20 @@ __device__ light_ray_data_t rk45(light_ray_data_t light_ray_data, density_grad_p
     	// check if ray is inside volume
 		if(!ray_inside_box(R_n, params, lookup))
 		{
-//			lookup = calculate_lookup_index(pos, params, lookup_scale);
-//
-//			h1 = fabs(params.data_width -1 - lookup.x);
-//			h2 = fabs(params.data_height - 1 - lookup.y);
-//			h3 = fabs(params.data_depth - lookup.z);
-//
-//			hmin = (h1<h2 ? h1:h2) < h3 ? (h1<h2 ? h1:h2):h3;
-//			if(hmin > tol)
-//			{
-//				h = hmin;
-//				continue;
-//			}
-//			else
-//				return light_ray_data;
+			// lookup = calculate_lookup_index(pos, params, lookup_scale);
+
+			// h1 = fabs(params.data_width -1 - lookup.x);
+			// h2 = fabs(params.data_height - 1 - lookup.y);
+			// h3 = fabs(params.data_depth - lookup.z);
+
+			// hmin = (h1<h2 ? h1:h2) < h3 ? (h1<h2 ? h1:h2):h3;
+			// if(hmin > tol)
+			// {
+			// 	h = hmin;
+			// 	continue;
+			// }
+			// else
+			// 	return light_ray_data;
 
 			h /= 10.0;
 			if(h >= 0.1 * params.step_size)
@@ -601,10 +601,10 @@ __device__ light_ray_data_t rk45(light_ray_data_t light_ray_data, density_grad_p
 
         //**************** k6 and l6  ***************************//
 
-//        k6 = h * dydx_1(x + h/2.0, y[0] - 8.0/27.0 * k1 + 2.0 * k2 - 3544.0/2565.0 * k3 + 1859.0/4104.0 * k4 - 11.0/40.0 * k5,
-//        		y[1] - 8.0/27.0 * l1 + 2.0 * l2 - 3544.0/2565.0 * l3 + 1859.0/4104.0 * l4 - 11.0/40.0 * l5);
-//        l6 = h * dydx_2(x + h/2.0, y[0] - 8.0/27.0 * k1 + 2.0 * k2 - 3544.0/2565.0 * k3 + 1859.0/4104.0 * k4 - 11.0/40.0 * k5,
-//        		y[1] - 8.0/27.0 * l1 + 2.0 * l2 - 3544.0/2565.0 * l3 + 1859.0/4104.0 * l4 - 11.0/40.0 * l5);
+    //    k6 = h * dydx_1(x + h/2.0, y[0] - 8.0/27.0 * k1 + 2.0 * k2 - 3544.0/2565.0 * k3 + 1859.0/4104.0 * k4 - 11.0/40.0 * k5,
+    //    		y[1] - 8.0/27.0 * l1 + 2.0 * l2 - 3544.0/2565.0 * l3 + 1859.0/4104.0 * l4 - 11.0/40.0 * l5);
+    //    l6 = h * dydx_2(x + h/2.0, y[0] - 8.0/27.0 * k1 + 2.0 * k2 - 3544.0/2565.0 * k3 + 1859.0/4104.0 * k4 - 11.0/40.0 * k5,
+    //    		y[1] - 8.0/27.0 * l1 + 2.0 * l2 - 3544.0/2565.0 * l3 + 1859.0/4104.0 * l4 - 11.0/40.0 * l5);
 
     	R_n = pos - 8.0/27.0 * k1 + 2.0 * k2 - 3544.0/2565.0 * k3 + 1859.0/4104.0 * k4 - 11.0/40.0 * k5;
     	T_n = refractive_index * dir - 8.0/27.0 * l1 + 2.0 * l2 - 3544.0/2565.0 * l3 + 1859.0/4104.0 * l4 - 11.0/40.0 * l5;
@@ -617,20 +617,20 @@ __device__ light_ray_data_t rk45(light_ray_data_t light_ray_data, density_grad_p
     	// check if ray is inside volume
 		if(!ray_inside_box(R_n, params, lookup))
 		{
-//			lookup = calculate_lookup_index(pos, params, lookup_scale);
-//
-//			h1 = fabs(params.data_width -1 - lookup.x);
-//			h2 = fabs(params.data_height - 1 - lookup.y);
-//			h3 = fabs(params.data_depth - lookup.z);
-//
-//			hmin = (h1<h2 ? h1:h2) < h3 ? (h1<h2 ? h1:h2):h3;
-//			if(hmin > tol)
-//			{
-//				h = hmin;
-//				continue;
-//			}
-//			else
-//				return light_ray_data;
+			// lookup = calculate_lookup_index(pos, params, lookup_scale);
+
+			// h1 = fabs(params.data_width -1 - lookup.x);
+			// h2 = fabs(params.data_height - 1 - lookup.y);
+			// h3 = fabs(params.data_depth - lookup.z);
+
+			// hmin = (h1<h2 ? h1:h2) < h3 ? (h1<h2 ? h1:h2):h3;
+			// if(hmin > tol)
+			// {
+			// 	h = hmin;
+			// 	continue;
+			// }
+			// else
+			// 	return light_ray_data;
 			h /= 10.0;
 			if(h >= 0.01 * params.step_size)
 				continue;
@@ -686,10 +686,10 @@ __device__ light_ray_data_t rk45(light_ray_data_t light_ray_data, density_grad_p
             	s = 5.00;
 			h *= s;
 
-//            if(s * h > params.step_size)
-//            	h = params.step_size;
-//            else
-//            	h *= s;
+        //    if(s * h > params.step_size)
+        //    	h = params.step_size;
+        //    else
+        //    	h *= s;
 
             i = i + 1;
         }
@@ -700,19 +700,19 @@ __device__ light_ray_data_t rk45(light_ray_data_t light_ray_data, density_grad_p
         	if(s < 0.1)
         		s = 0.1;
         	h *= s;
-//        	h *= 1.0;
+       	// h *= 1.0;
         	//        	if(h < 0.1 * params.step_size)
-//        		h = 0.1 * params.step_size;
+       		// h = 0.1 * params.step_size;
         }
 
 
-//        printf("i: %d, loop_ctr: %d, x: %f, y:%f\n", i, loop_ctr, x, y);
-//        printf("4th order: %.15f, 5th order: %.15f, exact: %f, R: %.15f, s: %.15f, h: %.15f\n", y4, y5, tan(x), R, s, h);
+    //    printf("i: %d, loop_ctr: %d, x: %f, y:%f\n", i, loop_ctr, x, y);
+    //    printf("4th order: %.15f, 5th order: %.15f, exact: %f, R: %.15f, s: %.15f, h: %.15f\n", y4, y5, tan(x), R, s, h);
 
     }
 
-//    light_ray_data.ray_source_coordinates = pos;
-//    light_ray_data.ray_propagation_direction = dir;
+	// light_ray_data.ray_source_coordinates = pos;
+    // light_ray_data.ray_propagation_direction = dir;
 
     return light_ray_data;
 }
@@ -764,7 +764,7 @@ __device__ light_ray_data_t euler(light_ray_data_t light_ray_data,
 	int loop_ctr = 0;
 	int loop_ctr_max = 1e7;
 	float current_refractive_index;
-//	float3 pos_temp;
+	// float3 pos_temp;
 
 	// perform linear interpolation to calculate density gradient
 	if(params.interpolation_scheme == 1)
@@ -832,8 +832,8 @@ __device__ light_ray_data_t euler(light_ray_data_t light_ray_data,
 			// before accessing the density gradient data
 			if(val.w < params.data_min)
 			{
-//				printf("loop_ctr: %d, lookup.z: %f, val.x: %f, val.w= %f < 0\n", loop_ctr, lookup.z, val.x, val.w);
-//				printf("val.w < params.data_min. Loop: %d\n", loop_ctr);
+				// printf("loop_ctr: %d, lookup.z: %f, val.x: %f, val.w= %f < 0\n", loop_ctr, lookup.z, val.x, val.w);
+				// printf("val.w < params.data_min. Loop: %d\n", loop_ctr);
 				if(val_prev.w == 0)
 				{
 					val_temp = tex3D(tex_data, lookup.x, lookup.y, lookup.z-1);
@@ -841,15 +841,15 @@ __device__ light_ray_data_t euler(light_ray_data_t light_ray_data,
 				}
 				else
 					val = val_prev;
-//				printf("loop_ctr: %d, lookup.z: %f, val.x: %g, val.w= %f < 0\n", loop_ctr, lookup.z, val.x, val.w);
+				// printf("loop_ctr: %d, lookup.z: %f, val.x: %g, val.w= %f < 0\n", loop_ctr, lookup.z, val.x, val.w);
 
-//				pos = pos + params.step_size * dir;
-//				pos = pos + params.step_size/(1 + params.data_min) * dir;
-//				pos = pos + params.step_size/refractive_index * dir;
-//
-//				light_ray_data.ray_source_coordinates = pos;
-//				increment_arc_length(&params, thread_id);
-//				continue;
+				// pos = pos + params.step_size * dir;
+				// pos = pos + params.step_size/(1 + params.data_min) * dir;
+				// pos = pos + params.step_size/refractive_index * dir;
+
+				// light_ray_data.ray_source_coordinates = pos;
+				// increment_arc_length(&params, thread_id);
+				// continue;
 			}
 
 			current_refractive_index = 1 + val.w;
@@ -860,7 +860,7 @@ __device__ light_ray_data_t euler(light_ray_data_t light_ray_data,
 			float2 noise;
 			if(add_ngrad_noise)
 			{
-		//		noise_std = 0.10;
+				// noise_std = 0.10;
 				// calculate the noise to be added from a standard normal distribution
 				noise = curand_normal2(&states[thread_id]);
 
@@ -882,13 +882,13 @@ __device__ light_ray_data_t euler(light_ray_data_t light_ray_data,
 			// update the ray position
 			pos = pos + params.step_size/current_refractive_index * dir;
 
-//			pos_temp = pos + params.step_size/current_refractive_index * dir;
-//			lookup = calculate_lookup_index(pos_temp, params, lookup_scale);
-//			// check if ray is inside volume
-//			if(!ray_inside_box(pos_temp, params, lookup) && loop_ctr!=0)
-//			{
-//				pos = pos + 0.5 * params.step_size/current_refractive_index * dir;
-//			}
+			// pos_temp = pos + params.step_size/current_refractive_index * dir;
+			// lookup = calculate_lookup_index(pos_temp, params, lookup_scale);
+			// // check if ray is inside volume
+			// if(!ray_inside_box(pos_temp, params, lookup) && loop_ctr!=0)
+			// {
+			// 	pos = pos + 0.5 * params.step_size/current_refractive_index * dir;
+			// }
 
 			increment_arc_length(&params, thread_id);
 
@@ -923,7 +923,7 @@ __device__ light_ray_data_t euler(light_ray_data_t light_ray_data,
 			// before accessing the density gradient data
 			if(val.w < params.data_min)
 			{
-//				pos = pos + params.max_step_size/params.data_min * dir;
+				// pos = pos + params.max_step_size/params.data_min * dir;
 				pos = pos + params.step_size/(1 + params.data_min) * dir;
 
 				light_ray_data.ray_source_coordinates = pos;
@@ -931,7 +931,7 @@ __device__ light_ray_data_t euler(light_ray_data_t light_ray_data,
 			}
 			loop_ctr += 1;
 
-//			calculate_derivatives(&val, lookup);
+			// calculate_derivatives(&val, lookup);
 
 			// calculate the change in ray direction
 			normal = make_float3(val.x,val.y,val.z);
@@ -954,8 +954,8 @@ __device__ light_ray_data_t euler(light_ray_data_t light_ray_data,
 
 	if(thread_id == 0)
 	{
-//		params.arc_length = loop_ctr * params.step_size;
-//		printf("arc_length: %f\n", params.arc_length);
+		// params.arc_length = loop_ctr * params.step_size;
+		// printf("arc_length: %f\n", params.arc_length);
 		printf("loop_ctr: %d\n", loop_ctr);
 	}
 
@@ -1057,7 +1057,7 @@ __device__ light_ray_data_t rk4(light_ray_data_t light_ray_data, density_grad_pa
 			// if not, propagate the ray further.
 			if(!access_refractive_index(pos, params, lookup))
 			{
-//				pos = pos + params.max_step_size/params.data_min * dir;
+				// pos = pos + params.max_step_size/params.data_min * dir;
 				pos = pos + params.step_size/(1 + params.data_min) * dir;
 				light_ray_data.ray_source_coordinates = pos;
 				continue;
@@ -1200,8 +1200,8 @@ __device__ light_ray_data_t rk4(light_ray_data_t light_ray_data, density_grad_pa
 
 			if(loop_ctr > loop_ctr_max)
 				break;
-	//		if(i==1)
-	//			pos = pos + dir * params.step_size/refractive_index;
+			// if(i==1)
+			// 	pos = pos + dir * params.step_size/refractive_index;
 
 			pos = light_ray_data.ray_source_coordinates;
 			dir = light_ray_data.ray_propagation_direction;
@@ -1215,7 +1215,7 @@ __device__ light_ray_data_t rk4(light_ray_data_t light_ray_data, density_grad_pa
 			// if not, propagate the ray further.
 			if(!access_refractive_index(pos, params, lookup))
 			{
-//				pos = pos + params.max_step_size/params.data_min * dir;
+				// pos = pos + params.max_step_size/params.data_min * dir;
 				pos = pos + params.step_size/(1 + params.data_min) * dir;
 
 				light_ray_data.ray_source_coordinates = pos;
@@ -1229,7 +1229,7 @@ __device__ light_ray_data_t rk4(light_ray_data_t light_ray_data, density_grad_pa
 			// before accessing the density gradient data
 			if(val.w < params.data_min)
 			{
-//				pos = pos + params.max_step_size/params.data_min * dir;
+				// pos = pos + params.max_step_size/params.data_min * dir;
 				pos = pos + params.step_size/(1 + params.data_min) * dir;
 
 				light_ray_data.ray_source_coordinates = pos;
@@ -1244,7 +1244,7 @@ __device__ light_ray_data_t rk4(light_ray_data_t light_ray_data, density_grad_pa
 			// calculate optical ray direction vector
 			T_n = val.w * light_ray_data.ray_propagation_direction;
 
-//			calculate_derivatives(&val, lookup);
+			// calculate_derivatives(&val, lookup);
 
 			// calculate coefficients
 			D = make_float3(val.w * val.x, val.w * val.y, val.w * val.z);
@@ -1258,7 +1258,7 @@ __device__ light_ray_data_t rk4(light_ray_data_t light_ray_data, density_grad_pa
 
 			val = cubicTex3D(coeffs3D, lookup);
 			val.w += 1;
-//			calculate_derivatives(&val, lookup);
+			// calculate_derivatives(&val, lookup);
 
 			D = make_float3(val.w * val.x, val.w * val.y, val.w * val.z);
 			B = delta_t * D;
@@ -1271,14 +1271,14 @@ __device__ light_ray_data_t rk4(light_ray_data_t light_ray_data, density_grad_pa
 
 			val = cubicTex3D(coeffs3D, lookup);
 			val.w += 1;
-//			calculate_derivatives(&val, lookup);
+			// calculate_derivatives(&val, lookup);
 
 			D = make_float3(val.w * val.x, val.w * val.y, val.w * val.z);
 			C = delta_t * D;
 
 			// calculate new positions and directions
 			R_n = R_n + delta_t * (T_n + 1/6.0 * (A + 2*B));
-	// 		float3 T_n_increment = 1/6.
+			// float3 T_n_increment = 1/6.
 			T_n = T_n + 1/6.0 * (A + 4*B + C);
 
 			// store the new position and direction in the light ray vector
@@ -1290,18 +1290,18 @@ __device__ light_ray_data_t rk4(light_ray_data_t light_ray_data, density_grad_pa
 
 	if(thread_id == 0)
 	{
-//		params.arc_length = loop_ctr * params.step_size;
-//		printf("arc_length: %f\n", params.arc_length);
+		// params.arc_length = loop_ctr * params.step_size;
+		// printf("arc_length: %f\n", params.arc_length);
 		printf("loop_ctr: %d\n", loop_ctr);
 	}
 
 	//***************** END OF RK4 ********************************//
 
-//	// if the light ray did not propagate through the whole volume, then set it to NAN
-//	float threshold = 0.1;
-//	if(fabs(light_ray_data.ray_source_coordinates.z - params.min_bound.z) > threshold*params.min_bound.z)
-//		set_lightray_to_NAN(&light_ray_data);
-//	printf("loop_ctr: %d\n", loop_ctr);
+	// if the light ray did not propagate through the whole volume, then set it to NAN
+	// float threshold = 0.1;
+	// if(fabs(light_ray_data.ray_source_coordinates.z - params.min_bound.z) > threshold*params.min_bound.z)
+	// 	set_lightray_to_NAN(&light_ray_data);
+	// printf("loop_ctr: %d\n", loop_ctr);
 	return light_ray_data;
 }
 
@@ -1329,8 +1329,8 @@ __device__ light_ray_data_t adams_bashforth(light_ray_data_t light_ray_data, den
 	// INTIALIZE USING RK 4
 	while(loop_ctr < 3)
 	{
-//		if(i==1)
-//			pos = pos + dir * params.step_size/refractive_index;
+		// if(i==1)
+		// 	pos = pos + dir * params.step_size/refractive_index;
 		pos = light_ray_data.ray_source_coordinates;
 		dir = light_ray_data.ray_propagation_direction;
 
@@ -1344,7 +1344,7 @@ __device__ light_ray_data_t adams_bashforth(light_ray_data_t light_ray_data, den
 		// if not, propagate the ray further.
 		if(!access_refractive_index(pos, params, lookup))
 		{
-//				pos = pos + params.max_step_size/params.data_min * dir;
+			// pos = pos + params.max_step_size/params.data_min * dir;
 			pos = pos + params.step_size/params.data_min * dir;
 			light_ray_data.ray_source_coordinates = pos;
 			continue;
@@ -1396,7 +1396,7 @@ __device__ light_ray_data_t adams_bashforth(light_ray_data_t light_ray_data, den
 
 		// calculate new positions and directions
 		R_n = R_n + delta_t * (T_n + 1/6.0 * (A + 2*B));
-// 		float3 T_n_increment = 1/6.
+		// float3 T_n_increment = 1/6.
 		T_n = T_n + 1/6.0 * (A + 4*B + C);
 
 		// store the new position and direction in the light ray vector
@@ -1419,8 +1419,8 @@ __device__ light_ray_data_t adams_bashforth(light_ray_data_t light_ray_data, den
 	while(inside_box)
 	{
 		loop_ctr += 1;
-//		if(loop_ctr > 1e5)
-//			break;
+		// if(loop_ctr > 1e5)
+		// 	break;
 		R_n = light_ray_data.ray_source_coordinates;
 		lookup = calculate_lookup_index(R_n, params, lookup_scale);
 		// check if ray is inside volume
@@ -1474,10 +1474,10 @@ __device__ light_ray_data_t trace_rays_through_density_gradients(light_ray_data_
 
 	// this is the corner of the volume containing the minimum coordinates
 	float3 min_bound = params.min_bound;
-//	printf("min bound: %f, %f, %f\n", min_bound.x, min_bound.y, min_bound.z);
+	// printf("min bound: %f, %f, %f\n", min_bound.x, min_bound.y, min_bound.z);
 	// this is the corner of the volume containing the maximum coordinates
 	float3 max_bound = params.max_bound;
-//	printf("max bound: %f, %f, %f\n", max_bound.x, max_bound.y, max_bound.z);
+	// printf("max bound: %f, %f, %f\n", max_bound.x, max_bound.y, max_bound.z);
 	// this is the scaling factor to covert the coordinates to integer index locations
 	float3 lookup_scale = {1.0f/(max_bound.x-min_bound.x), 1.0f/(max_bound.y - min_bound.y), 1.0f/(max_bound.z-min_bound.z)};
 
@@ -1493,9 +1493,9 @@ __device__ light_ray_data_t trace_rays_through_density_gradients(light_ray_data_
  	pos.x >= max_bound.x || pos.y >= max_bound.y || pos.z >= max_bound.z )
  	{
 
-// 		IntersectWithVolume(&pos, dir, params.min_bound, params.max_bound);
-// 		light_ray_data.ray_source_coordinates = pos;
-// 		return light_ray_data;
+		// IntersectWithVolume(&pos, dir, params.min_bound, params.max_bound);
+		// light_ray_data.ray_source_coordinates = pos;
+		// return light_ray_data;
  		// if the ray did not intersect the volume, then set all the properties to NAN
  		// and exit the function
  		if(!IntersectWithVolume(&pos, dir, params.min_bound, params.max_bound))
@@ -1512,7 +1512,7 @@ __device__ light_ray_data_t trace_rays_through_density_gradients(light_ray_data_
  		}
 
 	// increment ray position by a small amount so it is inside the volume.
-//	pos = pos + dir * 1 * params.step_size/refractive_index;
+	// pos = pos + dir * 1 * params.step_size/refractive_index;
 		if(dir.z > 0)
 			pos.z = params.min_bound.z;
 		else
@@ -1526,9 +1526,9 @@ __device__ light_ray_data_t trace_rays_through_density_gradients(light_ray_data_
 
  	light_ray_data.ray_source_coordinates = pos;
 
-// 	light_ray_data.ray_source_coordinates = pos;
-// 	light_ray_data.ray_propagation_direction = dir;
-// 	return light_ray_data;
+	// light_ray_data.ray_source_coordinates = pos;
+	// light_ray_data.ray_propagation_direction = dir;
+	// return light_ray_data;
 
  	switch(params.integration_algorithm)
  	{
@@ -1578,22 +1578,22 @@ __device__ void check_texture_lookup()
 	printf("val.w: %f\n", val.w);
 
 }
-//__global__ void check_trace_rays_through_density_gradients_02(int a, int b)
-//{
-//	/*
-//	 * This function is used to check the ray deflection produced by the
-//	 * trace_rays_through_density_gradients routine for a set of rays that are parallel
-//	 * to the z axis
-//	 */
-//	int c;
-//	int id = threadIdx.x;
-//
-//	c = a + b;
-//
-////	x[id] = c;
-//
-//	check_texture_lookup();
-//}
+// __global__ void check_trace_rays_through_density_gradients_02(int a, int b)
+// {
+// 	/*
+	//  * This function is used to check the ray deflection produced by the
+	//  * trace_rays_through_density_gradients routine for a set of rays that are parallel
+	//  * to the z axis
+	//  */
+	// int c;
+	// int id = threadIdx.x;
+
+	// c = a + b;
+
+	// x[id] = c;
+
+	// check_texture_lookup();
+// }
 
 __global__ void check_trace_rays_through_density_gradients(light_ray_data_t* light_ray_data, density_grad_params_t params, curandState* states,
 		bool save_intermediate_ray_data, int num_intermediate_positions_save, float3* intermediate_pos, float3* intermediate_dir)
@@ -1604,12 +1604,12 @@ __global__ void check_trace_rays_through_density_gradients(light_ray_data_t* lig
 	 * to the z axis
 	 */
 
-//	check_texture_lookup();
+	// check_texture_lookup();
 
 	int id;
 
-//	printf("Hello\n");
-//	id = blockIdx.x*blockDim.x + threadIdx.x;
+	// printf("Hello\n");
+	// id = blockIdx.x*blockDim.x + threadIdx.x;
 	id = threadIdx.x;
 
 	bool add_ngrad_noise = false;
@@ -1655,8 +1655,8 @@ void Host_Init(density_grad_params_t* paramsp, density_grad_params_t* dparams)
 
 		checkCudaErrors(cudaBindTextureToArray(tex_data, data_array, channelDesc));
 
-//		check_trace_rays_through_density_gradients_02<<<1,1>>>(1,1);
-//		cudaDeviceSynchronize();
+		// check_trace_rays_through_density_gradients_02<<<1,1>>>(1,1);
+		// cudaDeviceSynchronize();
 	}
 
 	//setup data texture for cubic interpolation
@@ -1764,23 +1764,23 @@ void loadNRRD(DataFile* datafile, int data_min, int data_max, float z_offset)
 				if(i == 0 && j == 0 && k == 5)
 				{
 					rho1 = temp;
-//					n1 = *datai;
+					// n1 = *datai;
 					n1 = d_temp;
-//					d_n1 = a + K*(temp);
-//					d_n1 = *datai;
+					// d_n1 = a + K*(temp);
+					// d_n1 = *datai;
 					d_n1 = d_temp;
 				}
 
 				if(i == 0 && j == 0 && k == 6)
 				{
 					rho2 = temp;
-//					n2 = *datai;
+					// n2 = *datai;
 					n2 = d_temp;
-//					d_n2 = a + K*(temp);
-//					d_n2 = *datai;
+					// d_n2 = a + K*(temp);
+					// d_n2 = *datai;
 					d_n2 = d_temp;
 				}
-//					printf("density: %G, refractive index: %G\n", temp, *datai);
+				// printf("density: %G, refractive index: %G\n", temp, *datai);
 
 				// update max and min values
 				if (*datai > max)
@@ -1807,7 +1807,7 @@ void loadNRRD(DataFile* datafile, int data_min, int data_max, float z_offset)
 	printf("1 + n1: %.9f\n", n1_2);
 	printf("1 + n1 (double): %.9f\n", d_n1_2);
 	printf("dn_dx: %.8G\n", (n2-n1)/del_x);
-//	exit(0);
+	// exit(0);
 	// transfer data to pointer
 	datafile->data = data;
 	datafile->sizex = sizex;
@@ -1850,7 +1850,7 @@ density_grad_params_t setData(float* data, density_grad_params_t _params)
 	_params.data = new float4[data_width*data_height*data_depth];
 
 	// save the refractive index gradient data to file.
-//	std::string filename = "/home/shannon/c/aether/Projects/BOS/error-analysis/analysis/src/photon/cuda_codes/data/gradient_backward.bin";
+	// std::string filename = "/home/shannon/c/aether/Projects/BOS/error-analysis/analysis/src/photon/cuda_codes/data/gradient_backward.bin";
 	std::string filename = "/scratch/shannon/c/aether/Projects/BOS/error-analysis/analysis/src/photon/cuda_codes/data/gradient_central.bin";
 
 	std::ofstream file;
@@ -1966,8 +1966,8 @@ density_grad_params_t setData(float* data, density_grad_params_t _params)
 				sample3 = data[size_t(lookup.z*data_width*data_height + lookup.y*data_width + lookup.x)];
 
 				normal.z = (-3.0/2 * sample1 + 2 * sample2 - 1.0/2 * sample3)/grid_z;
-//				if(normal.z > 5e-6)
-//					printf("sample1: %f, sample2: %f, sample3: %f, normal.z: %G\n", sample1, sample2, sample3, normal.z);
+				// if(normal.z > 5e-6)
+				// 	printf("sample1: %f, sample2: %f, sample3: %f, normal.z: %G\n", sample1, sample2, sample3, normal.z);
 			}
 			else if(lookup.z >= data_depth-DELTA)
 			{
@@ -1979,8 +1979,8 @@ density_grad_params_t setData(float* data, density_grad_params_t _params)
 				sample3 = data[size_t(lookup.z*data_width*data_height + lookup.y*data_width + lookup.x)];
 
 				normal.z = (3.0/2 * sample1 - 2 * sample2 + 1.0/2 * sample3)/grid_z;
-//				if(normal.z > 5e-6)
-//					printf("sample1: %f, sample2: %f, sample3: %f, normal.z: %G\n", sample1, sample2, sample3, normal.z);
+				// if(normal.z > 5e-6)
+				// 	printf("sample1: %f, sample2: %f, sample3: %f, normal.z: %G\n", sample1, sample2, sample3, normal.z);
 			}
 			else
 			{
@@ -2008,7 +2008,7 @@ density_grad_params_t setData(float* data, density_grad_params_t _params)
 		}
 	}
 
-//	file.close();
+	// file.close();
 	printf("Minimum Refractive Index: %f\n", _params.data_min);
 	printf("loop ctr: %d\n", loop_ctr);
 
@@ -2031,7 +2031,7 @@ density_grad_params_t readDatafromFile(char* filename, float z_offset)
      *
      */
 
-	    // this is the structure that will hold the simulation parameters
+	// this is the structure that will hold the simulation parameters
     density_grad_params_t _params;
 
     // file object to read data
@@ -2039,7 +2039,7 @@ density_grad_params_t readDatafromFile(char* filename, float z_offset)
 
     // data structure that will contain the density and grid information from the file
     DataFile* dataFiles[200];
-//    DataFile* dataFile;
+    // DataFile* dataFile;
 
     // add the current filename to the list
     files.push_back(string(filename));

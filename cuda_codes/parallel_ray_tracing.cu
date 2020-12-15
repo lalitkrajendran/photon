@@ -96,16 +96,16 @@ __device__ light_ray_data_t generate_lightfield_angular_data(float lens_pitch, f
 						radiance of the light ray
 	*/
 
-//	printf("random number 1: %.2f, 2: %.2f\n", random_number_1, random_number_2);
+	// printf("random number 1: %.2f, 2: %.2f\n", random_number_1, random_number_2);
 	// get source coordinates of the light ray
 	float x_current = lightfield_source.x;
 	float y_current = lightfield_source.y;
 	float z_current = lightfield_source.z;
-//	printf("x_current: %.2f, y_current: %.2f\n", x_current, y_current);
-//	float x_current = 0.0;
-//	float y_current = 0.0;
-//	float x_current = 25.0e3; //0.0;
-//	float y_current = 25.0e3;
+	// printf("x_current: %.2f, y_current: %.2f\n", x_current, y_current);
+	// float x_current = 0.0;
+	// float y_current = 0.0;
+	// float x_current = 25.0e3; //0.0;
+	// float y_current = 25.0e3;
 
 	//--------------------------------------------------------------------------------------
 	// compute direction of propagation of light ray
@@ -113,25 +113,25 @@ __device__ light_ray_data_t generate_lightfield_angular_data(float lens_pitch, f
 	float lens_pitch_scaling_factor = ray_cone_pitch_ratio; //1; //1e-1; //1e-4; //0.3; //1e-4;
 
 	// generate random points on the lens where the rays should intersect
-//	float x_lens = lens_pitch_scaling_factor*lens_pitch*sqrt(random_number_1)*cos(2*M_PI*random_number_2);
-//	float y_lens = lens_pitch_scaling_factor*lens_pitch*sqrt(random_number_1)*sin(2*M_PI*random_number_2);
+	// float x_lens = lens_pitch_scaling_factor*lens_pitch*sqrt(random_number_1)*cos(2*M_PI*random_number_2);
+	// float y_lens = lens_pitch_scaling_factor*lens_pitch*sqrt(random_number_1)*sin(2*M_PI*random_number_2);
 	float x_lens = lens_pitch_scaling_factor*0.5*lens_pitch*random_number_1*cos(2*M_PI*random_number_2);
 	float y_lens = lens_pitch_scaling_factor*0.5*lens_pitch*random_number_1*sin(2*M_PI*random_number_2);
 
-//	float x_lens = sqrt(random_number_1)*cos(2*M_PI*random_number_2);
-//	float y_lens = sqrt(random_number_1)*sin(2*M_PI*random_number_2);
-//	float x_lens = 0.0; //0.5*lens_pitch_scaling_factor*(random_number_1 - 0.5);
-//	float y_lens = 0.0;
-//	image_distance = 217514.0;
+	// float x_lens = sqrt(random_number_1)*cos(2*M_PI*random_number_2);
+	// float y_lens = sqrt(random_number_1)*sin(2*M_PI*random_number_2);
+	// float x_lens = 0.0; //0.5*lens_pitch_scaling_factor*(random_number_1 - 0.5);
+	// float y_lens = 0.0;
+	// image_distance = 217514.0;
 
 	// calculate the x angles for the light rays
 	float theta_temp = -(x_lens - x_current) / (image_distance - z_current);
-//	float theta_temp = (random_number_1 - 0.5) * 1e-3;
+	// float theta_temp = (random_number_1 - 0.5) * 1e-3;
 	// calculate the y angles for the light rays
 	float phi_temp = -(y_lens - y_current) / (image_distance - z_current);
 
-//	float theta_temp = M_PI/180.0 * 1e-2;
-//	float phi_temp = M_PI/180.0 * 1e-2;
+	// float theta_temp = M_PI/180.0 * 1e-2;
+	// float phi_temp = M_PI/180.0 * 1e-2;
 	//--------------------------------------------------------------------------------------
 	// compute irradiance of the light ray
 	//--------------------------------------------------------------------------------------
@@ -222,7 +222,7 @@ __device__ light_ray_data_t generate_lightfield_angular_data(float lens_pitch, f
 	light_ray_data.ray_wavelength = beam_wavelength;
 	// this is the radiance of the light ray
 	light_ray_data.ray_radiance = 1/(aperture_f_number*aperture_f_number)*irradiance_current;
-//	light_ray_data.ray_radiance = irradiance_current;
+	// light_ray_data.ray_radiance = irradiance_current;
 
 	return light_ray_data;
 }
@@ -265,7 +265,7 @@ __device__ float3 ray_sphere_intersection(float3 pos_c, float R, float3 dir_i, f
 
     // % This calculates the square root argument of the quadratic formula
     float square_root_arguments = beta * beta - 4.0 * alpha * gamma;
-//    printf("alpha: %f, beta: %f, gamma: %f, square_root_arguments: %f\n",alpha,beta,gamma,square_root_arguments);
+    // printf("alpha: %f, beta: %f, gamma: %f, square_root_arguments: %f\n",alpha,beta,gamma,square_root_arguments);
     float3 pos_f;
     // If solution is not real, then exit function
     if(square_root_arguments<0.0)
@@ -412,7 +412,7 @@ __device__ light_ray_data_t propagate_rays_through_single_element(element_data_t
 
 		//# % This extracts the pitch of the lens
 		element_pitch = optical_element.element_geometry.pitch;
-//		element_pitch *= 10;
+		// element_pitch *= 10;
 		//# % This is the thickness of the optical element from the front optical axis
 		//# % vertex to the back optical axis vertex
 		element_vertex_distance = optical_element.element_geometry.vertex_distance;
@@ -471,10 +471,10 @@ __device__ light_ray_data_t propagate_rays_through_single_element(element_data_t
 			return light_ray_data;
 		}
 
-//		// save current light ray position and exit (before refraction)
-//		light_ray_data.ray_source_coordinates = pos_intersect;
-//		light_ray_data.ray_propagation_direction = ray_propagation_direction;
-//		return light_ray_data;
+		// // save current light ray position and exit (before refraction)
+		// light_ray_data.ray_source_coordinates = pos_intersect;
+		// light_ray_data.ray_propagation_direction = ray_propagation_direction;
+		// return light_ray_data;
 
 		//# % This sets the new light ray origin to the intersection point with the
 		//# % front surface of the lens
@@ -482,14 +482,14 @@ __device__ light_ray_data_t propagate_rays_through_single_element(element_data_t
 
 		ray_propagation_direction = -(ray_source_coordinates-element_center)/element_focal_length + ray_propagation_direction;
 
-//		//# % This normalizes the ray propagation direction so that it's magnitude
-//		//# % equals one
+		// # % This normalizes the ray propagation direction so that it's magnitude
+		// # % equals one
 		ray_propagation_direction = normalize(ray_propagation_direction);
 
-//		// save current light ray position and exit (after refraction)
-//		light_ray_data.ray_source_coordinates = ray_source_coordinates;
-//		light_ray_data.ray_propagation_direction = ray_propagation_direction;
-//		return light_ray_data;
+		// // save current light ray position and exit (after refraction)
+		// light_ray_data.ray_source_coordinates = ray_source_coordinates;
+		// light_ray_data.ray_propagation_direction = ray_propagation_direction;
+		// return light_ray_data;
 
 	}
 
@@ -503,7 +503,7 @@ __device__ light_ray_data_t propagate_rays_through_single_element(element_data_t
 
 		//# % This extracts the pitch of the lens
 		element_pitch = optical_element.element_geometry.pitch;
-//		element_pitch *= 10;
+		// element_pitch *= 10;
 		//# % This is the thickness of the optical element from the front optical axis
 		//# % vertex to the back optical axis vertex
 		element_vertex_distance = optical_element.element_geometry.vertex_distance;
@@ -586,10 +586,10 @@ __device__ light_ray_data_t propagate_rays_through_single_element(element_data_t
 			return light_ray_data;
 		}
 
-//		// save current light ray position and exit (front surface, before refraction)
-//		light_ray_data.ray_source_coordinates = pos_intersect;
-//		light_ray_data.ray_propagation_direction = ray_propagation_direction;
-//		return light_ray_data;
+		// // save current light ray position and exit (front surface, before refraction)
+		// light_ray_data.ray_source_coordinates = pos_intersect;
+		// light_ray_data.ray_propagation_direction = ray_propagation_direction;
+		// return light_ray_data;
 
 		//# % This calculates the normal vectors of the lens at the intersection
 		//# % points
@@ -681,10 +681,10 @@ __device__ light_ray_data_t propagate_rays_through_single_element(element_data_t
 		//# % front surface of the lens
 		ray_source_coordinates = pos_intersect;
 
-//		// save current light ray position and exit (front surface, after refraction)
-//		light_ray_data.ray_source_coordinates = pos_intersect;
-//		light_ray_data.ray_propagation_direction = ray_propagation_direction;
-//		return light_ray_data;
+		// // save current light ray position and exit (front surface, after refraction)
+		// light_ray_data.ray_source_coordinates = pos_intersect;
+		// light_ray_data.ray_propagation_direction = ray_propagation_direction;
+		// return light_ray_data;
 
 		//# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 		//# % propagation of the light rays through the lens back surface         %
@@ -737,10 +737,10 @@ __device__ light_ray_data_t propagate_rays_through_single_element(element_data_t
 			return light_ray_data;
 		}
 
-//		// save current light ray position and exit (back surface, before refraction)
-//		light_ray_data.ray_source_coordinates = pos_intersect;
-//		light_ray_data.ray_propagation_direction = ray_propagation_direction;
-//		return light_ray_data;
+		// // save current light ray position and exit (back surface, before refraction)
+		// light_ray_data.ray_source_coordinates = pos_intersect;
+		// light_ray_data.ray_propagation_direction = ray_propagation_direction;
+		// return light_ray_data;
 
 		//# % This calculates the normal vectors of the lens at the intersection
 		//# % points
@@ -847,10 +847,10 @@ __device__ light_ray_data_t propagate_rays_through_single_element(element_data_t
 		//# % front surface of the lens
 		ray_source_coordinates = pos_intersect;
 
-//		// save current light ray position and exit (back surface, after refraction)
-//		light_ray_data.ray_source_coordinates = pos_intersect;
-//		light_ray_data.ray_propagation_direction = ray_propagation_direction;
-//		return light_ray_data;
+		// // save current light ray position and exit (back surface, after refraction)
+		// light_ray_data.ray_source_coordinates = pos_intersect;
+		// light_ray_data.ray_propagation_direction = ray_propagation_direction;
+		// return light_ray_data;
 
 	}
 
@@ -1147,7 +1147,7 @@ __device__ light_ray_data_t propagate_rays_through_multiple_elements(element_dat
 
 	//# % This initializes the structure to contain the light ray data for
 	//# % the current optical element
-//	light_ray_data_t light_ray_data_temp;
+	// light_ray_data_t light_ray_data_temp;
 	float3 pos_intersect_approximate_current;
 
 	//# % This iterates through the different planes, calculating the location of
@@ -1170,11 +1170,11 @@ __device__ light_ray_data_t propagate_rays_through_multiple_elements(element_dat
 			// plane with index k, then add the index to the optical_element_indices array
 			if(unique_plane_element_parameters[plane_parameters_index] == element_plane_parameters[k])
 			{
-//				// expand the array to store additional elements
-//				if(num_optical_element_indices!=0)
-//				{
-//					optical_element_indices = (int *) realloc(optical_element_indices,num_optical_element_indices*sizeof(int));
-//				}
+				// // expand the array to store additional elements
+				// if(num_optical_element_indices!=0)
+				// {
+				// 	optical_element_indices = (int *) realloc(optical_element_indices,num_optical_element_indices*sizeof(int));
+				// }
 
 				optical_element_indices[num_optical_element_indices] = k;
 				num_optical_element_indices++;
@@ -1182,7 +1182,7 @@ __device__ light_ray_data_t propagate_rays_through_multiple_elements(element_dat
 		}
 
 		//# % These are the centers of the optical elements on the current plane
-//		float3* pos_c_current = (float3 *) malloc(num_optical_element_indices * sizeof(float3));
+		// float3* pos_c_current = (float3 *) malloc(num_optical_element_indices * sizeof(float3));
 		float3* pos_c_current = new float3[num_optical_element_indices];
 		for(k = 0; k < num_optical_element_indices; k++)
 			pos_c_current[k] = element_center[optical_element_indices[k]];
@@ -1295,12 +1295,12 @@ __device__ light_ray_data_t propagate_rays_through_optical_system(element_data_t
 	{
 		// These are the indices of the current element or elements to propagate
 		// the light rays through
-//		current_element_indices = np.squeeze(np.argwhere(element_system_index == element_index))
+		// current_element_indices = np.squeeze(np.argwhere(element_system_index == element_index))
 
 		int element_ctr = 0;
 		for(k = 0; k < num_elements; k++)
 		{
-//			if(element_system_index_local[k]==element_index)
+			// if(element_system_index_local[k]==element_index)
 			if(sequential_element_number - element_system_index[k]==element_index)
 			{
 				current_element_indices[k] = k;
@@ -1311,7 +1311,7 @@ __device__ light_ray_data_t propagate_rays_through_optical_system(element_data_t
 		// % This is the number of elements that the light rays need to be
 		// % simultaneously propagated through
 		int simultaneous_element_number = element_ctr;
-//		printf("simultaneous_element_number: %d\n",simultaneous_element_number);
+		// printf("simultaneous_element_number: %d\n",simultaneous_element_number);
 
 
 		// % If there is only a single element that the rays are to be propagated
@@ -1322,8 +1322,8 @@ __device__ light_ray_data_t propagate_rays_through_optical_system(element_data_t
 		if(simultaneous_element_number == 1)
 			light_ray_data = propagate_rays_through_single_element(element_data[0], element_center[0],
 														element_plane_parameters[0],light_ray_data);
-//			light_ray_data = propagate_rays_through_single_element(element_data[current_element_indices[0]], element_center[current_element_indices[0]],
-//																			   element_plane_parameters[current_element_indices[0]],light_ray_data);
+			// light_ray_data = propagate_rays_through_single_element(element_data[current_element_indices[0]], element_center[current_element_indices[0]],
+			// 																   element_plane_parameters[current_element_indices[0]],light_ray_data);
 			//TODO: change this
 
 		else
@@ -1363,8 +1363,8 @@ __device__ light_ray_data_t propagate_rays_through_optical_system(element_data_t
 	}
 
 	// free allocated memory
-//	free(current_element_indices);
-//	free(element_system_index_local);
+	// free(current_element_indices);
+	// free(element_system_index_local);
 
 	return light_ray_data;
 
@@ -1376,7 +1376,7 @@ __device__ light_ray_data_t intersect_sensor_02(light_ray_data_t light_ray_data,
 		curandState* states, int ray_id, float diffraction_diameter, float* image_array)
 {
 	// structure to hold the ray intersection point, pixel location etc.
-//	pixel_data_t pixel_data;
+	// pixel_data_t pixel_data;
 
 	//# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	//# % Propagation of the light rays to the sensor                         %
@@ -1388,8 +1388,8 @@ __device__ light_ray_data_t intersect_sensor_02(light_ray_data_t light_ray_data,
 	float3 ray_source_coordinates = light_ray_data.ray_source_coordinates;
 
 	// flip angles
-//	ray_propagation_direction.x = - ray_propagation_direction.x;
-//	ray_propagation_direction.y = - ray_propagation_direction.y;
+	// ray_propagation_direction.x = - ray_propagation_direction.x;
+	// ray_propagation_direction.y = - ray_propagation_direction.y;
 
 	//# % This extracts the individual plane parameters for the sensor
 	float a = 0.0;
@@ -1405,15 +1405,15 @@ __device__ light_ray_data_t intersect_sensor_02(light_ray_data_t light_ray_data,
 	//# % This calculates the intersection points
 	float3 pos_intersect = ray_source_coordinates + ray_propagation_direction * intersection_time;
 
-//	printf("ray_coordinates: %.2f, %.2f, %.2f\n", ray_source_coordinates.x, ray_source_coordinates.y, ray_source_coordinates.z);
-//	printf("z_sensor: %.2f\n", camera_design.z_sensor);
-//	printf("intersection_time: %.2f\n", intersection_time);
-//	printf("pos_intersect: %.2f, %.2f, %.2f\n", pos_intersect.x, pos_intersect.y, pos_intersect.z);
+	// printf("ray_coordinates: %.2f, %.2f, %.2f\n", ray_source_coordinates.x, ray_source_coordinates.y, ray_source_coordinates.z);
+	// printf("z_sensor: %.2f\n", camera_design.z_sensor);
+	// printf("intersection_time: %.2f\n", intersection_time);
+	// printf("pos_intersect: %.2f, %.2f, %.2f\n", pos_intersect.x, pos_intersect.y, pos_intersect.z);
 	// add noise to the final light ray position
 	float2 noise;
 	if(add_pos_noise)
 	{
-//		noise_std = 0.10;
+		// noise_std = 0.10;
 		// calculate the noise to be added from a standard normal distribution
 		noise = curand_normal2(&states[ray_id]);
 
@@ -1435,7 +1435,7 @@ __device__ light_ray_data_t intersect_sensor_02(light_ray_data_t light_ray_data,
 	//# % of the (0,0) pixel
 	float d_x = camera_design.x_pixel_number - 1 - (ray_source_coordinates.x - pixel_1_x) / camera_design.pixel_pitch; // + 1.5;
 	float d_y = (ray_source_coordinates.y - pixel_1_y) / camera_design.pixel_pitch; // + 1.5;
-//	printf("pixel location of light ray: %.2f, %.2f\n", d_x, d_y);
+	// printf("pixel location of light ray: %.2f, %.2f\n", d_x, d_y);
 	//# % This checks if the given light ray actually intersects the sensor
 	//# % (ie the rays that are within the sensor pitch)
 	if(d_x >= camera_design.x_pixel_number || d_y >= camera_design.y_pixel_number
@@ -1460,13 +1460,13 @@ __device__ light_ray_data_t intersect_sensor_02(light_ray_data_t light_ray_data,
 	//# % This calculates the cos^4(alpha) term which controls the contribution
 	//# % of the incident light rays onto the measured energy in the sensor
 	double cos_4_alpha = cos(alpha)*cos(alpha)*cos(alpha)*cos(alpha);
-//	double cos_4_alpha = 1;
+	// double cos_4_alpha = 1;
 	// ------------------------------------------------------------------------------
 	// Update pixel intensities based on a diffraction model (Taken from Matt's code)
 	// ------------------------------------------------------------------------------
 	float X = d_x - 0.5; // - 0.5;
 	float Y = d_y - 0.5; // - 0.5;
-//	printf("pixel location of centroid: %.2f, %.2f\n", X, Y);
+	// printf("pixel location of centroid: %.2f, %.2f\n", X, Y);
 
 	float PARTICLE_DIAMETERS = diffraction_diameter;
 	float PARTICLE_MAX_INTENSITIES = light_ray_data.ray_radiance*cos_4_alpha * 8.0/pi;
@@ -1491,8 +1491,8 @@ __device__ light_ray_data_t intersect_sensor_02(light_ray_data_t light_ray_data,
 	int minRenderedRows = floor(Y - render_fraction * PARTICLE_DIAMETERS);
 	int maxRenderedRows =  ceil(Y + render_fraction * PARTICLE_DIAMETERS);
 
-//	printf("render rows: %d, %d, cols: %d, %d\n", minRenderedRows, maxRenderedRows,
-//			minRenderedCols, maxRenderedCols);
+	// printf("render rows: %d, %d, cols: %d, %d\n", minRenderedRows, maxRenderedRows,
+	// 		minRenderedCols, maxRenderedCols);
 	int row, col;
 	int image_index;
 	float pixel_increment;
@@ -1521,7 +1521,7 @@ __device__ light_ray_data_t intersect_sensor_02(light_ray_data_t light_ray_data,
 	                		   erf(sqrt8 *(col - X + 0.5) / PARTICLE_DIAMETERS)) *
 	                   (erf( sqrt8 *  (row - Y - 0.5)/ PARTICLE_DIAMETERS) -
 	                		   erf(sqrt8 * (row - Y + 0.5) / PARTICLE_DIAMETERS));
-//				printf("row: %d, col: %d, pixel_increment: %.2f\n", row, col, pixel_increment);
+				// printf("row: %d, col: %d, pixel_increment: %.2f\n", row, col, pixel_increment);
 				// this performs the addition but in a way that avoids a race condition where
 				// multiple threads try to write to the same memory location
 				atomicAdd(&image_array[image_index],pixel_increment);
@@ -1538,7 +1538,7 @@ __device__ light_ray_data_t create_apparent_image(light_ray_data_t light_ray_dat
 		float z_object, float z_offset, element_data_t optical_element)
 {
 	// structure to hold the ray intersection point, pixel location etc.
-//	pixel_data_t pixel_data;
+	// pixel_data_t pixel_data;
 
 	//# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	//# % Propagation of the light rays to the sensor                         %
@@ -1546,9 +1546,9 @@ __device__ light_ray_data_t create_apparent_image(light_ray_data_t light_ray_dat
 	//# % This extracts the propagation direction of the light rays
 	float3 ray_propagation_direction = light_ray_data.ray_propagation_direction;
 	// reverse ray propagation direction
-//	printf("original ray direction: %.2f, %.2f, %.2f \n", ray_propagation_direction.x, ray_propagation_direction.y, ray_propagation_direction.z);
+	// printf("original ray direction: %.2f, %.2f, %.2f \n", ray_propagation_direction.x, ray_propagation_direction.y, ray_propagation_direction.z);
 	ray_propagation_direction = -ray_propagation_direction;
-//	printf("reversed ray direction: %.2f, %.2f, %.2f \n", ray_propagation_direction.x, ray_propagation_direction.y, ray_propagation_direction.z);
+	// printf("reversed ray direction: %.2f, %.2f, %.2f \n", ray_propagation_direction.x, ray_propagation_direction.y, ray_propagation_direction.z);
 	//# % This extracts the light ray source coordinates
 	float3 ray_source_coordinates = light_ray_data.ray_source_coordinates;
 
@@ -1562,27 +1562,27 @@ __device__ light_ray_data_t create_apparent_image(light_ray_data_t light_ray_dat
 	//# % the first plane of the aperture stop
 	float intersection_time = -(dot(make_float3(a,b,c),ray_source_coordinates) + d)/
 			dot(make_float3(a,b,c),ray_propagation_direction);
-//	float intersection_time = fabs(ray_source_coordinates.z - z_object);
+	// float intersection_time = fabs(ray_source_coordinates.z - z_object);
 	//# % This calculates the intersection points
 	float3 pos_intersect = ray_source_coordinates + ray_propagation_direction * intersection_time;
 
-//	printf("pos_intersect: %.2f, %.2f, %.2f\n", pos_intersect.x, pos_intersect.y, pos_intersect.z);
+	// printf("pos_intersect: %.2f, %.2f, %.2f\n", pos_intersect.x, pos_intersect.y, pos_intersect.z);
 	float l = fabs(ray_source_coordinates.z - z_object);
 	float3 pos_intersect_2 = ray_source_coordinates + ray_propagation_direction * l;
 
-//	printf("err_x: %.2f, err_y: %.2f, err_z: %.2f\n", pos_intersect.x - pos_intersect_2.x,
-//			pos_intersect.y - pos_intersect_2.y, pos_intersect.z - pos_intersect_2.z);
-//	printf("x: %.2f, %.2f, y: %.2f,  %.2f, z: %.2f, %.2f\n", pos_intersect.x, pos_intersect_2.x,
-//			pos_intersect.y, pos_intersect_2.y, pos_intersect.z, pos_intersect_2.z);
+	// printf("err_x: %.2f, err_y: %.2f, err_z: %.2f\n", pos_intersect.x - pos_intersect_2.x,
+	// 		pos_intersect.y - pos_intersect_2.y, pos_intersect.z - pos_intersect_2.z);
+	// printf("x: %.2f, %.2f, y: %.2f,  %.2f, z: %.2f, %.2f\n", pos_intersect.x, pos_intersect_2.x,
+	// 		pos_intersect.y, pos_intersect_2.y, pos_intersect.z, pos_intersect_2.z);
 
-//	printf("difference in z: %.2f, intersection_time: %.2f\n", (pos_intersect.z - ray_source_coordinates.z), intersection_time);
-//	float err_z = fabs(intersection_time - (z_object - ray_source_coordinates.z));
-//	printf("error in z: %.2f, error in x: %.2f\n", err_z, err_z * ray_propagation_direction.x);
+	// printf("difference in z: %.2f, intersection_time: %.2f\n", (pos_intersect.z - ray_source_coordinates.z), intersection_time);
+	// float err_z = fabs(intersection_time - (z_object - ray_source_coordinates.z));
+	// printf("error in z: %.2f, error in x: %.2f\n", err_z, err_z * ray_propagation_direction.x);
 
 
-//	light_ray_data.ray_source_coordinates = pos_intersect;
-//	light_ray_data.ray_propagation_direction = ray_propagation_direction;
-//	return light_ray_data;
+	// light_ray_data.ray_source_coordinates = pos_intersect;
+	// light_ray_data.ray_propagation_direction = ray_propagation_direction;
+	// return light_ray_data;
 
 	// calculate magnification
 	float element_focal_length = optical_element.element_properties.thin_lens_focal_length;
@@ -1617,7 +1617,7 @@ __device__ light_ray_data_t create_apparent_image(light_ray_data_t light_ray_dat
 	//# % of the (0,0) pixel
 	float d_x = camera_design.x_pixel_number - 1 - (ray_source_coordinates.x - pixel_1_x) / camera_design.pixel_pitch; // + 1.5;
 	float d_y = (ray_source_coordinates.y - pixel_1_y) / camera_design.pixel_pitch; // + 1.5;
-//	printf("pixel location of light ray: %.2f, %.2f\n", d_x, d_y);
+	// printf("pixel location of light ray: %.2f, %.2f\n", d_x, d_y);
 	//# % This checks if the given light ray actually intersects the sensor
 	//# % (ie the rays that are within the sensor pitch)
 	if(d_x >= camera_design.x_pixel_number || d_y >= camera_design.y_pixel_number
@@ -1643,13 +1643,13 @@ __device__ light_ray_data_t create_apparent_image(light_ray_data_t light_ray_dat
 	//# % This calculates the cos^4(alpha) term which controls the contribution
 	//# % of the incident light rays onto the measured energy in the sensor
 	double cos_4_alpha = cos(alpha)*cos(alpha)*cos(alpha)*cos(alpha);
-//	double cos_4_alpha = 1;
+	// double cos_4_alpha = 1;
 	// ------------------------------------------------------------------------------
 	// Update pixel intensities based on a diffraction model (Taken from Matt's code)
 	// ------------------------------------------------------------------------------
 	float X = d_x - 0.5; // - 0.5;
 	float Y = d_y - 0.5; // - 0.5;
-//	printf("pixel location of centroid: %.2f, %.2f\n", X, Y);
+	// printf("pixel location of centroid: %.2f, %.2f\n", X, Y);
 
 	float PARTICLE_DIAMETERS = diffraction_diameter;
 	float PARTICLE_MAX_INTENSITIES = light_ray_data.ray_radiance*cos_4_alpha * 8.0/pi;
@@ -1674,8 +1674,8 @@ __device__ light_ray_data_t create_apparent_image(light_ray_data_t light_ray_dat
 	int minRenderedRows = floor(Y - render_fraction * PARTICLE_DIAMETERS);
 	int maxRenderedRows = ceil(Y + render_fraction * PARTICLE_DIAMETERS);
 
-//	printf("render rows: %d, %d, cols: %d, %d\n", minRenderedRows, maxRenderedRows,
-//			minRenderedCols, maxRenderedCols);
+	// printf("render rows: %d, %d, cols: %d, %d\n", minRenderedRows, maxRenderedRows,
+	// 		minRenderedCols, maxRenderedCols);
 	int row, col;
 	int image_index;
 	float pixel_increment;
@@ -1690,9 +1690,9 @@ __device__ light_ray_data_t create_apparent_image(light_ray_data_t light_ray_dat
 	        bool render_pixel = col >= 0 && col <= (camera_design.x_pixel_number-1)
 	        		&& row >= 0 && row <= (camera_design.y_pixel_number-1)
 	            && (render_radius <= render_fraction * PARTICLE_DIAMETERS);
-//	        printf("particle_intensities: %.2f\n", PARTICLE_MAX_INTENSITIES);
-//	        printf((render_radius <= render_fraction * PARTICLE_DIAMETERS) ? "true" : "false");
-//			printf(render_pixel ? "true" : "false");
+	        // printf("particle_intensities: %.2f\n", PARTICLE_MAX_INTENSITIES);
+	        // printf((render_radius <= render_fraction * PARTICLE_DIAMETERS) ? "true" : "false");
+			// printf(render_pixel ? "true" : "false");
 	        //% Render the pixel if it meets the criteria
 	        if(render_pixel)
 	        {
@@ -1701,17 +1701,17 @@ __device__ light_ray_data_t create_apparent_image(light_ray_data_t light_ray_dat
 				image_index = (row)*camera_design.x_pixel_number + (col);
 
 				// this is the amount by which the pixel's intensity will be updated
-//				pixel_increment = PARTICLE_MAX_INTENSITIES * (PARTICLE_DIAMETERS)* (PARTICLE_DIAMETERS) * pi / 32.0 *
-//	                   (erf( sqrt8 *  (col - X - 0.5)/ PARTICLE_DIAMETERS ) -
-//	                		   erf(sqrt8 *(col - X + 0.5) / PARTICLE_DIAMETERS)) *
-//	                   (erf( sqrt8 *  (row - Y - 0.5)/ PARTICLE_DIAMETERS) -
-//	                		   erf(sqrt8 * (row - Y + 0.5) / PARTICLE_DIAMETERS));
+				// pixel_increment = PARTICLE_MAX_INTENSITIES * (PARTICLE_DIAMETERS)* (PARTICLE_DIAMETERS) * pi / 32.0 *
+	            //        (erf( sqrt8 *  (col - X - 0.5)/ PARTICLE_DIAMETERS ) -
+	            //     		   erf(sqrt8 *(col - X + 0.5) / PARTICLE_DIAMETERS)) *
+	            //        (erf( sqrt8 *  (row - Y - 0.5)/ PARTICLE_DIAMETERS) -
+	            //     		   erf(sqrt8 * (row - Y + 0.5) / PARTICLE_DIAMETERS));
 				pixel_increment = PARTICLE_MAX_INTENSITIES * pi / 32.0 *
 	                   (erf( sqrt8 *  (col - X - 0.5)/ PARTICLE_DIAMETERS ) -
 	                		   erf(sqrt8 *(col - X + 0.5) / PARTICLE_DIAMETERS)) *
 	                   (erf( sqrt8 *  (row - Y - 0.5)/ PARTICLE_DIAMETERS) -
 	                		   erf(sqrt8 * (row - Y + 0.5) / PARTICLE_DIAMETERS));
-//				printf("row: %d, col: %d, pixel_increment: %.2f\n", row, col, pixel_increment);
+				// printf("row: %d, col: %d, pixel_increment: %.2f\n", row, col, pixel_increment);
 				// this performs the addition but in a way that avoids a race condition where
 				// multiple threads try to write to the same memory location
 				atomicAdd(&image_array[image_index],pixel_increment);
@@ -1741,8 +1741,8 @@ __device__ pixel_data_t intersect_sensor(light_ray_data_t light_ray_data,camera_
 	float3 ray_source_coordinates = light_ray_data.ray_source_coordinates;
 
 	// flip angles
-//	ray_propagation_direction.x = - ray_propagation_direction.x;
-//	ray_propagation_direction.y = - ray_propagation_direction.y;
+	// ray_propagation_direction.x = - ray_propagation_direction.x;
+	// ray_propagation_direction.y = - ray_propagation_direction.y;
 
 	//# % This extracts the individual plane parameters for the sensor
 	float a = 0.0;
@@ -1762,7 +1762,7 @@ __device__ pixel_data_t intersect_sensor(light_ray_data_t light_ray_data,camera_
 	float2 noise;
 	if(add_pos_noise)
 	{
-//		noise_std = 0.10;
+		// noise_std = 0.10;
 		// calculate the noise to be added from a standard normal distribution
 		noise = curand_normal2(&states[ray_id]);
 
@@ -1930,7 +1930,7 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 	 * a number of functions that are visible only on the device to perform various parts
 	 * of the ray tracing process.
 	 */
-//	check_texture_lookup();
+	// check_texture_lookup();
 	//--------------------------------------------------------------------------------------
 	// compute indices to access in lightfield_source and lightfield_data
 	//--------------------------------------------------------------------------------------
@@ -1939,10 +1939,10 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 
 	// get id of particle which is the source of light rays
 	int local_particle_id = blockIdx.y;
-//	if (local_particle_id > 0 || local_thread_id > 0)
-//		return;
-//	if(local_particle_id > 0)
-//		return;
+	// if (local_particle_id > 0 || local_thread_id > 0)
+	// 	return;
+	// if(local_particle_id > 0)
+	// 	return;
 
 	// get id of ray emitted by the particle
 	int local_ray_id = blockIdx.x * blockDim.x + local_thread_id;
@@ -1989,31 +1989,31 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 		final_dir[global_ray_id].z = CUDART_NAN_F;
 
 	}
-//	printf("random number 1: %.2f, 2: %.2f\n", rand_array_1[local_ray_id], rand_array_2[local_ray_id]);
+	// printf("random number 1: %.2f, 2: %.2f\n", rand_array_1[local_ray_id], rand_array_2[local_ray_id]);
 	// generate light rays
 	light_ray_data_t light_ray_data = generate_lightfield_angular_data(lens_pitch, image_distance,scattering_data,
 				scattering_type, lightfield_source_shared,lightray_number_per_particle,
 				beam_wavelength,aperture_f_number,rand_array_1[local_ray_id],rand_array_2[local_ray_id], ray_cone_pitch_ratio);
 	float3 temp_pos;
 	float3 temp_dir;
-//
-//	if(local_ray_id == 0)
-//		light_ray_data.ray_propagation_direction = normalize(make_float3(-1e-3, 0.0, -1));
-//	else if(local_ray_id == 1)
-//		light_ray_data.ray_propagation_direction = normalize(make_float3(1e-3, 0.0, -1));
-//	else
-//		return;
+
+	// if(local_ray_id == 0)
+	// 	light_ray_data.ray_propagation_direction = normalize(make_float3(-1e-3, 0.0, -1));
+	// else if(local_ray_id == 1)
+	// 	light_ray_data.ray_propagation_direction = normalize(make_float3(1e-3, 0.0, -1));
+	// else
+	// 	return;
 
 
 	if(global_ray_id < num_lightrays_save && save_lightrays)
 	{
-//		final_dir[global_ray_id] = light_ray_data.ray_propagation_direction;
-//		final_pos[global_ray_id] = light_ray_data.ray_source_coordinates;
-//		return;
+		// final_dir[global_ray_id] = light_ray_data.ray_propagation_direction;
+		// final_pos[global_ray_id] = light_ray_data.ray_source_coordinates;
+		// return;
 		temp_pos = light_ray_data.ray_source_coordinates;
 		temp_dir = light_ray_data.ray_propagation_direction;
 	}
-//	return;
+	// return;
 
 	// this structure contains the camera design information
 	camera_design_t camera_design = *camera_design_p;
@@ -2036,8 +2036,8 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 		// world co-ordinates.
 		// ---------------------------------------------------------------
 
-//		printf("ray position before first rotation: %f, %f, %f\n", ray_position_vector.x, ray_position_vector.y, ray_position_vector.z);
-//		printf("ray direction before first rotation: %f, %f, %f\n", ray_direction_vector.x, ray_direction_vector.y, ray_direction_vector.z);
+		// printf("ray position before first rotation: %f, %f, %f\n", ray_position_vector.x, ray_position_vector.y, ray_position_vector.z);
+		// printf("ray direction before first rotation: %f, %f, %f\n", ray_direction_vector.x, ray_direction_vector.y, ray_direction_vector.z);
 
 		// % This rotates the light rays direction vectors by the inverse of the
         // % camera rotation array so that the ray is now in the world coordinate
@@ -2056,8 +2056,8 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 		ray_direction_vector = make_float3(dot_vector[0],dot_vector[1],dot_vector[2]);
 		ray_position_vector = make_float3(dot_vector_2[0],dot_vector_2[1],dot_vector_2[2]);
 
-//		printf("ray position after first rotation: %f, %f, %f\n", ray_position_vector.x, ray_position_vector.y, ray_position_vector.z);
-//		printf("ray direction after first rotation: %f, %f, %f\n", ray_direction_vector.x, ray_direction_vector.y, ray_direction_vector.z);
+		// printf("ray position after first rotation: %f, %f, %f\n", ray_position_vector.x, ray_position_vector.y, ray_position_vector.z);
+		// printf("ray direction after first rotation: %f, %f, %f\n", ray_direction_vector.x, ray_direction_vector.y, ray_direction_vector.z);
 
 		light_ray_data.ray_propagation_direction = ray_direction_vector;
 		light_ray_data.ray_source_coordinates = ray_position_vector;
@@ -2074,8 +2074,8 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 		// rotation matrix.
 		// ---------------------------------------------------------------
 
-//		printf("ray position before second rotation: %f, %f, %f\n", ray_position_vector.x, ray_position_vector.y, ray_position_vector.z);
-//		printf("ray direction before second rotation: %f, %f, %f\n", ray_direction_vector.x, ray_direction_vector.y, ray_direction_vector.z);
+		// printf("ray position before second rotation: %f, %f, %f\n", ray_position_vector.x, ray_position_vector.y, ray_position_vector.z);
+		// printf("ray direction before second rotation: %f, %f, %f\n", ray_direction_vector.x, ray_direction_vector.y, ray_direction_vector.z);
 
 		// % This rotates the light rays direction vectors back to the camera co-ordinates
 		for(int i = 0; i < 3; i++)
@@ -2090,13 +2090,13 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 		ray_direction_vector = make_float3(dot_vector[0],dot_vector[1],dot_vector[2]);
 		ray_position_vector = make_float3(dot_vector_2[0],dot_vector_2[1],dot_vector_2[2]);
 
-//		printf("ray position after second rotation: %f, %f, %f\n", ray_position_vector.x, ray_position_vector.y, ray_position_vector.z);
-//		printf("ray direction after second rotation: %f, %f, %f\n", ray_direction_vector.x, ray_direction_vector.y, ray_direction_vector.z);
+		// printf("ray position after second rotation: %f, %f, %f\n", ray_position_vector.x, ray_position_vector.y, ray_position_vector.z);
+		// printf("ray direction after second rotation: %f, %f, %f\n", ray_direction_vector.x, ray_direction_vector.y, ray_direction_vector.z);
 
 		light_ray_data.ray_propagation_direction = ray_direction_vector;
-//		light_ray_data.ray_propagation_direction = normalize(ray_direction_orig);
+		// light_ray_data.ray_propagation_direction = normalize(ray_direction_orig);
 		light_ray_data.ray_source_coordinates = ray_position_vector;
-//		light_ray_data.ray_source_coordinates = pos_orig;
+		// light_ray_data.ray_source_coordinates = pos_orig;
 
 		// ignore rays that did not pass through the density gradients
 		if(isnan(light_ray_data.ray_propagation_direction.x) || isnan(light_ray_data.ray_propagation_direction.y)
@@ -2109,17 +2109,17 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 	if(global_ray_id < num_lightrays_save && save_lightrays)
 	{
 		final_dir[global_ray_id] = light_ray_data.ray_propagation_direction;
-//		final_pos[global_ray_id] = light_ray_data.ray_source_coordinates;
-//		return;
+		// final_pos[global_ray_id] = light_ray_data.ray_source_coordinates;
+		// return;
 	}
 
-//	if(save_intermediate_ray_data && !simulate_density_gradients && global_ray_id < num_intermediate_positions_save && save_lightrays)
-//	{
-//		intermediate_pos[global_ray_id * num_intermediate_positions_save] = temp_pos;
-//		intermediate_dir[global_ray_id * num_intermediate_positions_save] = temp_dir;
-////		final_pos[global_ray_id] = light_ray_data.ray_source_coordinates;
-////		return;
-//	}
+	// if(save_intermediate_ray_data && !simulate_density_gradients && global_ray_id < num_intermediate_positions_save && save_lightrays)
+	// {
+	// 	intermediate_pos[global_ray_id * num_intermediate_positions_save] = temp_pos;
+	// 	intermediate_dir[global_ray_id * num_intermediate_positions_save] = temp_dir;
+	// 	final_pos[global_ray_id] = light_ray_data.ray_source_coordinates;
+	// 	return;
+	// }
 
 
 	if (element_data[0].element_type == 'n')
@@ -2133,7 +2133,7 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 		if(global_ray_id < num_lightrays_save && save_lightrays)
 		{
 			final_pos[global_ray_id] = light_ray_data.ray_source_coordinates;
-//			final_dir[global_ray_id] = light_ray_data.ray_propagation_direction;
+			// final_dir[global_ray_id] = light_ray_data.ray_propagation_direction;
 		}
 
 		return;
@@ -2144,12 +2144,12 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 			element_plane_parameters,element_system_index,num_elements,num_rays,
 			lightray_number_per_particle,light_ray_data);
 
-//	if(global_ray_id < num_lightrays_save && save_lightrays)
-//	{
-//		final_dir[global_ray_id] = light_ray_data.ray_propagation_direction;
-//		final_pos[global_ray_id] = light_ray_data.ray_source_coordinates;
-//		return;
-//	}
+	// if(global_ray_id < num_lightrays_save && save_lightrays)
+	// {
+	// 	final_dir[global_ray_id] = light_ray_data.ray_propagation_direction;
+	// 	final_pos[global_ray_id] = light_ray_data.ray_source_coordinates;
+	// 	return;
+	// }
 
 	// ignore rays that did not pass through the optical train
 	if(isnan(light_ray_data.ray_propagation_direction.x) || isnan(light_ray_data.ray_propagation_direction.y)
@@ -2166,7 +2166,7 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 		if(global_ray_id < num_lightrays_save && save_lightrays)
 		{
 			final_pos[global_ray_id] = light_ray_data.ray_source_coordinates;
-//			final_dir[global_ray_id] = light_ray_data.ray_propagation_direction;
+			// final_dir[global_ray_id] = light_ray_data.ray_propagation_direction;
 		}
 	}
 	else
@@ -2218,7 +2218,7 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 		if(global_ray_id < num_lightrays_save && save_lightrays)
 		{
 			final_pos[global_ray_id] = pixel_data.final_pos;
-	//		final_dir[global_ray_id] = light_ray_data.ray_propagation_direction;
+			// final_dir[global_ray_id] = light_ray_data.ray_propagation_direction;
 		}
 	}
 
@@ -2226,6 +2226,7 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 
 
 }
+
 __global__ void check_trace_rays_through_density_gradients_02(int a, int b)
 {
 	/*
@@ -2233,15 +2234,16 @@ __global__ void check_trace_rays_through_density_gradients_02(int a, int b)
 	 * trace_rays_through_density_gradients routine for a set of rays that are parallel
 	 * to the z axis
 	 */
-//	int c;
-//	int id = threadIdx.x;
-//
-//	c = a + b;
+	// int c;
+	// int id = threadIdx.x;
 
-//	x[id] = c;
+	// c = a + b;
+
+	// x[id] = c;
 
 	check_texture_lookup();
 }
+
 extern "C"{
 
 void read_from_file()
@@ -2298,7 +2300,7 @@ void read_from_file()
 	//	else
 	//		strcpy(scattering_type_str,"diffuse");
 	char scattering_type_str[] = "mie";
-//		char scattering_type_str[] = "diffuse";
+	// char scattering_type_str[] = "diffuse";
 
 	if(strcmp(scattering_type_str,"mie")==0)
 	{
@@ -2354,8 +2356,8 @@ void read_from_file()
 	// num_particles
 	file_lightfield_source.read ((char*)&lightfield_source.num_particles, sizeof(int));
 
-//	// num_rays
-//	file_lightfield_source.read ((char*)&lightfield_source.num_rays, sizeof(int));
+	// // num_rays
+	// file_lightfield_source.read ((char*)&lightfield_source.num_rays, sizeof(int));
 
 	// diameter_index
 	lightfield_source.diameter_index = (int *) malloc(lightfield_source.num_particles * sizeof(int));
@@ -2384,9 +2386,6 @@ void read_from_file()
 
 	lightfield_source.z_offset = 2.16220E05;
 	file_lightfield_source.close();
-
-
-
 
 	//--------------------------------------------------------------------------------------
 	// save optical element data
@@ -2417,18 +2416,18 @@ void read_from_file()
 
 		// element_geometry
 		file_optical_elements.read((char*)&element_data[k].element_geometry.front_surface_radius,sizeof(float));
-//		file_optical_elements.read((char*)&element_data[k].element_geometry.front_surface_shape,40*sizeof(char));
+		// file_optical_elements.read((char*)&element_data[k].element_geometry.front_surface_shape,40*sizeof(char));
 
 		file_optical_elements.read((char*)&element_data[k].element_geometry.front_surface_spherical,sizeof(bool));
 		file_optical_elements.read((char*)&element_data[k].element_geometry.back_surface_radius,sizeof(float));
-//		file_optical_elements.read((char*)&element_data[k].element_geometry.back_surface_shape,strlen(element_data[k].element_geometry.back_surface_shape)*sizeof(char));
+		// file_optical_elements.read((char*)&element_data[k].element_geometry.back_surface_shape,strlen(element_data[k].element_geometry.back_surface_shape)*sizeof(char));
 
 
 		file_optical_elements.read((char*)&element_data[k].element_geometry.back_surface_spherical,sizeof(bool));
 		file_optical_elements.read((char*)&element_data[k].element_geometry.pitch,sizeof(float));
 		file_optical_elements.read((char*)&element_data[k].element_geometry.vertex_distance,sizeof(double));
 
-//		file_optical_elements.read((char*)&element_data[k].element_geometry,sizeof(element_geometry_t));
+		// file_optical_elements.read((char*)&element_data[k].element_geometry,sizeof(element_geometry_t));
 		// element_number
 		file_optical_elements.read((char*)&element_data[k].element_number,sizeof(float));
 
@@ -2439,8 +2438,8 @@ void read_from_file()
 		file_optical_elements.read((char*)&element_data[k].element_properties.thin_lens_focal_length,sizeof(float));
 		file_optical_elements.read((char*)&element_data[k].element_properties.transmission_ratio,sizeof(float));
 
-//		// element_type
-//		file_optical_elements.read((char*)&element_data[k].element_type,strlen(element_data[k].element_type)*sizeof(char));
+		// // element_type
+		// file_optical_elements.read((char*)&element_data[k].element_type,strlen(element_data[k].element_type)*sizeof(char));
 		file_optical_elements.read((char*)&element_data[k].element_type,sizeof(char));
 
 		// elements_coplanar
@@ -2487,35 +2486,35 @@ void read_from_file()
 
 	// pixel bit depth
 	file_camera_design.read((char*)&camera_design.pixel_bit_depth,sizeof(int));
-//	printf("pixel bit depth: %d\n",camera_design.pixel_bit_depth);
+	// printf("pixel bit depth: %d\n",camera_design.pixel_bit_depth);
 
 	// pixel gain
 	file_camera_design.read((char*)&camera_design.pixel_gain,sizeof(float));
-//	printf("pixel gain: %f\n",camera_design.pixel_gain);
+	// printf("pixel gain: %f\n",camera_design.pixel_gain);
 
 	// pixel pitch
 	file_camera_design.read((char*)&camera_design.pixel_pitch,sizeof(float));
-//	printf("pixel pitch: %f\n",camera_design.pixel_pitch);
+	// printf("pixel pitch: %f\n",camera_design.pixel_pitch);
 
 	// x_camera_angle
 	file_camera_design.read((char*)&camera_design.x_camera_angle,sizeof(float));
-//	printf("x camera angle: %f\n",camera_design.x_camera_angle);
+	// printf("x camera angle: %f\n",camera_design.x_camera_angle);
 
 	// y_camera_angle
 	file_camera_design.read((char*)&camera_design.y_camera_angle,sizeof(float));
-//	printf("y camera angle: %f\n",camera_design.y_camera_angle);
+	// printf("y camera angle: %f\n",camera_design.y_camera_angle);
 
 	// x_pixel_number
 	file_camera_design.read((char*)&camera_design.x_pixel_number,sizeof(int));
-//	printf("x pixel number: %d\n",camera_design.x_pixel_number);
+	// printf("x pixel number: %d\n",camera_design.x_pixel_number);
 
 	// y_pixel_number
 	file_camera_design.read((char*)&camera_design.y_pixel_number,sizeof(int));
-//	printf("y pixel number: %d\n",camera_design.y_pixel_number);
+	// printf("y pixel number: %d\n",camera_design.y_pixel_number);
 
 	// z sensor
 	file_camera_design.read((char*)&camera_design.z_sensor,sizeof(float));
-//	printf("z sensor: %f\n",camera_design.z_sensor);
+	// printf("z sensor: %f\n",camera_design.z_sensor);
 
 	file_camera_design.close();
 
@@ -2528,7 +2527,7 @@ void read_from_file()
 			std::ios::binary);
 	printf("\n");
 
-//	double* image_array = (double *) malloc(camera_design.x_pixel_number*camera_design.y_pixel_number*sizeof(double));
+	// double* image_array = (double *) malloc(camera_design.x_pixel_number*camera_design.y_pixel_number*sizeof(double));
 	float* image_array = (float *) malloc(camera_design.x_pixel_number*camera_design.y_pixel_number*sizeof(float));
 
 	// write image array to file
@@ -2541,21 +2540,21 @@ void read_from_file()
 	// read density gradient parameters from file
 	//--------------------------------------------------------------------------------------
 
-//	// open file
-//	filename = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/density_grad.bin";
-//	std::ifstream file_density_grad(filename.c_str(), std::ios::in | std::ios::binary);
-//	printf("\n");
-//
-//
-//	bool simulate_density_gradients;
-//	// simulate density gradients
-//	file_density_grad.read((char*)&simulate_density_gradients,sizeof(bool));
-//
-//	file_density_grad.close();
+	// // open file
+	// filename = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/density_grad.bin";
+	// std::ifstream file_density_grad(filename.c_str(), std::ios::in | std::ios::binary);
+	// printf("\n");
+
+
+	// bool simulate_density_gradients;
+	// // simulate density gradients
+	// file_density_grad.read((char*)&simulate_density_gradients,sizeof(bool));
+
+	// file_density_grad.close();
 
 	// specify if the density gradient effects have to be simulated or not
 	bool simulate_density_gradients = true;
-//	bool simulate_density_gradients = false;
+	// bool simulate_density_gradients = false;
 
 	// specify name of the file containing density gradient data
 	char density_grad_filename[] = "/home/barracuda/a/lrajendr/Projects/parallel_ray_tracing/data/const_grad_BOS_no_noise_delta_x_0.10_delta_y_0.10_zobj_2500_zmin_200_zmax_1200_nx_0250_ny_0250_nz_0250.nrrd";
@@ -2685,7 +2684,7 @@ void save_to_file(float lens_pitch, float image_distance,
 	// num_particles
 	file_lightfield_source.write ((char*)&lightfield_source_p->num_particles, sizeof(int));
 	// num_rays
-//	file_lightfield_source.write ((char*)&lightfield_source_p->num_rays, sizeof(int));
+	// file_lightfield_source.write ((char*)&lightfield_source_p->num_rays, sizeof(int));
 	// diameter_index
 	for(k = 0; k < lightfield_source_p->num_particles; k++)
 		file_lightfield_source.write ((char*)&lightfield_source_p->diameter_index[k], sizeof(int));
@@ -2741,14 +2740,14 @@ void save_to_file(float lens_pitch, float image_distance,
 		printf("element_geometry:\n");
 		file_optical_elements.write((char*)&element_data_p[k].element_geometry.front_surface_radius,sizeof(float));
 		printf("front_surface_radius: %f\n", element_data_p[k].element_geometry.front_surface_radius);
-//		file_optical_elements.write((char*)&element_data_p[k].element_geometry.front_surface_shape,strlen(element_data_p->element_geometry.front_surface_shape)*sizeof(char));
-//		printf("front_surface_shape: %s\n", element_data_p[k].element_geometry.front_surface_shape);
+		// file_optical_elements.write((char*)&element_data_p[k].element_geometry.front_surface_shape,strlen(element_data_p->element_geometry.front_surface_shape)*sizeof(char));
+		// printf("front_surface_shape: %s\n", element_data_p[k].element_geometry.front_surface_shape);
 		file_optical_elements.write((char*)&element_data_p[k].element_geometry.front_surface_spherical,sizeof(bool));
 		printf("front_surface_spherical: %s\n",element_data_p[k].element_geometry.front_surface_spherical ? "true":"false");
 		file_optical_elements.write((char*)&element_data_p[k].element_geometry.back_surface_radius,sizeof(float));
 		printf("back_surface_radius: %f\n", element_data_p[k].element_geometry.back_surface_radius);
-//		file_optical_elements.write((char*)&element_data_p[k].element_geometry.back_surface_shape,strlen(element_data_p->element_geometry.back_surface_shape)*sizeof(char));
-//		printf("back_surface_shape: %s\n", element_data_p[k].element_geometry.back_surface_shape);
+		// file_optical_elements.write((char*)&element_data_p[k].element_geometry.back_surface_shape,strlen(element_data_p->element_geometry.back_surface_shape)*sizeof(char));
+		// printf("back_surface_shape: %s\n", element_data_p[k].element_geometry.back_surface_shape);
 		file_optical_elements.write((char*)&element_data_p[k].element_geometry.back_surface_spherical,sizeof(bool));
 		printf("back_surface_spherical: %s\n",element_data_p[k].element_geometry.back_surface_spherical ? "true":"false");
 		file_optical_elements.write((char*)&element_data_p[k].element_geometry.pitch,sizeof(float));
@@ -2774,7 +2773,7 @@ void save_to_file(float lens_pitch, float image_distance,
 		printf("transmission_ratio : %f\n",element_data_p[k].element_properties.transmission_ratio);
 
 		// element_type
-//		file_optical_elements.write((char*)&element_data_p[k].element_type,strlen(element_data_p->element_type)*sizeof(char));
+		// file_optical_elements.write((char*)&element_data_p[k].element_type,strlen(element_data_p->element_type)*sizeof(char));
 		printf("element_type: %c\n",element_data_p[k].element_type);
 		file_optical_elements.write((char*)&element_data_p[k].element_type,sizeof(char));
 
@@ -3056,48 +3055,10 @@ void check_density_gradients(density_grad_params_t params)
 
 }
 
-//__global__ void check_trace_rays_through_density_gradients_02(int a, int b)
-//{
-//	/*
-//	 * This function is used to check the ray deflection produced by the
-//	 * trace_rays_through_density_gradients routine for a set of rays that are parallel
-//	 * to the z axis
-//	 */
-//	int c;
-//	int id = threadIdx.x;
-//
-//	c = a + b;
-//
-////	x[id] = c;
-//
-//	check_texture_lookup();
-//}
-
 void temp_check()
 {
 	check_trace_rays_through_density_gradients_02<<<1,5>>>(1, 1);
 }
-
-//void check_density_gradients_02(density_grad_params_t params)
-//{
-//
-//	int a = 1, b = 1;
-//	int N = 10;
-//
-//	int x[10];
-//
-//	int* d_x;
-//
-//	cudaMalloc((void**)&d_x, sizeof(int)*N);
-//
-//	check_trace_rays_through_density_gradients_02<<<1,N>>>(a, b, x);
-//	cudaDeviceSynchronize();
-//
-//	cudaMemcpy(x, d_x, sizeof(int)*N, cudaMemcpyDeviceToHost);
-//
-//	cudaFree(d_x);
-//
-//}
 
 void start_ray_tracing(float lens_pitch, float image_distance,
 		scattering_data_t* scattering_data_p, char* scattering_type_str,
@@ -3259,7 +3220,7 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 		h_rand1[k] = ((double) rand() / (RAND_MAX));
 		h_rand2[k] = ((double) rand() / (RAND_MAX));
 
-//		printf("%1.4f, %1.4f\n ", h_rand1[k], h_rand2[k]);
+		// printf("%1.4f, %1.4f\n ", h_rand1[k], h_rand2[k]);
 	}
 	printf("done\n");
 
@@ -3396,12 +3357,12 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 
 	// number of the light rays to be generated and traced in a single call
 	int num_rays = source_point_number*lightray_number_per_particle;
-//	// print the number of rays
+	// print the number of rays
 	printf("num_particles: %d, source_point_number: %d, lightray_number_per_particle: %d, num_rays: %d\n",
 			num_particles, source_point_number, lightray_number_per_particle, num_rays);
 
 	// allocate number of threads per block
-//	dim3 block(500,1);
+	// dim3 block(500,1);
 	dim3 block(250,1);
 
 	//------------------------------------------------------------------------------------------
@@ -3586,7 +3547,7 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 
 		if(save_lightrays) //k == 0)
 		{
-//			printf("arc length: %f\n", params.arc_length);
+			// printf("arc length: %f\n", params.arc_length);
 			//--------------------------------------------------------------------------------------
 			// save final light ray positions to file (for debugging purposes)
 			//--------------------------------------------------------------------------------------
@@ -3799,7 +3760,6 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 
 
 }
-
 
 
 }
