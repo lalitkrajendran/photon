@@ -1,3 +1,4 @@
+#!/usr/bin/env python2.7
 import glob
 import pickle
 import os
@@ -11,6 +12,13 @@ import tifffile as TIFF
 import matplotlib.image as mpimg
 # import skimage.io as ski_io
 import matplotlib.pyplot as plt
+import sys
+import platform
+
+if platform.system() == 'Linux':
+    mount_directory = '/scratch/shannon/c/aether/'
+else:
+    mount_directory = '/Volumes/aether_c/'
 
 def create_single_lens_optical_system():
 # This function is designed to create a data structure containing the
@@ -324,7 +332,7 @@ def create_camera_optical_system(simulation_parameters):
     optical_system['design']['optical_element'][0]['optical_element'][0]['element_properties']['thin_lens_focal_length'] = focal_length
 
     # display lens properties to user
-    print 'n: %.4f, t: %.2f, R: %.2f' % (refractive_index, lens_thickness, lens_radius_of_curvature)
+    print('n: %.4f, t: %.2f, R: %.2f' % (refractive_index, lens_thickness, lens_radius_of_curvature))
     # exit()
     
     return optical_system
@@ -1054,7 +1062,7 @@ def generate_calibration_lightfield_data(simulation_parameters,optical_system,pl
     # % This is a vector of Z positions corresponding to the locations Z
     # % locations of the calibration planes
     grid_plane_z_world_coordinate = calibration_plane_spacing*np.linspace(-(calibration_plane_number-1.0)/2.0,(calibration_plane_number-1.0)/2.0,calibration_plane_number,endpoint=True)
-    print 'grid plane z', grid_plane_z_world_coordinate
+    print('grid plane z', grid_plane_z_world_coordinate)
 
     # % This is the Z world coordinate of the current grid to simulate
     current_z_world_coordinate = grid_plane_z_world_coordinate[plane_index]
@@ -1361,8 +1369,8 @@ def generate_bos_lightfield_data(simulation_parameters,optical_system):
                     / (simulation_parameters['lens_design']['object_distance'] - simulation_parameters['lens_design']['focal_length'])
                 dot_spacing_microns = simulation_parameters['bos_pattern']['dot_spacing'] * simulation_parameters['camera_design']['pixel_pitch'] / M
                 # number of grid points that can be accommodated in the field of view                
-                x_grid_point_number = (simulation_parameters['bos_pattern']['X_Max'] - simulation_parameters['bos_pattern']['X_Min'])/dot_spacing_microns
-                y_grid_point_number = (simulation_parameters['bos_pattern']['Y_Max'] - simulation_parameters['bos_pattern']['Y_Min'])/dot_spacing_microns
+                x_grid_point_number = int((simulation_parameters['bos_pattern']['X_Max'] - simulation_parameters['bos_pattern']['X_Min'])/dot_spacing_microns)
+                y_grid_point_number = int((simulation_parameters['bos_pattern']['Y_Max'] - simulation_parameters['bos_pattern']['Y_Min'])/dot_spacing_microns)
                 
                 x_grid_point_coordinate_vector = np.linspace(start=simulation_parameters['bos_pattern']['X_Min'], stop=simulation_parameters['bos_pattern']['X_Max'], num=x_grid_point_number, endpoint=False)
                 y_grid_point_coordinate_vector = np.linspace(start=simulation_parameters['bos_pattern']['Y_Min'], stop=simulation_parameters['bos_pattern']['Y_Max'], num=y_grid_point_number, endpoint=False)
@@ -1457,7 +1465,7 @@ def generate_bos_lightfield_data(simulation_parameters,optical_system):
 
     # this moves the object evn farther away to make it out of focus
     if ('object_distance_buffer' in simulation_parameters['lens_design'].keys()):
-        print 'moving object beyond focal plane'
+        print('moving object beyond focal plane')
         z += simulation_parameters['lens_design']['object_distance_buffer']
 
     # % This adds in the particles to the lightfield source data
@@ -1740,7 +1748,7 @@ def run_simulation_02(simulation_parameters):
             # for frame_index in np.array(frame_vector):
             for frame_index in range(1,2):
                 # This creates the lightfield data for performing the raytracing operation
-                print "frame_index : %d" % frame_index
+                print("frame_index : %d" % frame_index)
                 lightfield_source = dict()
 
                 lightfield_source = load_lightfield_data(simulation_parameters,optical_system,scattering_data,frame_index, lightfield_source)
@@ -1813,7 +1821,7 @@ def run_simulation_02(simulation_parameters):
 
             # % This displays that the calibration images are being simulated
             # fprintf('\n\n');
-            print 'Simulating calibration images . . . '
+            print('Simulating calibration images . . . ')
 
             # % This sets the scattering type to diffuse for the calibration grid
             # % simulation
@@ -1896,6 +1904,8 @@ def run_simulation_02(simulation_parameters):
         # % This extracts the directory to save the calibration grid images from
         # % parameters structure
         image_directory = simulation_parameters['output_data']['image_directory']
+        print("image directory ", image_directory)
+        
         # % This extracts the number of lightrays to simulate per particle (this is roughly
         # % equivalent to the power of the laser)
         lightray_number_per_particle = simulation_parameters['bos_pattern']['lightray_number_per_particle']
@@ -1912,7 +1922,7 @@ def run_simulation_02(simulation_parameters):
 
             # % This displays that the calibration images are being simulated
             # fprintf('\n\n');
-            print 'Simulating bos_pattern images . . . '
+            print('Simulating bos_pattern images . . . ')
 
             # % This sets the scattering type to diffuse for the calibration grid
             # % simulation
@@ -1955,7 +1965,7 @@ def run_simulation_02(simulation_parameters):
                 os.makedirs(simulation_parameters['output_data']['lightray_positions_filepath'])
             if not os.path.exists(simulation_parameters['output_data']['lightray_directions_filepath']):
                 os.makedirs(simulation_parameters['output_data']['lightray_directions_filepath'])
-
+                
             # % This performs the ray tracing to generate the sensor image
             I, I_raw = perform_ray_tracing_03(simulation_parameters,optical_system,pixel_gain,scattering_data,scattering_type,lightfield_source,field_type)
 
@@ -1992,7 +2002,7 @@ def run_simulation_02(simulation_parameters):
             I, I_raw = perform_ray_tracing_03(simulation_parameters, optical_system, pixel_gain, scattering_data,
                                               scattering_type, lightfield_source, field_type)
 
-            print 'image shape: %d, %d' % (I.shape[0], I.shape[1])
+            print('image shape: %d, %d' % (I.shape[0], I.shape[1]))
             # % This is the filename to save the image data to
             image_filename_write = os.path.join(image_directory, 'bos_pattern_image_2.tif')
 

@@ -1,3 +1,4 @@
+#!/usr/bin/env python2.7
 # coding: utf-8
 import glob
 import numpy as np
@@ -7,6 +8,14 @@ import os
 import pickle
 import time
 from sys import argv
+import sys
+import os
+import platform
+
+if platform.system() == 'Linux':
+    mount_directory = '/scratch/shannon/c/aether/'
+else:
+    mount_directory = '/Volumes/aether_c/'
 
 os.environ['LD_LIBRARY_PATH'] = '~/usr/lib/python2.7'
 
@@ -52,9 +61,10 @@ script, filepath, starting_index, number_of_parameter_files = argv
 # convert string variables to integers
 starting_index = int(starting_index)
 number_of_parameter_files = int(number_of_parameter_files)
-print 'number of parameter files to run in one simulation', number_of_parameter_files
+print('number of parameter files to run in one simulation', number_of_parameter_files)
 
 # filepath = '/scratch/shannon/c/aether/Projects/BOS/error-analysis/analysis/data/parameters/gaussian/'
+# filepath = os.path.join(mount_directory, 'Projects/BOS/tomo-bos/analysis/data/jhu/parameters')
 # starting_index = 1
 # number_of_parameter_files = 1
 
@@ -62,8 +72,8 @@ print 'number of parameter files to run in one simulation', number_of_parameter_
 bos_simulation_parameters_read_directory = filepath
 
 # This is the list of camera parameters to run the simulation over
-bos_parameter_list = sorted(glob.glob(bos_simulation_parameters_read_directory + '*.mat'))
-print "Number of cases: %d" % len(bos_parameter_list)
+bos_parameter_list = sorted(glob.glob(os.path.join(bos_simulation_parameters_read_directory, '*.mat')))
+print("Number of cases: %d" % len(bos_parameter_list))
 
 # initialize the random number generator
 np.random.seed()
@@ -77,13 +87,12 @@ for i in range(starting_index,starting_index+number_of_parameter_files):
     parameter_index = i
 
     # This displays that the current camera simulation is being ran
-    print "\n\n\n\n"
-    print "Running case %d simulation . . . " % parameter_index
+    print("\n\n\n\n")
+    print("Running case %d simulation . . . " % parameter_index)
 
     # This is the current filename of the camera parameter file to load
-    parameter_filename_read = bos_simulation_parameters_read_directory + os.path.basename(
-        bos_parameter_list[i - 1])
-    print "parameter_filename_read: " + parameter_filename_read
+    parameter_filename_read = os.path.join(bos_simulation_parameters_read_directory, os.path.basename(bos_parameter_list[i - 1]))
+    print("parameter_filename_read: " + parameter_filename_read)
     # This loads the current parameter data
     # NOTE: the mat file is being loaded as an object array of one dimension. this helps to maintain
     # similarity in syntax from the matlab code, since since matlab structures and python objects
@@ -107,6 +116,8 @@ for i in range(starting_index,starting_index+number_of_parameter_files):
 
     image_directory = simulation_parameters['output_data']['image_directory']
 
+    if not platform.system() == 'Linux':
+        image_directory = image_directory.replace('/scratch/shannon/c/aether/', mount_directory)
     # This creates the top level bos pattern image directory
     if not (os.path.exists(image_directory)):
         # This creates the bos pattern image directory
@@ -125,7 +136,8 @@ for i in range(starting_index,starting_index+number_of_parameter_files):
 
     # convert int variables to float
     for i in simulation_parameters:
-        if(type(simulation_parameters[i]) is str or type(simulation_parameters[i]) is list or type(simulation_parameters[i]) is unicode):
+        # if(type(simulation_parameters[i]) is str or type(simulation_parameters[i]) is list or type(simulation_parameters[i]) is unicode):
+        if(type(simulation_parameters[i]) is bytes or type(simulation_parameters[i]) is list or type(simulation_parameters[i]) is str):
             continue
         for j in simulation_parameters[i]:
             if (type(simulation_parameters[i][j]) is int):
@@ -135,4 +147,4 @@ for i in range(starting_index,starting_index+number_of_parameter_files):
     run_simulation_02(simulation_parameters)
 
 end = time.time()
-print "TOTAL time taken (minutes): ", (end - start)/60
+print("TOTAL time taken (minutes): ", (end - start)/60)

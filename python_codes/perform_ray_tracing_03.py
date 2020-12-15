@@ -1,3 +1,4 @@
+#!/usr/bin/env python2.7
 import numpy as np
 from numpy import linalg as la
 import run_simulation_02
@@ -1566,8 +1567,8 @@ def intersect_sensor_better(camera_design, x, y):
     #         if(ii_indices[r,c]<0) or  (y_pixel_number<=ii_indices[r,c]):
     #             pixel_weights[r,c] = np.NAN
     #
-    # print "ii_indices.dtype : "
-    # print ii_indices.dtype
+    # print("ii_indices.dtype : ")
+    # print(ii_indices.dtype)
 
     pixel_weights[(jj_indices < 0)] = np.NAN
     pixel_weights[(x_pixel_number <=jj_indices)] = np.NAN
@@ -1588,9 +1589,6 @@ def intersect_sensor_better(camera_design, x, y):
     # pixel_weights[(ii_indices < 1) or (y_pixel_number < ii_indices)] = np.NAN
 
     return [ii_indices, jj_indices, pixel_weights]
-
-
-
 
 
 def trace_rays_through_density_gradients(light_ray_data):
@@ -1674,7 +1672,7 @@ def prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, sc
         # get number of diameters over which mie scattering data is available
         scattering_data_ctypes.num_diameters = scattering_data['scattering_irradiance'].shape[1]
 
-        # print "scattering_data_ctypes, pointer at %d" % id(scattering_data_ctypes)
+        # print("scattering_data_ctypes, pointer at %d" % id(scattering_data_ctypes))
 
         for i in range(0,3):
             scattering_data_ctypes.beam_propogation_vector[i] = scattering_data['beam_propogation_vector'][i].astype('float32')
@@ -1690,7 +1688,7 @@ def prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, sc
         # get number of diameters over which mie scattering data is available
         scattering_data_ctypes.num_diameters = 0
 
-        # print "scattering_data_ctypes, pointer at %d" % id(scattering_data_ctypes)
+        # print("scattering_data_ctypes, pointer at %d" % id(scattering_data_ctypes))
         # scattering_data_ctypes.beam_propagation_vector = 0
 
         for i in range(0, 3):
@@ -1799,7 +1797,7 @@ def prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, sc
         element_data_ctypes[i].element_number = element_data[i]['element_number']
 
         if lens_model == 'thin-lens':
-            element_data_ctypes[i].element_type = 't'
+            element_data_ctypes[i].element_type = ('t').encode('utf-8')
         elif lens_model == 'apparent':
             element_data_ctypes[i].element_type = 'n'
         else:
@@ -1875,8 +1873,8 @@ def prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, sc
     # I2 = np.reshape(I,(1,1024*1024)).astype(np.float32)
     I2 = np.reshape(I,(1,int(camera_design['x_pixel_number']*camera_design['y_pixel_number']))).astype(np.float32)
 
-    print 'rotation matrix', camera_design['rotation_matrix']
-    print 'inverse rotation matrix', camera_design['inverse_rotation_matrix']
+    print('rotation matrix', camera_design['rotation_matrix'])
+    print('inverse rotation matrix', camera_design['inverse_rotation_matrix'])
     # -------------------------------------------------------------------------------------------------------------------
     # call cuda code
     # -------------------------------------------------------------------------------------------------------------------
@@ -1923,23 +1921,25 @@ def prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, sc
 
 
     # call the function in cuda code to perform the ray tracing
-    cuda_func.start_ray_tracing(lens_pitch, image_distance, scattering_data_ctypes, scattering_type,
+    cuda_func.start_ray_tracing(lens_pitch, image_distance, scattering_data_ctypes, scattering_type.encode('utf-8'),
                            lightfield_source_ctypes, lightray_number_per_particle,
                            beam_wavelength, aperture_f_number, num_elements, element_center, element_data_ctypes_struct,
                            element_plane_parameters,
                            np.asarray(element_system_index).astype('int32'), camera_design_ctypes_struct,
-                                I2,simulate_density_gradients,density_grad_filename, save_lightrays, lightray_positions_filepath,
-                                lightray_directions_filepath, num_lightrays_save, ray_tracing_algorithm,
+                                I2, simulate_density_gradients, density_grad_filename.encode('utf-8'), save_lightrays, 
+                                lightray_positions_filepath.encode('utf-8'), lightray_directions_filepath.encode('utf-8'), 
+                                num_lightrays_save, ray_tracing_algorithm,
                                 add_pos_noise, pos_noise_std, add_ngrad_noise, ngrad_noise_std, ray_cone_pitch_ratio,
                                 save_intermediate_ray_data, int(num_intermediate_positions_save))
 
-    print "done ray tracing"
+    print("done ray tracing")
 
     # reshape the image back into a 2D array
     # I = np.reshape(I2,(1024,1024))
     I = np.reshape(I2,(int(camera_design['y_pixel_number']),int(camera_design['x_pixel_number'])))
 
     return I
+
 
 def perform_ray_tracing_03(simulation_parameters, optical_system, pixel_gain, scattering_data, scattering_type,
                            lightfield_source, field_type):
@@ -2078,7 +2078,6 @@ def perform_ray_tracing_03(simulation_parameters, optical_system, pixel_gain, sc
     else:
         lens_model = 'general'
 
-
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # % Begins raytracing operations                                            %
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2128,7 +2127,7 @@ def perform_ray_tracing_03(simulation_parameters, optical_system, pixel_gain, sc
     if simulate_density_gradients:
         # this checks if noise to be added to the final position of the light rays is specified.
         if ('add_pos_noise' in simulation_parameters['density_gradients'].keys()):
-            print 'setting position noise'
+            print('setting position noise')
             add_pos_noise = simulation_parameters['density_gradients']['add_pos_noise']
             pos_noise_std = simulation_parameters['density_gradients']['pos_noise_std']
 
@@ -2139,7 +2138,7 @@ def perform_ray_tracing_03(simulation_parameters, optical_system, pixel_gain, sc
     if simulate_density_gradients:
         # this checks if noise to be added to the final position of the light rays is specified.
         if ('add_ngrad_noise' in simulation_parameters['density_gradients'].keys()):
-            print 'setting refractive index gradient noise'
+            print('setting refractive index gradient noise')
             add_ngrad_noise = simulation_parameters['density_gradients']['add_ngrad_noise']
             ngrad_noise_std = simulation_parameters['density_gradients']['ngrad_noise_std']
 
@@ -2190,7 +2189,7 @@ def perform_ray_tracing_03(simulation_parameters, optical_system, pixel_gain, sc
     # simulation_parameters['camera_design']['image_noise'] = 0.05
     if(simulation_parameters['camera_design']['image_noise'] > 0.0):
         np.random.seed()
-        print 'Adding image noise of', simulation_parameters['camera_design']['image_noise']*100
+        print('Adding image noise of', simulation_parameters['camera_design']['image_noise']*100)
         # this generates random numbers from a normal distribution to add to the image array
         # image_noise = np.random.normal(0.0, scale=simulation_parameters['camera_design']['image_noise'] * I.max(),
         #                                size=I.shape)
@@ -2215,7 +2214,7 @@ def perform_ray_tracing_03(simulation_parameters, optical_system, pixel_gain, sc
         intensity_rescaling = simulation_parameters['camera_design']['intensity_rescaling']
 
     if intensity_rescaling:
-        print 'rescaling intensity'
+        print('rescaling intensity')
         # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         # % Rescales and resamples image for export                                 %
         # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2249,15 +2248,15 @@ def perform_ray_tracing_03(simulation_parameters, optical_system, pixel_gain, sc
         I = I[nr / 2 - nr_crop / 2:nr / 2 + nr_crop / 2 - 1, nc / 2 - nc_crop / 2:nc / 2 + nc_crop / 2 - 1]
         I_raw = I_raw[nr / 2 - nr_crop / 2:nr / 2 + nr_crop / 2 - 1, nc / 2 - nc_crop / 2:nc / 2 + nc_crop / 2 - 1]
 
-    print 'max intensity: ', I.max()
-    print 'total intensity:', I.sum()
+    print('max intensity: ', I.max())
+    print('total intensity:', I.sum())
 
     # # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # # % Adding image noise                                                      %
     # # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # # simulation_parameters['camera_design']['image_noise'] = 0.05
     # if (simulation_parameters['camera_design']['image_noise'] > 0.0):
-    #     print 'Adding image noise of', simulation_parameters['camera_design']['image_noise']
+    #     print('Adding image noise of', simulation_parameters['camera_design']['image_noise'])
     #     # this generates random numbers from a normal distribution to add to the image array
     #     image_noise = np.random.normal(0.0, scale=simulation_parameters['camera_design']['image_noise'] * I.max(),
     #                                    size=I.shape)
