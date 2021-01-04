@@ -6,7 +6,7 @@
  *
  *	This program
  *
- */
+*/
 #include <stdio.h>
 #include <fstream>
 #include <string>
@@ -72,7 +72,6 @@ __device__ light_ray_data_t generate_lightfield_angular_data(float lens_pitch, f
 		scattering_data_t scattering_data, int scattering_type, lightfield_source_single_t lightfield_source,
                                      int lightray_number_per_particle, float beam_wavelength,
                                      float aperture_f_number, float random_number_1,float random_number_2, float ray_cone_pitch_ratio)
-
 {
 	/*
 		This function generates a light ray for a given source point
@@ -115,8 +114,8 @@ __device__ light_ray_data_t generate_lightfield_angular_data(float lens_pitch, f
 	// generate random points on the lens where the rays should intersect
 	// float x_lens = lens_pitch_scaling_factor*lens_pitch*sqrt(random_number_1)*cos(2*M_PI*random_number_2);
 	// float y_lens = lens_pitch_scaling_factor*lens_pitch*sqrt(random_number_1)*sin(2*M_PI*random_number_2);
-	float x_lens = lens_pitch_scaling_factor*0.5*lens_pitch*random_number_1*cos(2*M_PI*random_number_2);
-	float y_lens = lens_pitch_scaling_factor*0.5*lens_pitch*random_number_1*sin(2*M_PI*random_number_2);
+	float x_lens = lens_pitch_scaling_factor * 0.5 * lens_pitch*random_number_1 * cos(2*M_PI*random_number_2);
+	float y_lens = lens_pitch_scaling_factor * 0.5 * lens_pitch*random_number_1 * sin(2*M_PI*random_number_2);
 
 	// float x_lens = sqrt(random_number_1)*cos(2*M_PI*random_number_2);
 	// float y_lens = sqrt(random_number_1)*sin(2*M_PI*random_number_2);
@@ -1409,6 +1408,7 @@ __device__ light_ray_data_t intersect_sensor_02(light_ray_data_t light_ray_data,
 	// printf("z_sensor: %.2f\n", camera_design.z_sensor);
 	// printf("intersection_time: %.2f\n", intersection_time);
 	// printf("pos_intersect: %.2f, %.2f, %.2f\n", pos_intersect.x, pos_intersect.y, pos_intersect.z);
+	
 	// add noise to the final light ray position
 	float2 noise;
 	if(add_pos_noise)
@@ -1992,18 +1992,19 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 	// printf("random number 1: %.2f, 2: %.2f\n", rand_array_1[local_ray_id], rand_array_2[local_ray_id]);
 	// generate light rays
 	light_ray_data_t light_ray_data = generate_lightfield_angular_data(lens_pitch, image_distance,scattering_data,
-				scattering_type, lightfield_source_shared,lightray_number_per_particle,
-				beam_wavelength,aperture_f_number,rand_array_1[local_ray_id],rand_array_2[local_ray_id], ray_cone_pitch_ratio);
+				scattering_type, lightfield_source_shared, lightray_number_per_particle,
+				beam_wavelength, aperture_f_number, rand_array_1[local_ray_id], rand_array_2[local_ray_id], ray_cone_pitch_ratio);
 	float3 temp_pos;
 	float3 temp_dir;
 
-	// if(local_ray_id == 0)
-	// 	light_ray_data.ray_propagation_direction = normalize(make_float3(-1e-3, 0.0, -1));
-	// else if(local_ray_id == 1)
-	// 	light_ray_data.ray_propagation_direction = normalize(make_float3(1e-3, 0.0, -1));
+	// if(global_ray_id == 0)
+	// {
+	// 	light_ray_data.ray_source_coordinates.x = 0.0;
+	// 	light_ray_data.ray_source_coordinates.y = 0.0;		 
+	// 	light_ray_data.ray_propagation_direction = normalize(make_float3(0.0, 0.0, -1));
+	// }
 	// else
 	// 	return;
-
 
 	if(global_ray_id < num_lightrays_save && save_lightrays)
 	{
@@ -2023,11 +2024,15 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 	{
 
 		float3 ray_direction_vector, temp_vector, ray_direction_orig, pos_orig, ray_position_vector;
-		float dot_vector[3], dot_vector_2[3];
+		float pos_vector[3], dir_vector[3];
 		ray_position_vector = light_ray_data.ray_source_coordinates;
 		ray_direction_vector = light_ray_data.ray_propagation_direction;
 		ray_direction_orig = ray_direction_vector;
 		pos_orig = light_ray_data.ray_source_coordinates;
+
+		// account for z offset
+		// printf("ray position before offset: %.2f, %.2f, %.2f\n", ray_position_vector.x, ray_position_vector.y, ray_position_vector.z);
+		ray_position_vector.z = ray_position_vector.z - (lightfield_source_shared.z_offset + 750e3);
 
 		// ---------------------------------------------------------------
 		// Rotate light ray from camera co-ordinates to world co-ordinates
@@ -2038,23 +2043,27 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 
 		// printf("ray position before first rotation: %f, %f, %f\n", ray_position_vector.x, ray_position_vector.y, ray_position_vector.z);
 		// printf("ray direction before first rotation: %f, %f, %f\n", ray_direction_vector.x, ray_direction_vector.y, ray_direction_vector.z);
-
+		
 		// % This rotates the light rays direction vectors by the inverse of the
         // % camera rotation array so that the ray is now in the world coordinate
-        // % system
+		// % system
+		float offset;
 		for(int i = 0; i < 3; i++)
 		{
-
 			temp_vector.x = camera_design.inverse_rotation_matrix[i*3 + 0];
 			temp_vector.y = camera_design.inverse_rotation_matrix[i*3 + 1];
 			temp_vector.z = camera_design.inverse_rotation_matrix[i*3 + 2];
+						
+			// offset = (params.max_bound.z - params.min_bound.z)/2.0 * temp_vector.z;
+			// printf("offset: %.2f\n", offset);
 
-			dot_vector[i] = dot(temp_vector,ray_direction_vector);
-			dot_vector_2[i] = dot(temp_vector,ray_position_vector);
+			pos_vector[i] = dot(temp_vector, ray_position_vector); // - offset;
+			dir_vector[i] = dot(temp_vector, ray_direction_vector);
+
 		}
 
-		ray_direction_vector = make_float3(dot_vector[0],dot_vector[1],dot_vector[2]);
-		ray_position_vector = make_float3(dot_vector_2[0],dot_vector_2[1],dot_vector_2[2]);
+		ray_position_vector = make_float3(pos_vector[0], pos_vector[1], pos_vector[2]);
+		ray_direction_vector = make_float3(dir_vector[0], dir_vector[1], dir_vector[2]);
 
 		// printf("ray position after first rotation: %f, %f, %f\n", ray_position_vector.x, ray_position_vector.y, ray_position_vector.z);
 		// printf("ray direction after first rotation: %f, %f, %f\n", ray_direction_vector.x, ray_direction_vector.y, ray_direction_vector.z);
@@ -2062,7 +2071,7 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 		light_ray_data.ray_propagation_direction = ray_direction_vector;
 		light_ray_data.ray_source_coordinates = ray_position_vector;
 
-		light_ray_data = trace_rays_through_density_gradients(light_ray_data,params,
+		light_ray_data = trace_rays_through_density_gradients(light_ray_data, params,
 				global_ray_id, add_ngrad_noise, ngrad_noise_std, states, intermediate_pos, intermediate_dir,
 				save_intermediate_ray_data, num_intermediate_positions_save);
 
@@ -2076,7 +2085,7 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 
 		// printf("ray position before second rotation: %f, %f, %f\n", ray_position_vector.x, ray_position_vector.y, ray_position_vector.z);
 		// printf("ray direction before second rotation: %f, %f, %f\n", ray_direction_vector.x, ray_direction_vector.y, ray_direction_vector.z);
-
+		
 		// % This rotates the light rays direction vectors back to the camera co-ordinates
 		for(int i = 0; i < 3; i++)
 		{
@@ -2084,19 +2093,23 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 			temp_vector.y = camera_design.rotation_matrix[i*3 + 1];
 			temp_vector.z = camera_design.rotation_matrix[i*3 + 2];
 
-			dot_vector[i] = dot(temp_vector,ray_direction_vector);
-			dot_vector_2[i] = dot(temp_vector,ray_position_vector);
+			pos_vector[i] = dot(temp_vector, ray_position_vector); 
+			dir_vector[i] = dot(temp_vector, ray_direction_vector);
 		}
-		ray_direction_vector = make_float3(dot_vector[0],dot_vector[1],dot_vector[2]);
-		ray_position_vector = make_float3(dot_vector_2[0],dot_vector_2[1],dot_vector_2[2]);
+
+		ray_position_vector = make_float3(pos_vector[0], pos_vector[1], pos_vector[2]);
+		ray_direction_vector = normalize(make_float3(dir_vector[0], dir_vector[1], dir_vector[2]));
 
 		// printf("ray position after second rotation: %f, %f, %f\n", ray_position_vector.x, ray_position_vector.y, ray_position_vector.z);
 		// printf("ray direction after second rotation: %f, %f, %f\n", ray_direction_vector.x, ray_direction_vector.y, ray_direction_vector.z);
 
 		light_ray_data.ray_propagation_direction = ray_direction_vector;
-		// light_ray_data.ray_propagation_direction = normalize(ray_direction_orig);
+
+		// add the offset back to the positions
+		ray_position_vector.z = ray_position_vector.z + (lightfield_source_shared.z_offset + 750e3);
+		// printf("ray position after restoring offset: %f, %f, %f\n", ray_position_vector.x, ray_position_vector.y, ray_position_vector.z);
+
 		light_ray_data.ray_source_coordinates = ray_position_vector;
-		// light_ray_data.ray_source_coordinates = pos_orig;
 
 		// ignore rays that did not pass through the density gradients
 		if(isnan(light_ray_data.ray_propagation_direction.x) || isnan(light_ray_data.ray_propagation_direction.y)
@@ -2104,7 +2117,11 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 			|| isnan(light_ray_data.ray_source_coordinates.x) || isnan(light_ray_data.ray_source_coordinates.y)
 					|| isnan(light_ray_data.ray_source_coordinates.z))
 			return;
+	
 	}
+
+	// printf("light ray position before lens: %f, %f, %f\n", light_ray_data.ray_source_coordinates.x, light_ray_data.ray_source_coordinates.y, light_ray_data.ray_source_coordinates.z);
+	// printf("light ray direction before lens: %f, %f, %f\n", light_ray_data.ray_propagation_direction.x, light_ray_data.ray_propagation_direction.y, light_ray_data.ray_propagation_direction.z);
 
 	if(global_ray_id < num_lightrays_save && save_lightrays)
 	{
@@ -2113,21 +2130,12 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 		// return;
 	}
 
-	// if(save_intermediate_ray_data && !simulate_density_gradients && global_ray_id < num_intermediate_positions_save && save_lightrays)
-	// {
-	// 	intermediate_pos[global_ray_id * num_intermediate_positions_save] = temp_pos;
-	// 	intermediate_dir[global_ray_id * num_intermediate_positions_save] = temp_dir;
-	// 	final_pos[global_ray_id] = light_ray_data.ray_source_coordinates;
-	// 	return;
-	// }
-
-
 	if (element_data[0].element_type == 'n')
 	{
 		// create an apparent image without ray tracing through lens
 		float updated_object_distance = lightfield_source.object_distance + lightfield_source.z_offset;
-		light_ray_data = create_apparent_image(light_ray_data, camera_design,
-						lightray_number_per_particle,num_rays, add_pos_noise, noise_std, states, global_ray_id, camera_design.diffraction_diameter, image_array,
+		light_ray_data = create_apparent_image(light_ray_data, camera_design, lightray_number_per_particle,
+			 			num_rays, add_pos_noise, noise_std, states, global_ray_id, camera_design.diffraction_diameter, image_array,
 						updated_object_distance, lightfield_source.z_offset, element_data[0]);
 
 		if(global_ray_id < num_lightrays_save && save_lightrays)
@@ -2140,9 +2148,8 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 	}
 
 	// trace rays through the optical train
-	light_ray_data = propagate_rays_through_optical_system(element_data, element_center,
-			element_plane_parameters,element_system_index,num_elements,num_rays,
-			lightray_number_per_particle,light_ray_data);
+	light_ray_data = propagate_rays_through_optical_system(element_data, element_center, element_plane_parameters, 
+		element_system_index, num_elements, num_rays,lightray_number_per_particle, light_ray_data);
 
 	// if(global_ray_id < num_lightrays_save && save_lightrays)
 	// {
@@ -2160,8 +2167,8 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 
 	if(implement_diffraction)
 	{
-		light_ray_data = intersect_sensor_02(light_ray_data, camera_design,
-						lightray_number_per_particle,num_rays, add_pos_noise, noise_std, states, global_ray_id, camera_design.diffraction_diameter, image_array);
+		light_ray_data = intersect_sensor_02(light_ray_data, camera_design,lightray_number_per_particle, 
+			num_rays, add_pos_noise, noise_std, states, global_ray_id, camera_design.diffraction_diameter, image_array);
 
 		if(global_ray_id < num_lightrays_save && save_lightrays)
 		{
@@ -2172,8 +2179,8 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 	else
 	{
 		// perform ray intersection with the sensor and the pixel radiance integration
-		pixel_data_t pixel_data = intersect_sensor(light_ray_data,camera_design,
-				lightray_number_per_particle,num_rays, add_pos_noise, noise_std, states, global_ray_id);
+		pixel_data_t pixel_data = intersect_sensor(light_ray_data, camera_design, lightray_number_per_particle, 
+			num_rays, add_pos_noise, noise_std, states, global_ray_id);
 
 		// ignore rays that did not intersect within the sensor pitch
 		if(isnan(pixel_data.final_pos.x) || isnan(pixel_data.final_pos.y))
@@ -2188,11 +2195,11 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 		double pixel_increment;
 
 		// convert the pixel row index vector type to an array for easy indexing
-		int ii_indices[4] = {pixel_data.ii_indices.x,pixel_data.ii_indices.y,pixel_data.ii_indices.z,pixel_data.ii_indices.w};
+		int ii_indices[4] = {pixel_data.ii_indices.x, pixel_data.ii_indices.y, pixel_data.ii_indices.z, pixel_data.ii_indices.w};
 		// convert the pixel column index vector type to an array for easy indexing
-		int jj_indices[4] = {pixel_data.jj_indices.x,pixel_data.jj_indices.y,pixel_data.jj_indices.z,pixel_data.jj_indices.w};
+		int jj_indices[4] = {pixel_data.jj_indices.x, pixel_data.jj_indices.y, pixel_data.jj_indices.z, pixel_data.jj_indices.w};
 		// convert the pixel intensity weight vector type to an array for easy indexing
-		double pixel_weights[4] = {pixel_data.pixel_weights.x,pixel_data.pixel_weights.y,pixel_data.pixel_weights.z,pixel_data.pixel_weights.w};
+		double pixel_weights[4] = {pixel_data.pixel_weights.x, pixel_data.pixel_weights.y, pixel_data.pixel_weights.z, pixel_data.pixel_weights.w};
 		// this is the fraction of the ray radiance that will be added to the pixel
 		double cos_4_alpha = pixel_data.cos_4_alpha;
 
@@ -2208,22 +2215,20 @@ __global__ void parallel_ray_tracing(float lens_pitch, float image_distance,
 
 			// this is the index of the image array corresponding to the pixel
 			// where the intensity will be incremented
-			image_index = (ii_indices[k]-1)*x_pixel_number + jj_indices[k]-1;
+			image_index = (ii_indices[k] - 1) * x_pixel_number + jj_indices[k] - 1;
 			// this is the amount by which the pixel's intensity will be updated
-			pixel_increment = pixel_weights[k]*light_ray_data.ray_radiance*cos_4_alpha;
+			pixel_increment = pixel_weights[k] * light_ray_data.ray_radiance * cos_4_alpha;
 			// this performs the addition but in a way that avoids a race condition where
 			// multiple threads try to write to the same memory location
-			atomicAdd(&image_array[image_index],(float)pixel_increment);
+			atomicAdd(&image_array[image_index], (float)pixel_increment);
 		}
+		
 		if(global_ray_id < num_lightrays_save && save_lightrays)
 		{
 			final_pos[global_ray_id] = pixel_data.final_pos;
 			// final_dir[global_ray_id] = light_ray_data.ray_propagation_direction;
 		}
 	}
-
-
-
 
 }
 
@@ -3121,9 +3126,10 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	// counter variable for all the for loops in this function
 	int k;
 	float z_offset = lightfield_source.z_offset;
-	printf("z_offset: %f\n", z_offset);
-	printf("object distance: %f\n", lightfield_source.object_distance);
-	printf("Particle Location: %f, %f, %f\n", lightfield_source.x[0], lightfield_source.y[0], lightfield_source.z[0]);
+	// printf("z_offset: %f\n", z_offset);
+	// printf("object distance: %f\n", lightfield_source.object_distance);
+	// printf("Particle Location: %f, %f, %f\n", lightfield_source.x[0], lightfield_source.y[0], lightfield_source.z[0]);
+	
 	//--------------------------------------------------------------------------------------
 	// allocate space on GPU for lightfield_source
 	//--------------------------------------------------------------------------------------
@@ -3163,7 +3169,6 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	lightfield_source.radiance = d_source_radiance;
 	lightfield_source.diameter_index = d_source_diameter_index;
 
-
 	//--------------------------------------------------------------------------------------
 	// allocate space on GPU for scattering_data
 	//--------------------------------------------------------------------------------------
@@ -3197,7 +3202,6 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	//--------------------------------------------------------------------------------------
 	// read random numbers from file
 	//--------------------------------------------------------------------------------------
-
 	// allocate space for CPU arrays to hold the random numbers
 	float* h_rand1 = (float*) malloc(lightray_number_per_particle*sizeof(float));
 	float* h_rand2 = (float*) malloc(lightray_number_per_particle*sizeof(float));
@@ -3353,7 +3357,6 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 
 	if(num_particles < source_point_number)
 		source_point_number = num_particles;
-
 
 	// number of the light rays to be generated and traced in a single call
 	int num_rays = source_point_number*lightray_number_per_particle;
@@ -3673,10 +3676,10 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	//--------------------------------------------------------------------------------------
 	// free allocated memory
 	//--------------------------------------------------------------------------------------
-
+	printf("freeing memory ...");
 	if(save_lightrays)
 	{
-		printf("freeing memory allocated for saving final light ray data\n");
+		// printf("freeing memory allocated for saving final light ray data\n");
 		// free arrays
 		free(final_pos);
 		cudaFree(d_final_pos);
@@ -3688,7 +3691,7 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 
 	if(save_intermediate_ray_data)
 	{
-		printf("freeing memory allocated for saving intermediate light ray data\n");
+		// printf("freeing memory allocated for saving intermediate light ray data\n");
 		// free arrays
 		free(intermediate_pos);
 		cudaFree(d_intermediate_pos);
@@ -3699,14 +3702,14 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	}
 
 	// free allocated memory on the CPU
-	printf("freeing memory allocated for storing random numbers\n");
+	// printf("freeing memory allocated for storing random numbers\n");
 	free(h_rand1);
 	free(h_rand2);
 	// free allocated memory on the GPU
 	cudaFree(d_rand1);
 	cudaFree(d_rand2);
 
-	printf("freeing memory allocated for storing element data\n");
+	// printf("freeing memory allocated for storing element data\n");
 	free(element_center_2);
 	free(element_plane_parameters_2);
 	cudaFree(d_element_center);
@@ -3714,7 +3717,7 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 	cudaFree(d_element_system_index);
 	cudaFree(d_element_data);
 
-	printf("freeing memory allocated for lightfield source data\n");
+	// printf("freeing memory allocated for lightfield source data\n");
 	cudaFree(d_source_x);
 	cudaFree(d_source_y);
 	cudaFree(d_source_z);
@@ -3727,19 +3730,19 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 		cudaFree(d_scattering_irradiance);
 	}
 
-	printf("freeing memory allocated for camera and image\n");
+	// printf("freeing memory allocated for camera and image\n");
 	cudaFree(d_camera_design);
 	cudaFree(d_image_array);
 
 	if(add_pos_noise || add_ngrad_noise)
 	{
-		printf("freeing memory allocated for initializing noise\n");
+		// printf("freeing memory allocated for initializing noise\n");
 		cudaFree(states);
 	}
 
 	if(simulate_density_gradients)
 	{
-		printf("freeing memory allocated for density gradient data\n");
+		// printf("freeing memory allocated for density gradient data\n");
 		delete [] params.data;
 		checkCudaErrors(cudaFree(d_params_p));
 
@@ -3755,12 +3758,11 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 			checkCudaErrors(cudaUnbindTexture(coeffs3D));
 		}
 	}
+	printf("...done\n");
 
 	printf("exiting cuda code\n");
 
-
 }
-
 
 }
 

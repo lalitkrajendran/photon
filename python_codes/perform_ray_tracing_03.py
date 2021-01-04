@@ -1878,7 +1878,6 @@ def prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, sc
     # -------------------------------------------------------------------------------------------------------------------
     # call cuda code
     # -------------------------------------------------------------------------------------------------------------------
-
     # import cuda code
     cuda_func = ctypes.CDLL('../cuda_codes/Debug/libparallel_ray_tracing.so')
 
@@ -2218,13 +2217,16 @@ def perform_ray_tracing_03(simulation_parameters, optical_system, pixel_gain, sc
         # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         # % Rescales and resamples image for export                                 %
         # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        # set NaN values to zero
+        I[~np.isfinite(I)] = 0.0
 
         # % This rescales the image intensity to account for the pixel gain
         I *= 10 ** (pixel_gain / 20.0)
 
         # % This rescales the image to values ranging from 0 to 2^bit_depth-1
         # I = (2 ** pixel_bit_depth - 1) * I / (2 ** 16 - 1)
-        I = (2 ** pixel_bit_depth - 1) * I / (np.max(I[np.isfinite(I)]))
+        if np.max(I) > 0.0:
+            I = (2 ** pixel_bit_depth - 1) * I / (np.max(I))
 
         # % This rounds the values of the image to the nearest integer
         I = np.round(I)

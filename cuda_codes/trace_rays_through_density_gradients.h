@@ -366,22 +366,22 @@ __device__ light_ray_data_t rk45(light_ray_data_t light_ray_data, density_grad_p
         if(loop_ctr > 100000)
             break;
 
-       // ensure that the x position does not exceed the upper limit
-    //    if(h > fabs(xmax - x))
-    //    {
-    //        if(fabs(xmax - x) > tol)
-    //            h = fabs(xmax - x);
-    //        else
-    //            break;
-    //    }
+       	// // ensure that the x position does not exceed the upper limit
+		// if(h > fabs(xmax - x))
+		// {
+		// 	if(fabs(xmax - x) > tol)
+		// 		h = fabs(xmax - x);
+		// 	else
+		// 		break;
+		// }
 
 
         // calculate coefficients
 
         //**************** k1 and l1  ***************************//
 
-    //    k1 = h * dydx_1(x, y[0], y[1]);
-    //    l1 = h * dydx_2(x, y[0], y[1]);
+		// k1 = h * dydx_1(x, y[0], y[1]);
+		// l1 = h * dydx_2(x, y[0], y[1]);
 
         R_n = pos;
         T_n = refractive_index * dir;
@@ -431,8 +431,8 @@ __device__ light_ray_data_t rk45(light_ray_data_t light_ray_data, density_grad_p
 
         //**************** k2 and l2  ***************************//
 
-    //    k2 = h * dydx_1(x + h/4.0, y[0] + k1/4.0, y[1] + l1/4.0);
-    //    l2 = h * dydx_2(x + h/4.0, y[0] + k1/4.0, y[1] + l1/4.0);
+		// k2 = h * dydx_1(x + h/4.0, y[0] + k1/4.0, y[1] + l1/4.0);
+		// l2 = h * dydx_2(x + h/4.0, y[0] + k1/4.0, y[1] + l1/4.0);
 
     	R_n = pos + k1/4.0;
     	T_n = refractive_index * dir + l1/4.0;
@@ -797,21 +797,21 @@ __device__ light_ray_data_t euler(light_ray_data_t light_ray_data,
 			if(!ray_inside_box(pos, params, lookup) && loop_ctr!=0)
 			{
 
-				// flag rays that exit through the sides of the volume
-				if(pos.x < params.min_bound.x || pos.y < params.min_bound.y ||
-						pos.x >= params.max_bound.x || pos.y >= params.max_bound.y||
-						lookup.x < 0 || lookup.y < 0 ||	lookup.x >= params.data_width
-						|| lookup.y >= params.data_height)
-				{
-					//# % This sets any of the light ray positions outside of the domain
-					//# % to NaN values
-					light_ray_data.ray_source_coordinates = make_float3(CUDART_NAN_F,CUDART_NAN_F,CUDART_NAN_F);
+				// // flag rays that exit through the sides of the volume
+				// if(pos.x < params.min_bound.x || pos.y < params.min_bound.y ||
+				// 		pos.x >= params.max_bound.x || pos.y >= params.max_bound.y||
+				// 		lookup.x < 0 || lookup.y < 0 ||	lookup.x >= params.data_width
+				// 		|| lookup.y >= params.data_height)
+				// {
+				// 	//# % This sets any of the light ray positions outside of the domain
+				// 	//# % to NaN values
+				// 	light_ray_data.ray_source_coordinates = make_float3(CUDART_NAN_F,CUDART_NAN_F,CUDART_NAN_F);
 
-					//# % This sets any of the light ray directions outside of the domain
-					//# % to NaN values
-					light_ray_data.ray_propagation_direction = make_float3(CUDART_NAN_F,CUDART_NAN_F,CUDART_NAN_F);
+				// 	//# % This sets any of the light ray directions outside of the domain
+				// 	//# % to NaN values
+				// 	light_ray_data.ray_propagation_direction = make_float3(CUDART_NAN_F,CUDART_NAN_F,CUDART_NAN_F);
 
-				}
+				// }
 
 				break;
 			}
@@ -950,13 +950,6 @@ __device__ light_ray_data_t euler(light_ray_data_t light_ray_data,
 			light_ray_data.ray_propagation_direction = dir;
 		}
 
-	}
-
-	if(thread_id == 0)
-	{
-		// params.arc_length = loop_ctr * params.step_size;
-		// printf("arc_length: %f\n", params.arc_length);
-		printf("loop_ctr: %d\n", loop_ctr);
 	}
 
 	//***************** END OF EULER ********************************//
@@ -1471,7 +1464,6 @@ __device__ light_ray_data_t trace_rays_through_density_gradients(light_ray_data_
 		density_grad_params_t params, int thread_id, bool add_ngrad_noise, float ngrad_noise_std, curandState* states,
 		float3* intermediate_pos, float3* intermediate_dir, bool save_intermediate_ray_data, int num_intermediate_positions_save)
 {
-
 	// this is the corner of the volume containing the minimum coordinates
 	float3 min_bound = params.min_bound;
 	// printf("min bound: %f, %f, %f\n", min_bound.x, min_bound.y, min_bound.z);
@@ -1500,23 +1492,24 @@ __device__ light_ray_data_t trace_rays_through_density_gradients(light_ray_data_
  		// and exit the function
  		if(!IntersectWithVolume(&pos, dir, params.min_bound, params.max_bound))
  		{
- 			//# % This sets any of the light ray positions outside of the domain
- 			//# % to NaN values
- 			light_ray_data.ray_source_coordinates = make_float3(CUDART_NAN_F,CUDART_NAN_F,CUDART_NAN_F);
+			// //# % This sets any of the light ray positions outside of the domain
+ 			// //# % to NaN values
+ 			// light_ray_data.ray_source_coordinates = make_float3(CUDART_NAN_F,CUDART_NAN_F,CUDART_NAN_F);
 
- 			//# % This sets any of the light ray directions outside of the domain
- 			//# % to NaN values
- 			light_ray_data.ray_propagation_direction = make_float3(CUDART_NAN_F,CUDART_NAN_F,CUDART_NAN_F);
+ 			// //# % This sets any of the light ray directions outside of the domain
+ 			// //# % to NaN values
+ 			// light_ray_data.ray_propagation_direction = make_float3(CUDART_NAN_F,CUDART_NAN_F,CUDART_NAN_F);
 
  			return light_ray_data;
  		}
 
-	// increment ray position by a small amount so it is inside the volume.
-	// pos = pos + dir * 1 * params.step_size/refractive_index;
-		if(dir.z > 0)
-			pos.z = params.min_bound.z;
-		else
-			pos.z = params.max_bound.z;
+		// printf("light ray intersection point: %.2f, %.2f, %.2f\n", pos.x, pos.y, pos.z);
+		// increment ray position by a small amount so it is inside the volume.
+		// pos = pos + dir * 1 * params.step_size/refractive_index;
+		// if(dir.z > 0)
+		// 	pos.z = params.min_bound.z;
+		// else
+		// 	pos.z = params.max_bound.z;
 
  	}
 
@@ -1578,6 +1571,7 @@ __device__ void check_texture_lookup()
 	printf("val.w: %f\n", val.w);
 
 }
+
 // __global__ void check_trace_rays_through_density_gradients_02(int a, int b)
 // {
 // 	/*
@@ -1619,8 +1613,8 @@ __global__ void check_trace_rays_through_density_gradients(light_ray_data_t* lig
 			states, intermediate_pos, intermediate_dir,
 			save_intermediate_ray_data, num_intermediate_positions_save);
 
-
 }
+
 extern "C"{
 
 void Host_Init(density_grad_params_t* paramsp, density_grad_params_t* dparams)
@@ -1709,27 +1703,26 @@ void loadNRRD(DataFile* datafile, int data_min, int data_max, float z_offset)
 
 	xmin = nrrd->spaceOrigin[0];
 	del_x = nrrd->axis[0].spacing;
-	xmax = xmin + (sizex-1)*del_x;
+	xmax = xmin + (sizex - 1) * del_x;
 
 	ymin = nrrd->spaceOrigin[1];
 	del_y = nrrd->axis[1].spacing;
-	ymax = ymin + (sizey-1)*del_y;
+	ymax = ymin + (sizey - 1) * del_y;
 
-	zmin = nrrd->spaceOrigin[2] + z_offset;
+	zmin = nrrd->spaceOrigin[2] - 750e3; // + z_offset;
 	del_z = nrrd->axis[2].spacing;
-	zmax = zmin + (sizez-1)*del_z;
+	zmax = zmin + (sizez - 1) * del_z;
 
 	printf("\n******************** Co-ordinate System Info ******************************\n");
-	printf("xmin: %g, xmax: %g, N_x: %d, del_x: %f\n", xmin,xmax,sizex,del_x);
-	printf("ymin: %g, ymax: %g, N_y: %d, del_y: %f\n", ymin,ymax,sizey,del_y);
-	printf("zmin: %f, zmax: %f, N_z: %d, del_z: %f\n", zmin,zmax,sizez,del_z);
-
+	printf("xmin: %g, xmax: %g, N_x: %d, del_x: %f\n", xmin, xmax, sizex, del_x);
+	printf("ymin: %g, ymax: %g, N_y: %d, del_y: %f\n", ymin, ymax, sizey, del_y);
+	printf("zmin: %f, zmax: %f, N_z: %d, del_z: %f\n", zmin, zmax, sizez, del_z);
 
 	// not sure what these statements do
 	if (data_max > sizez)
 	data_max = sizez;
 	if (sizez > (data_max-data_min))
-	sizez = data_max-data_min;
+	sizez = data_max - data_min;
 
 	printf(" size: %f %f %f\n", float(sizex), float(sizey), float(sizez));
 
@@ -1743,9 +1736,10 @@ void loadNRRD(DataFile* datafile, int data_min, int data_max, float z_offset)
 	// set GladStone Dale constant (cm^3/g) for refractive index calculation
 	float K = 0.225e-3;
 
-	float temp, rho1, rho2, n1, n2;
-	double d_n1, d_n2, d_temp;
-//	double a = 1.0;
+	// float temp;
+	// float rho1, rho2, n1, n2;
+	// double d_n1, d_n2, d_temp;
+	// double a = 1.0;
 
 	for(int i = 0; i < sizex; i++)
 	{
@@ -1755,31 +1749,31 @@ void loadNRRD(DataFile* datafile, int data_min, int data_max, float z_offset)
 			{
 				// read density data from file
 				*datai = (*dataNrrd)*data_fudge;
-				temp = *datai;
+				// temp = *datai;
 				// convert density to refractive index
-//				*datai = a + K*(temp);
-				d_temp = K*(temp);
+				// *datai = a + K*(temp);
+				// d_temp = K*(temp);
 				*datai = K*(*datai);
 
-				if(i == 0 && j == 0 && k == 5)
-				{
-					rho1 = temp;
-					// n1 = *datai;
-					n1 = d_temp;
-					// d_n1 = a + K*(temp);
-					// d_n1 = *datai;
-					d_n1 = d_temp;
-				}
+				// if(i == 0 && j == 0 && k == 5)
+				// {
+				// 	rho1 = temp;
+				// 	// n1 = *datai;
+				// 	n1 = d_temp;
+				// 	// d_n1 = a + K*(temp);
+				// 	// d_n1 = *datai;
+				// 	d_n1 = d_temp;
+				// }
 
-				if(i == 0 && j == 0 && k == 6)
-				{
-					rho2 = temp;
-					// n2 = *datai;
-					n2 = d_temp;
-					// d_n2 = a + K*(temp);
-					// d_n2 = *datai;
-					d_n2 = d_temp;
-				}
+				// if(i == 0 && j == 0 && k == 6)
+				// {
+				// 	rho2 = temp;
+				// 	// n2 = *datai;
+				// 	n2 = d_temp;
+				// 	// d_n2 = a + K*(temp);
+				// 	// d_n2 = *datai;
+				// 	d_n2 = d_temp;
+				// }
 				// printf("density: %G, refractive index: %G\n", temp, *datai);
 
 				// update max and min values
@@ -1795,19 +1789,19 @@ void loadNRRD(DataFile* datafile, int data_min, int data_max, float z_offset)
 		}
 	}
 
-	float del_n = K*(rho2 - rho1);
-	float del_n_2 = K*rho2 - K*rho1;
-	float n3 = 1.000000000 + n1;
-	printf("rho1: %.8f, rho2: %.8f, rho2-rho1: %.8G\n", rho1, rho2, rho2-rho1);
-	printf("n1: %.9f, n2: %.9f, n2-n1: %.8G, del_n: %.8G, del_n_2: %.8G\n", n1, n2, n2-n1, del_n, del_n_2);
-	printf("d_n1: %.9f, d_n2: %.9f, d_n2-d_n1: %.8G\n", d_n1, d_n2, d_n2-d_n1);
-	printf("n3: %.9f\n", n3);
-	float n1_2 = 1 + n1;
-	double d_n1_2 = 1 + d_n1;
-	printf("1 + n1: %.9f\n", n1_2);
-	printf("1 + n1 (double): %.9f\n", d_n1_2);
-	printf("dn_dx: %.8G\n", (n2-n1)/del_x);
-	// exit(0);
+	// float del_n = K*(rho2 - rho1);
+	// float del_n_2 = K*rho2 - K*rho1;
+	// float n3 = 1.000000000 + n1;
+	// printf("rho1: %.8f, rho2: %.8f, rho2-rho1: %.8G\n", rho1, rho2, rho2-rho1);
+	// printf("n1: %.9f, n2: %.9f, n2-n1: %.8G, del_n: %.8G, del_n_2: %.8G\n", n1, n2, n2-n1, del_n, del_n_2);
+	// printf("d_n1: %.9f, d_n2: %.9f, d_n2-d_n1: %.8G\n", d_n1, d_n2, d_n2-d_n1);
+	// printf("n3: %.9f\n", n3);
+	// float n1_2 = 1 + n1;
+	// double d_n1_2 = 1 + d_n1;
+	// printf("1 + n1: %.9f\n", n1_2);
+	// printf("1 + n1 (double): %.9f\n", d_n1_2);
+	// printf("dn_dx: %.8G\n", (n2-n1)/del_x);
+	
 	// transfer data to pointer
 	datafile->data = data;
 	datafile->sizex = sizex;
@@ -2000,8 +1994,8 @@ density_grad_params_t setData(float* data, density_grad_params_t _params)
 
 			loop_ctr++;
 
-			if(_params.data[data_loc].w == 0)
-				printf("_params.data[data_loc].w == 0 at data_loc: %d\n", data_loc);
+			// if(_params.data[data_loc].w == 0)
+			// 	printf("_params.data[data_loc].w == 0 at data_loc: %d\n", data_loc);
 
 			file.write((char*)&_params.data[data_loc], sizeof(float)*4);
 		  }
@@ -2010,7 +2004,7 @@ density_grad_params_t setData(float* data, density_grad_params_t _params)
 
 	// file.close();
 	printf("Minimum Refractive Index: %f\n", _params.data_min);
-	printf("loop ctr: %d\n", loop_ctr);
+	// printf("loop ctr: %d\n", loop_ctr);
 
 	return _params;
 }
@@ -2069,8 +2063,8 @@ density_grad_params_t readDatafromFile(char* filename, float z_offset)
         input_files[i] = new char[files[i].length()+10];
         strcpy(input_files[i], files[i].c_str());
         strcpy(dataFiles[i]->filename, input_files[i]);
-        printf("copied filename");
-        loadNRRD(dataFiles[i],data_min,data_max, z_offset);
+        // printf("copied filename");
+        loadNRRD(dataFiles[i], data_min, data_max, z_offset);
         delete [] input_files[i];
     }
     delete [] input_files;
@@ -2113,14 +2107,9 @@ density_grad_params_t readDatafromFile(char* filename, float z_offset)
 
 	// delete old array
 	delete[] dataFiles[0]->data;
-    return _params;
+    
+	return _params;
 
 }
-
-
-
-
-
-
 
 #endif /* TRACE_RAYS_THROUGH_DENSITY_GRADIENTS_H_ */

@@ -21,8 +21,13 @@ else:
     mount_directory = '/Volumes/aether_c/'
 
 def create_single_lens_optical_system():
-# This function is designed to create a data structure containing the
-# necessary optical elements to simulate a plenoptic camera.
+    """
+    This function is designed to create a data structure containing the
+    necessary optical elements to simulate a plenoptic camera.
+
+    Returns:
+        optical_system (dict): dictionary containing optical system information
+    """
 
     #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     #% Single Lens Design                                                      %
@@ -72,7 +77,7 @@ def create_single_lens_optical_system():
 
     # This also specifies the geometry of the current optical element - if the
     # element type is 'system', then the geometry has a Null value
-#     optical_system['design']['element_geometry'] = None
+    # optical_system['design']['element_geometry'] = None
 
     # This creates a substructure to describe the optical properties of the 
     # current element (the value of the structure will be null if the current 
@@ -242,9 +247,19 @@ def create_single_lens_optical_system():
 
 
 def create_camera_optical_system(simulation_parameters):
-    # This function creates the optical system used in running the ray tracing
+    # Function to create the optical system used in running the ray tracing
     # simulation.
-
+    #
+    # INPUTS:
+    # simulation_parameters: dictionary containing experimental parameters
+    #
+    # OUTPUTS:
+    # optical_system: dictionary containing optical system info
+    #
+    # AUTHOR:
+    # Rod Lafoy
+    # Lalit Rajendran (lrajendr@purdue.edu)
+    
     # This extracts the lens focal length from the design structure (in microns)
     focal_length=simulation_parameters['lens_design']['focal_length']
     
@@ -337,10 +352,19 @@ def create_camera_optical_system(simulation_parameters):
     
     return optical_system
 
-def calculate_rotation_matrix(theta_x,theta_y,theta_z):
-# This function calculates the rotation matrix of the angles 'theta_x',
-# 'theta_y', and 'theta_z' which are measured in radians and returns the
-# rotation matrix as the output argument 'rotation_matrix'.
+def calculate_rotation_matrix(theta_x, theta_y, theta_z):
+    # This function calculates the rotation matrix of the angles 'theta_x',
+    # 'theta_y', and 'theta_z' which are measured in radians and returns the
+    # rotation matrix as the output argument 'rotation_matrix'.
+    #
+    # INPUTS:
+    # theta_x, theta_y, theta_z (float): camera angles
+    #
+    # OUTPUTS:
+    # rotation_matrix (float array): camera rotation matrix
+    #
+    # AUTHOR:
+    # Rod Lafoy and Lalit Rajendran (lrajendr@purdue.edu)
 
     # This creates the rotation matrix about the x axis
     rotation_x = np.matrix([[1.0,0.0,0.0],[0.0,np.cos(theta_x),np.sin(theta_x)],[0.0,-np.sin(theta_x),np.cos(theta_x)]])
@@ -356,20 +380,26 @@ def calculate_rotation_matrix(theta_x,theta_y,theta_z):
 
     return rotation_matrix
 
-def rotate_coordinates(X,Y,Z,Alpha,Beta,Gamma,XC,YC,ZC):
-# This function takes the coordinates specified by the arrays X, Y, and Z
-# and rotates them by angles Alpha, Beta, and Gamma about the x, y, and z
-# axes respectively.  The scalars XC, YC, and ZC correspond to the center
-# of rotation, ie the coordinates will be rotated by an angle Alpha about
-# the point (YC,ZC), an angle Beta about the point (XC,ZC), and by an angle
-# Gamma about the point (XC,YC).
-#
-# This function was extracted from a sub-function so that multiple
-# functions could call this same copy.
-#
-# Authors: Rod La Foy
-# First Created On: 11 November 2013
-# Last Modified On: 11 November 2013
+def rotate_coordinates(X, Y, Z, Alpha, Beta, Gamma, XC, YC, ZC):
+    # Function takes the coordinates specified by the arrays X, Y, and Z
+    # and rotates them by angles Alpha, Beta, and Gamma about the x, y, and z
+    # axes respectively.  The scalars XC, YC, and ZC correspond to the center
+    # of rotation, ie the coordinates will be rotated by an angle Alpha about
+    # the point (YC,ZC), an angle Beta about the point (XC,ZC), and by an angle
+    # Gamma about the point (XC,YC).
+    #
+    # INPUTS:
+    # X, Y, Z (float arrays): input co-ordinates
+    # Alpha, Beta, Gamma (float): angles
+    # XC, YC, ZC (float): center for rotation
+    #
+    # OUTPUTS:
+    #
+    #
+    # AUTHOR:
+    # Rod Lafoy
+    # Lalit Rajendran (lrajendr@purdue.edu)
+    
 
     # This calculates the rotation matrix for the current angles
     R = calculate_rotation_matrix(Alpha,Beta,Gamma)
@@ -400,10 +430,22 @@ def rotate_coordinates(X,Y,Z,Alpha,Beta,Gamma,XC,YC,ZC):
 
     return [XR,YR,ZR]
 
-def log_normal_pdf(x,mu,sigma):
-# This function calculates the log-normal probability density function of
-# the argument 'x' with a mean of 'mu' and a standard deviation of 'sigma'.
-
+def log_normal_pdf(x, mu, sigma):
+    # Function to calculate the log-normal probability density function of
+    # the argument 'x' with a mean of 'mu' and a standard deviation of 'sigma'.
+    #
+    # INPUTS:
+    # x: value of the random variable
+    # mu: mean
+    # sigma: standard deviation
+    #
+    # OUTPUTS:
+    # y: pdf
+    #
+    # AUTHOR:
+    # Rod Lafoy
+    # Lalit Rajendran (lrajendr@purdue.edu)
+        
     # This calculates the log-normal probility density function
     y1 = 1.0/(x * sigma * np.sqrt(2.0 * np.pi))
     y2 = (np.log(x) - mu)
@@ -413,12 +455,12 @@ def log_normal_pdf(x,mu,sigma):
     return y
 
 def inverse_log_normal_pdf(y,mu,sigma):
-# This function calculates the inverse, ie the two values of x such that
-#
-#  y = pdf(x1) and y = pdf(x2)
-#
-# for the log-normal probability density function of the argument 'y' with
-# a mean of 'mu' and a standard deviation of 'sigma'.
+    # This function calculates the inverse, ie the two values of x such that
+    #
+    #  y = pdf(x1) and y = pdf(x2)
+    #
+    # for the log-normal probability density function of the argument 'y' with
+    # a mean of 'mu' and a standard deviation of 'sigma'.
 
     # This calculates the inverse log-normal probability density function
     x1 = np.exp(mu - sigma**2 - sigma * np.sqrt(sigma**2.0 - 2.0 * mu - 2.0 * np.log(y * sigma * np.sqrt(2.0*np.pi))))
@@ -427,8 +469,8 @@ def inverse_log_normal_pdf(y,mu,sigma):
     return [x1,x2]
 
 def log_normal_cdf(x,mu,sigma):
-# This function calculates the log-normal cumulative density function of
-# the argument 'x' with a mean of 'mu' and a standard deviation of 'sigma'.
+    # This function calculates the log-normal cumulative density function of
+    # the argument 'x' with a mean of 'mu' and a standard deviation of 'sigma'.
 
     # This calculates the log-normal cumulative density function
     y=(1.0 + scispec.erf((np.log(x) - mu)/(sigma * np.sqrt(2.0))))/2.0
@@ -436,15 +478,15 @@ def log_normal_cdf(x,mu,sigma):
     return  y
 
 def calculate_log_normal_pdf_extrema(mu,sigma,t):
-# % This function calculates the extrema of the log-normal probability
-# % density function such that
-# %
-# %   t = 1 - ( cdf(x_max) - cdf(x_min) )
-# %
-# % ie the extrema given the portion of the log-normal pdf such that the
-# % percentage of the pdf that lie outside of the extrema equals t.  The
-# % input arguments are the log-normal mean 'mu', the log-normal standard
-# % deviation 'sigma', and the threshhold 't'.
+    # % This function calculates the extrema of the log-normal probability
+    # % density function such that
+    # %
+    # %   t = 1 - ( cdf(x_max) - cdf(x_min) )
+    # %
+    # % ie the extrema given the portion of the log-normal pdf such that the
+    # % percentage of the pdf that lie outside of the extrema equals t.  The
+    # % input arguments are the log-normal mean 'mu', the log-normal standard
+    # % deviation 'sigma', and the threshhold 't'.
 
     # % This initializes a first estimate of the 'x_max' extrema
     x_max = np.exp(mu + sigma)
@@ -480,8 +522,8 @@ def calculate_log_normal_pdf_extrema(mu,sigma,t):
     return [x_min,x_max]
 
 def calculate_particle_diameter_distribution(simulation_parameters):
-# This function calculates the discrete values of the possible particle
-# diameters to be simulated during the experiment.
+    # This function calculates the discrete values of the possible particle
+    # diameters to be simulated during the experiment.
 
     # This extracts the mean diameter of the particles being used in the
     # simulated experiment (in microns)
@@ -535,9 +577,9 @@ def calculate_particle_diameter_distribution(simulation_parameters):
     return [particle_diameter_vector,particle_diameter_pdf]
 
 def calculate_particle_diameter_indices(simulation_parameters,particle_diameter_pdf,particle_diameter_vector):
-# This function calculates the distribution of the particle diameter
-# indices based upon the particle diameter probability density function
-# and the total particle number.
+    # This function calculates the distribution of the particle diameter
+    # indices based upon the particle diameter probability density function
+    # and the total particle number.
 
     # This extracts the number of particles to simulate out of the list of
     # possible particles
@@ -578,9 +620,9 @@ def calculate_particle_diameter_indices(simulation_parameters,particle_diameter_
     return particle_diameter_index_distribution
 
 def calculate_mie_scattering_intensity(simulation_parameters,particle_diameter_vector):
-# % This function calculates the intensity of the Mie scattering produced by
-# % the different particle diameters given by 'particle_diameter_vector' for
-# % the illumination source defined in 'simulation_parameters'.
+    # % This function calculates the intensity of the Mie scattering produced by
+    # % the different particle diameters given by 'particle_diameter_vector' for
+    # % the illumination source defined in 'simulation_parameters'.
 
     # % This extracts the refractive index of the medium in which the particles
     # % are seeded (typically either water or air)
@@ -635,12 +677,12 @@ def calculate_mie_scattering_intensity(simulation_parameters,particle_diameter_v
     return [scattering_angle,scattering_irradiance]
 
 def create_mie_scattering_data(simulation_parameters):
-# This function creates various parameters used in simulation the Mie
-# scattering of the particles.  Specifically this calculate the size
-# distribution of the particles, the Mie scattering intensities as a
-# function of the scattering angles, and several parameters necessary to
-# calculate the scattering angles of the particles with respect to the
-# laser beam and the simulated cameras.
+    # This function creates various parameters used in simulation the Mie
+    # scattering of the particles.  Specifically this calculate the size
+    # distribution of the particles, the Mie scattering intensities as a
+    # function of the scattering angles, and several parameters necessary to
+    # calculate the scattering angles of the particles with respect to the
+    # laser beam and the simulated cameras.
 
     # This is the x angle of the camera to the particle volume
     x_camera_angle = simulation_parameters['camera_design']['x_camera_angle']
@@ -708,10 +750,9 @@ def create_mie_scattering_data(simulation_parameters):
 
     return mie_scattering_data
 
-
 def load_lightfield_data(simulation_parameters,optical_system,mie_scattering_data,frame_index,lightfield_source):
-# This function creates the lightfield data for performing the ray tracing
-# operation.
+    # This function creates the lightfield data for performing the ray tracing
+    # operation.
 
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # % Extracts parameters from 'simulation_parameters'                    %
@@ -929,13 +970,13 @@ def load_lightfield_data(simulation_parameters,optical_system,mie_scattering_dat
     return lightfield_source
 
 def calculate_sunflower_coordinates(grid_point_diameter,lightray_number_per_grid_point):
-#% This function creates two coordinate vectors x and y that consist of a
-#% series of points that fill a circle centered at (0,0) with a diameter
-#% equal to the grid_point_diameter.  The points will lie on concentric
-#% circles such that the distance between adjacent circles is constant and
-#% equal to the approximate nearest neighbor distance of all points.  The
-#% number of output points is approximately equal to
-#% lightray_number_per_grid_point.
+    #% This function creates two coordinate vectors x and y that consist of a
+    #% series of points that fill a circle centered at (0,0) with a diameter
+    #% equal to the grid_point_diameter.  The points will lie on concentric
+    #% circles such that the distance between adjacent circles is constant and
+    #% equal to the approximate nearest neighbor distance of all points.  The
+    #% number of output points is approximately equal to
+    #% lightray_number_per_grid_point.
 
     #% This is the area of the grid point in microns
     grid_point_area = np.pi*(grid_point_diameter/2.0)**2.0
@@ -986,10 +1027,10 @@ def calculate_sunflower_coordinates(grid_point_diameter,lightray_number_per_grid
     return [x_lightray_coordinates,y_lightray_coordinates]
 
 def generate_calibration_lightfield_data(simulation_parameters,optical_system,plane_index):
-# % This function generates a structure containing the location of the each of the
-# % lightfield source points as well as their irradiance and color.  Only a single value is
-# % returned for each source point and no angular information is stored.  The angular data 
-# % of the lightrays will be generated later - this is done to avoid out of memory errors.
+    # % This function generates a structure containing the location of the each of the
+    # % lightfield source points as well as their irradiance and color.  Only a single value is
+    # % returned for each source point and no angular information is stored.  The angular data 
+    # % of the lightrays will be generated later - this is done to avoid out of memory errors.
 
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # % Extracts parameters from 'simulation_parameters'                    %
@@ -1254,10 +1295,10 @@ def create_non_overlapping_dot_coordinates(simulation_parameters):
     return coordinates
 
 def generate_bos_lightfield_data(simulation_parameters,optical_system):
-# % This function generates a structure containing the location of the each of the
-# % lightfield source points as well as their irradiance and color on a BOS texture.  Only a single value is
-# % returned for each source point and no angular information is stored.  The angular data
-# % of the lightrays will be generated later - this is done to avoid out of memory errors.
+    # % This function generates a structure containing the location of the each of the
+    # % lightfield source points as well as their irradiance and color on a BOS texture.  Only a single value is
+    # % returned for each source point and no angular information is stored.  The angular data
+    # % of the lightrays will be generated later - this is done to avoid out of memory errors.
 
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # % Extracts parameters from 'simulation_parameters'                    %
@@ -1450,8 +1491,8 @@ def generate_bos_lightfield_data(simulation_parameters,optical_system):
     else:
         radiance = np.ones(x.shape)*simulation_parameters['bos_pattern']['lightray_radiance']        
     
-    # % This rotates the image coordinates by the specified angles
-    [x,y,z] = rotate_coordinates(x,y,z,x_camera_angle,y_camera_angle,0.0,0.0,0.0,0.0)
+    # % This rotates the image coordinates by the specified angles (target is always perpendicular to the camera so not needed)
+    # [x,y,z] = rotate_coordinates(x,y,z,x_camera_angle,y_camera_angle,0.0,0.0,0.0,0.0)
 
     x = np.squeeze(np.asarray(x))
     y = np.squeeze(np.asarray(y))
@@ -1478,12 +1519,11 @@ def generate_bos_lightfield_data(simulation_parameters,optical_system):
     lightfield_source['object_distance'] = object_distance
     return lightfield_source, x_grid_point_coordinate_vector, y_grid_point_coordinate_vector
 
-
 def generate_bos_image_lightfield_data(simulation_parameters,optical_system):
-# % This function generates a structure containing the location of the each of the
-# % lightfield source points as well as their irradiance and color on a BOS texture.  Only a single value is
-# % returned for each source point and no angular information is stored.  The angular data
-# % of the lightrays will be generated later - this is done to avoid out of memory errors.
+    # % This function generates a structure containing the location of the each of the
+    # % lightfield source points as well as their irradiance and color on a BOS texture.  Only a single value is
+    # % returned for each source point and no angular information is stored.  The angular data
+    # % of the lightrays will be generated later - this is done to avoid out of memory errors.
 
     # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # % Extracts parameters from 'simulation_parameters'                    %
@@ -1623,7 +1663,6 @@ def generate_bos_image_lightfield_data(simulation_parameters,optical_system):
 
     return lightfield_source
 
-
 def generate_random_numbers_for_lightrays(lightray_number_per_particle):
     ################################################################################################################
     # generate random numbers for light ray intersection with lens
@@ -1646,10 +1685,9 @@ def generate_random_numbers_for_lightrays(lightray_number_per_particle):
     # psi_temp = np.zeros(shape=(1,int(lightray_number_per_particle))).astype('float32')
     psi_temp.tofile(os.path.join(cuda_codes_filepath, 'data', 'random2.bin'))
 
-
 def run_simulation_02(simulation_parameters):
-# This function runs a simulation using the thick lens, non-paraxial
-# camera simulation.
+    # This function runs a simulation using the thick lens, non-paraxial
+    # camera simulation.
 
     # simulation_parameters['lens_design']['lens_model'] = 'general'
     # simulation_parameters['lens_design']['lens_model'] = 'thin-lens'
