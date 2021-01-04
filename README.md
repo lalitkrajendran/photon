@@ -22,3 +22,4 @@ Dependencies for CUDA:
 - teem (http://teem.sourceforge.net)
 - cubic_interpolation_cuda (https://github.com/DannyRuijters/CubicInterpolationCUDA)
 
+Sample data is provided in the sample-data/ directory. Run the "sample_run_script.sh" file after compiling the software to run the package and generate sample images. You will have to make the bash script executable before running it. To do that, type: "chmod +x sample_run_script.sh" in the terminal. 

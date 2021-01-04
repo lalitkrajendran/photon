@@ -1,10 +1,11 @@
 # hidden files
 ._*
+
 #object files
 *.o
 
 #.mat files
-**.mat
+#**.mat
 
 # pycharm files
 python_codes/.idea/*
@@ -25,15 +26,8 @@ python_codes/build/*
 /data
 /results
 
-/test_directory*
-test_directory/particle_positions/particle_data_frame_0001.p
-test.bin
-test_directory_sayantan_params/1e6/particle_positions/*.p
-test_directory_sayantan_params/*/particle_positions/*.p
-test_directory_sayantan_params/particle_positions/*.p
-
 /src/sample-codes
 /data
 /results
 *~
-
+./sample-data/sample-images
