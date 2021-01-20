@@ -15,6 +15,16 @@ sys.path.append(os.path.join(mount_directory, 'Projects/BOS/general-codes/python
 import modify_plt_settings
 import loadmat_functions
 
+# modify plot settings
+import matplotlib
+matplotlib.rcParams['text.latex.preamble'] = [r"\usepackage{amsmath}"]
+plt = modify_plt_settings.modify_plt_settings(plt)
+
+# get color cycle
+colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
+# convert to rgba array
+colors = matplotlib.colors.to_rgba_array(colors)
+
 def load_image_from_bin(filename, shape):
     # Function to load raw image from ray tracing
     #
@@ -143,7 +153,8 @@ def calculate_lightray_deflections(pos1, pos2, dir1, dir2):
     # loop through co-ordinates and calculate displacements and deflections
     for i, coord in enumerate(coords):
         # displacements
-        d_pos[coord] = pos2[coord] - pos1[coord]
+        # d_pos[coord] = pos2[coord] - pos1[coord]
+        d_pos[coord] = pos1[coord] - pos2[coord]
         # angular deflections
         d_dir[coord] = dir2[coord] - dir1[coord]
 
@@ -226,42 +237,104 @@ def plot_dot_displacements_quiver(pos, d_pos, x_lim, y_lim, skip=1, scale=None):
     # Lalit Rajendran (lrajendr@purdue.edu)
         
     fig = plt.figure()
-    plt.quiver(pos['x'][::skip], pos['y'][::skip], d_pos['x'][::skip], d_pos['y'][::skip], scale=scale)
+    plt.quiver(pos['x'][::skip], pos['y'][::skip], d_pos['x'][::skip], d_pos['y'][::skip], scale=scale,
+                    color=colors[0, :], headwidth=5)
     ax = fig.axes[0]
     ax.set_aspect('equal', adjustable='box')
     ax.set_xlim(x_lim)
     ax.set_ylim(y_lim)
-    ax.set_xticks([])
-    ax.set_yticks([])
+    ax.set_xlabel('X (pix.)')
+    ax.set_ylabel('Y (pix.)')
     
     return fig, ax
 
-# TODO
-def plot_dot_displacements_contour(pos, d_pos, x_lim, y_lim):
-    # Function to plot dot displacements
+
+def plot_dot_displacements_contour(pos, d_pos, x_lim, y_lim, grid_spacing, skip=1):
+    # Function to plot dot displacements as contour
     #
     # INPUTS:
     # pos: ray positions on reference image
     # d_pos: ray displacements
     # x_lim: axis limits along x
     # y_lim: axis limits along y
+    # grid_spacing: grid spacing to interpolate deflections
+    # skip: number of grid points to skip in the contour plot
     #
     # OUTPUTS:
     # fig, ax: figure and axes for the plotted figure
     #
     # AUTHOR:
     # Lalit Rajendran (lrajendr@purdue.edu)
-        
+
+    # interpolate displacements onto grid
+    pos_grid, d_pos_grid = interpolate_deflections_to_grid(pos, d_pos, x_lim, y_lim, grid_spacing)
+
+    # calculate displacement magnitude
+    d_pos_mag = np.sqrt(d_pos_grid['x']**2 + d_pos_grid['y']**2)
+    
+    # plot contours 
     fig = plt.figure()
-    plt.quiver(pos['x'][::skip], pos['y'][::skip], d_pos['x'][::skip], d_pos['y'][::skip], scale=scale)
+    plt.pcolormesh(pos_grid['x'][::skip], pos_grid['y'][::skip], d_pos_mag[::skip])
+    plt.colorbar()
     ax = fig.axes[0]
     ax.set_aspect('equal', adjustable='box')
     ax.set_xlim(x_lim)
     ax.set_ylim(y_lim)
-    ax.set_xticks([])
-    ax.set_yticks([])
-    
+    ax.set_xlabel('X (pix.)')
+    ax.set_ylabel('Y (pix.)')
+
     return fig, ax
+
+
+def interpolate_deflections_to_grid(pos, d_pos, x_lim, y_lim, grid_spacing):
+    # Function to interpolate dot deflections to a grid
+    #
+    # INPUTS:
+    # pos: dot positions
+    # d_pos: dot displacements
+    # x_lim, y_lim: axis limits
+    # grid_spacing: spacing of the grid to interpolate the displacements
+    #
+    # OUTPUTS:
+    # pos_grid: grid co-ordinates
+    # d_pos_grid: interpolated displacements
+    #
+    # AUTHOR:
+    # Lalit Rajendran (lrajendr@purdue.edu)
+    
+    # calculate number of grid points
+    num_grid_points_x = int((x_lim[1] - x_lim[0]) / grid_spacing)
+    num_grid_points_y = int((y_lim[1] - y_lim[0]) / grid_spacing)
+    
+    # create 2D co-ordinate grid
+    x = x_lim[0] + np.linspace(start=0, stop=num_grid_points_x-1, num=num_grid_points_x, endpoint=True) * grid_spacing
+    y = y_lim[0] + np.linspace(start=0, stop=num_grid_points_y-1, num=num_grid_points_y, endpoint=True) * grid_spacing
+    X, Y = np.meshgrid(x, y)
+    
+    # collect points with non-nan indices
+    valid_idx = np.logical_and(np.isfinite(pos['x']), np.isfinite(pos1['y']))
+    x_valid = pos['x'][valid_idx]
+    y_valid = pos['y'][valid_idx]
+    dx_valid = d_pos['x'][valid_idx]
+    dy_valid = d_pos['y'][valid_idx]
+
+    # create array of points
+    points = np.transpose(np.vstack((x_valid, y_valid)))
+
+    # interpolate onto grid
+    dx_grid = griddata(points, dx_valid, (X, Y), method='linear')
+    dy_grid = griddata(points, dy_valid, (X, Y), method='linear')
+
+    # prepare variables to return
+    pos_grid = dict()
+    pos_grid['x'] = X
+    pos_grid['y'] = Y
+
+    d_pos_grid = dict()
+    d_pos_grid['x'] = dx_grid
+    d_pos_grid['y'] = dy_grid
+
+    return pos_grid, d_pos_grid
 
 
 def remove_edge_dots(pos, dir, buffer, num_pixels):
@@ -450,7 +523,8 @@ def process_lightray_data(folder, save_results=False, display_progress=False):
     
     if save_results:
         # mat_file = {'x': pos1_dot['x'], 'y': pos1_dot['y'], 'dx': d_pos_dot['x'], 'dy': d_pos_dot['y']}
-        mat_file = {'pos': pos_dot, 'dir': dir_dot, 'd_pos': d_pos_dot, 'd_dir': d_dir_dot}
+        # mat_file = {'pos': pos_dot, 'dir': dir_dot, 'd_pos': d_pos_dot, 'd_dir': d_dir_dot}
+        mat_file = {'pos1': pos1_dot, 'pos2': pos2_dot, 'dir1': dir1_dot, 'dir2': dir2_dot, 'd_pos': d_pos_dot, 'd_dir': d_dir_dot}
         sio.savemat(os.path.join(folder, 'dot-deflections.mat'), mat_file, long_field_names=True)
 
     return pos_dot, dir_dot, d_pos_dot, d_dir_dot
