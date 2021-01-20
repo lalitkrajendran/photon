@@ -20,6 +20,7 @@ if platform.system() == 'Linux':
 else:
     mount_directory = '/Volumes/aether_c/'
 
+
 def create_single_lens_optical_system():
     """
     This function is designed to create a data structure containing the
@@ -352,6 +353,7 @@ def create_camera_optical_system(simulation_parameters):
     
     return optical_system
 
+
 def calculate_rotation_matrix(theta_x, theta_y, theta_z):
     # This function calculates the rotation matrix of the angles 'theta_x',
     # 'theta_y', and 'theta_z' which are measured in radians and returns the
@@ -379,6 +381,7 @@ def calculate_rotation_matrix(theta_x, theta_y, theta_z):
     rotation_matrix = rotation_x * rotation_y * rotation_z
 
     return rotation_matrix
+
 
 def rotate_coordinates(X, Y, Z, Alpha, Beta, Gamma, XC, YC, ZC):
     # Function takes the coordinates specified by the arrays X, Y, and Z
@@ -430,6 +433,7 @@ def rotate_coordinates(X, Y, Z, Alpha, Beta, Gamma, XC, YC, ZC):
 
     return [XR,YR,ZR]
 
+
 def log_normal_pdf(x, mu, sigma):
     # Function to calculate the log-normal probability density function of
     # the argument 'x' with a mean of 'mu' and a standard deviation of 'sigma'.
@@ -454,6 +458,7 @@ def log_normal_pdf(x, mu, sigma):
 
     return y
 
+
 def inverse_log_normal_pdf(y,mu,sigma):
     # This function calculates the inverse, ie the two values of x such that
     #
@@ -468,6 +473,7 @@ def inverse_log_normal_pdf(y,mu,sigma):
 
     return [x1,x2]
 
+
 def log_normal_cdf(x,mu,sigma):
     # This function calculates the log-normal cumulative density function of
     # the argument 'x' with a mean of 'mu' and a standard deviation of 'sigma'.
@@ -476,6 +482,7 @@ def log_normal_cdf(x,mu,sigma):
     y=(1.0 + scispec.erf((np.log(x) - mu)/(sigma * np.sqrt(2.0))))/2.0
 
     return  y
+
 
 def calculate_log_normal_pdf_extrema(mu,sigma,t):
     # % This function calculates the extrema of the log-normal probability
@@ -520,6 +527,7 @@ def calculate_log_normal_pdf_extrema(mu,sigma,t):
         x_max = x_max - dx
 
     return [x_min,x_max]
+
 
 def calculate_particle_diameter_distribution(simulation_parameters):
     # This function calculates the discrete values of the possible particle
@@ -576,6 +584,7 @@ def calculate_particle_diameter_distribution(simulation_parameters):
 
     return [particle_diameter_vector,particle_diameter_pdf]
 
+
 def calculate_particle_diameter_indices(simulation_parameters,particle_diameter_pdf,particle_diameter_vector):
     # This function calculates the distribution of the particle diameter
     # indices based upon the particle diameter probability density function
@@ -618,6 +627,7 @@ def calculate_particle_diameter_indices(simulation_parameters,particle_diameter_
         particle_diameter_index_distribution[diameter_indices] = particle_diameter_index
 
     return particle_diameter_index_distribution
+
 
 def calculate_mie_scattering_intensity(simulation_parameters,particle_diameter_vector):
     # % This function calculates the intensity of the Mie scattering produced by
@@ -675,6 +685,7 @@ def calculate_mie_scattering_intensity(simulation_parameters,particle_diameter_v
         scattering_irradiance[:,particle_diameter_index] = s11
         
     return [scattering_angle,scattering_irradiance]
+
 
 def create_mie_scattering_data(simulation_parameters):
     # This function creates various parameters used in simulation the Mie
@@ -749,6 +760,7 @@ def create_mie_scattering_data(simulation_parameters):
     mie_scattering_data['beam_propogation_vector'] = beam_propogation_vector
 
     return mie_scattering_data
+
 
 def load_lightfield_data(simulation_parameters,optical_system,mie_scattering_data,frame_index,lightfield_source):
     # This function creates the lightfield data for performing the ray tracing
@@ -969,6 +981,7 @@ def load_lightfield_data(simulation_parameters,optical_system,mie_scattering_dat
     lightfield_source['object_distance'] = object_distance
     return lightfield_source
 
+
 def calculate_sunflower_coordinates(grid_point_diameter,lightray_number_per_grid_point):
     #% This function creates two coordinate vectors x and y that consist of a
     #% series of points that fill a circle centered at (0,0) with a diameter
@@ -1025,6 +1038,7 @@ def calculate_sunflower_coordinates(grid_point_diameter,lightray_number_per_grid
     y_lightray_coordinates = np.transpose(np.append(y_lightray_coordinates,0.0))
     
     return [x_lightray_coordinates,y_lightray_coordinates]
+
 
 def generate_calibration_lightfield_data(simulation_parameters,optical_system,plane_index):
     # % This function generates a structure containing the location of the each of the
@@ -1218,6 +1232,7 @@ def generate_calibration_lightfield_data(simulation_parameters,optical_system,pl
 
     return lightfield_source
 
+
 def create_non_overlapping_dot_coordinates(simulation_parameters):
     # This function creates random co-ordinates for the dot centroids on a dot pattern, ensuring no overlap
 
@@ -1227,10 +1242,10 @@ def create_non_overlapping_dot_coordinates(simulation_parameters):
     ymax = simulation_parameters['bos_pattern']['Y_Max']
 
     # number of dots required
-    num_dots = simulation_parameters['bos_pattern']['grid_point_number']
+    num_dots = int(simulation_parameters['bos_pattern']['grid_point_number'])
 
     # max number of iterations
-    max_iter = 50e3
+    max_iter = 5e4 #50e3
 
     # geometric diameter (um)
     d_g = simulation_parameters['bos_pattern']['grid_point_diameter']
@@ -1293,6 +1308,7 @@ def create_non_overlapping_dot_coordinates(simulation_parameters):
     # coordinates = np.reshape(coordinates, (int(simulation_parameters['bos_pattern']['x_grid_point_number']),
     #                                        int(simulation_parameters['bos_pattern']['y_grid_point_number']), 2))
     return coordinates
+
 
 def generate_bos_lightfield_data(simulation_parameters,optical_system):
     # % This function generates a structure containing the location of the each of the
@@ -1519,6 +1535,7 @@ def generate_bos_lightfield_data(simulation_parameters,optical_system):
     lightfield_source['object_distance'] = object_distance
     return lightfield_source, x_grid_point_coordinate_vector, y_grid_point_coordinate_vector
 
+
 def generate_bos_image_lightfield_data(simulation_parameters,optical_system):
     # % This function generates a structure containing the location of the each of the
     # % lightfield source points as well as their irradiance and color on a BOS texture.  Only a single value is
@@ -1663,6 +1680,7 @@ def generate_bos_image_lightfield_data(simulation_parameters,optical_system):
 
     return lightfield_source
 
+
 def generate_random_numbers_for_lightrays(lightray_number_per_particle):
     ################################################################################################################
     # generate random numbers for light ray intersection with lens
@@ -1684,6 +1702,7 @@ def generate_random_numbers_for_lightrays(lightray_number_per_particle):
     psi_temp = np.random.rand(1, int(lightray_number_per_particle)).astype('float32')
     # psi_temp = np.zeros(shape=(1,int(lightray_number_per_particle))).astype('float32')
     psi_temp.tofile(os.path.join(cuda_codes_filepath, 'data', 'random2.bin'))
+
 
 def run_simulation_02(simulation_parameters):
     # This function runs a simulation using the thick lens, non-paraxial
