@@ -301,7 +301,7 @@ def interpolate_deflections_to_grid(pos, d_pos, x_lim, y_lim, grid_spacing):
     #
     # AUTHOR:
     # Lalit Rajendran (lrajendr@purdue.edu)
-    
+
     # calculate number of grid points
     num_grid_points_x = int((x_lim[1] - x_lim[0]) / grid_spacing)
     num_grid_points_y = int((y_lim[1] - y_lim[0]) / grid_spacing)
