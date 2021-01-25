@@ -1,9 +1,9 @@
 # hidden files
 ._*
-
+*.pyc
 #object files
 *.o
-
+*.so
 #.mat files
 #**.mat
 

@@ -4,6 +4,7 @@ import sys
 import os.path
 import matplotlib.pyplot as plt
 import platform
+from scipy.interpolate import griddata
 
 if platform.system() == 'Linux':
     mount_directory = '/scratch/shannon/c/aether/'
@@ -25,6 +26,7 @@ colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
 # convert to rgba array
 colors = matplotlib.colors.to_rgba_array(colors)
 
+
 def load_image_from_bin(filename, shape):
     # Function to load raw image from ray tracing
     #
@@ -43,6 +45,30 @@ def load_image_from_bin(filename, shape):
     I = np.reshape(I_temp, newshape=shape)
 
     return I
+
+
+def load_intermediate_light_ray_positions(filename, num_intermediate_positions):    
+    # Function to load final light ray positions
+    #
+    # INPUTS:
+    # filename: path to .bin file containing light ray positions
+    # num_intermediate_positions: number of positions saved for each ray
+    #
+    # OUTPUTS:
+    # pos_dict (dict): ray positions (um) along x,y,z (image co-ord) and number of rays
+    #
+    # AUTHOR:
+    # Lalit Rajendran (lrajendr@purdue.edu)
+    
+    pos_temp = np.fromfile(file=filename, dtype='float32')
+
+    num_rays = int(pos_temp.size/(3 * num_intermediate_positions))
+
+    pos = np.reshape(a=pos_temp, newshape=(num_rays, num_intermediate_positions, 3))
+
+    pos_dict = {'x': pos[:, :, 0], 'y': pos[:, :, 1], 'z': pos[:, :, 2], 'num_rays': num_rays}
+
+    return pos_dict
 
 
 def load_light_ray_positions(filename):    
@@ -66,6 +92,29 @@ def load_light_ray_positions(filename):
     pos_dict = {'x': pos[:, 0], 'y': pos[:, 1], 'z': pos[:, 2], 'num_rays': num_rays}
 
     return pos_dict
+
+
+def load_intermediate_light_ray_directions(filename, num_intermediate_positions):    
+    # Function to load light ray directions after density gradients
+    #
+    # INPUTS:
+    # filename: path to .bin file containing light ray directions
+    #
+    # OUTPUTS:
+    # dir_dict (dict): ray angles (rad.) along x,y,z (image co-ord) and number of rays
+    #
+    # AUTHOR:
+    # Lalit Rajendran (lrajendr@purdue.edu)
+
+    dir_temp = np.fromfile(file=filename, dtype='float32')
+
+    num_rays = int(dir_temp.size/(3 * num_intermediate_positions))
+
+    dirs = np.reshape(a=dir_temp, newshape=(num_rays, num_intermediate_positions, 3))
+
+    dir_dict = {'x': np.arccos(dirs[:, :, 0]), 'y': np.arccos(dirs[:, :, 1]), 'z': np.arccos(dirs[:, :, 2]), 'num_rays': num_rays}
+
+    return dir_dict
 
 
 def load_light_ray_directions(filename):    
@@ -127,6 +176,36 @@ def load_light_ray_data(folder):
     dir2 = load_light_ray_directions(filename)
 
     return pos1, pos2, dir1, dir2
+
+
+def load_intermediate_light_ray_data(folder, num_intermediate_positions):
+    # Function to light ray positions and directions
+    #
+    # INPUTS:
+    # folder: directory containing light ray data for reference and gradient images
+    # num_intermediate_positions: number of intermediate positions saved inside the density gradients
+    #
+    # OUTPUTS:
+    # ipos, idir: intermediate ray positions and directions
+    #
+    # AUTHOR:
+    # Lalit Rajendran (lrajendr@purdue.edu)
+    
+    # -----------------
+    # load positions
+    # -----------------    
+    # gradient image
+    filename = os.path.join(folder, 'light-ray-positions', 'im2', 'intermediate_pos_0000.bin')
+    ipos = load_intermediate_light_ray_positions(filename, num_intermediate_positions)
+
+    # -----------------
+    # load directions
+    # -----------------    
+    # gradient image
+    filename = os.path.join(folder, 'light-ray-directions', 'im2', 'intermediate_dir_0000.bin')
+    idir = load_intermediate_light_ray_directions(filename, num_intermediate_positions)
+
+    return ipos, idir
 
 
 def calculate_lightray_deflections(pos1, pos2, dir1, dir2):
@@ -273,17 +352,18 @@ def plot_dot_displacements_contour(pos, d_pos, x_lim, y_lim, grid_spacing, skip=
     d_pos_mag = np.sqrt(d_pos_grid['x']**2 + d_pos_grid['y']**2)
     
     # plot contours 
-    fig = plt.figure()
-    plt.pcolormesh(pos_grid['x'][::skip], pos_grid['y'][::skip], d_pos_mag[::skip])
+    # fig = plt.figure()
+    plt.pcolormesh(pos_grid['x'][::skip], pos_grid['y'][::skip], d_pos_mag[::skip], cmap='Greys')
     plt.colorbar()
-    ax = fig.axes[0]
-    ax.set_aspect('equal', adjustable='box')
+    # ax = fig.axes[0]
+    ax = plt.gca()
+    ax.set_aspect('equal')#, adjustable='box')
     ax.set_xlim(x_lim)
     ax.set_ylim(y_lim)
     ax.set_xlabel('X (pix.)')
     ax.set_ylabel('Y (pix.)')
 
-    return fig, ax
+    # return fig, ax
 
 
 def interpolate_deflections_to_grid(pos, d_pos, x_lim, y_lim, grid_spacing):
@@ -312,7 +392,7 @@ def interpolate_deflections_to_grid(pos, d_pos, x_lim, y_lim, grid_spacing):
     X, Y = np.meshgrid(x, y)
     
     # collect points with non-nan indices
-    valid_idx = np.logical_and(np.isfinite(pos['x']), np.isfinite(pos1['y']))
+    valid_idx = np.logical_and(np.isfinite(pos['x']), np.isfinite(pos['y']))
     x_valid = pos['x'][valid_idx]
     y_valid = pos['y'][valid_idx]
     dx_valid = d_pos['x'][valid_idx]

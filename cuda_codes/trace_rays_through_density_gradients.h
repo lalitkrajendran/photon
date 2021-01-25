@@ -957,7 +957,6 @@ __device__ light_ray_data_t euler(light_ray_data_t light_ray_data,
 	return light_ray_data;
 }
 
-
 __device__ light_ray_data_t rk4(light_ray_data_t light_ray_data, density_grad_params_t params, float3 lookup_scale,
 		int thread_id, float3* intermediate_pos, float3* intermediate_dir,
 		bool save_intermediate_ray_data, int num_intermediate_positions_save)
@@ -1485,20 +1484,23 @@ __device__ light_ray_data_t trace_rays_through_density_gradients(light_ray_data_
  	pos.x >= max_bound.x || pos.y >= max_bound.y || pos.z >= max_bound.z )
  	{
 
- 		// // if the ray did not intersect the volume, then set all the properties to NAN
- 		// // and exit the function
- 		// if(!IntersectWithVolume(&pos, dir, params.min_bound, params.max_bound))
- 		// {
-		// 	//# % This sets any of the light ray positions outside of the domain
- 		// 	//# % to NaN values
- 		// 	light_ray_data.ray_source_coordinates = make_float3(CUDART_NAN_F,CUDART_NAN_F,CUDART_NAN_F);
+		// IntersectWithVolume(&pos, dir, params.min_bound, params.max_bound);
+		// light_ray_data.ray_source_coordinates = pos;
+		// return light_ray_data;
+ 		// if the ray did not intersect the volume, then set all the properties to NAN
+ 		// and exit the function
+ 		if(!IntersectWithVolume(&pos, dir, params.min_bound, params.max_bound))
+ 		{
+			// //# % This sets any of the light ray positions outside of the domain
+ 			// //# % to NaN values
+ 			// light_ray_data.ray_source_coordinates = make_float3(CUDART_NAN_F,CUDART_NAN_F,CUDART_NAN_F);
 
- 		// 	//# % This sets any of the light ray directions outside of the domain
- 		// 	//# % to NaN values
- 		// 	light_ray_data.ray_propagation_direction = make_float3(CUDART_NAN_F,CUDART_NAN_F,CUDART_NAN_F);
+ 			// //# % This sets any of the light ray directions outside of the domain
+ 			// //# % to NaN values
+ 			// light_ray_data.ray_propagation_direction = make_float3(CUDART_NAN_F,CUDART_NAN_F,CUDART_NAN_F);
 
- 		// 	return light_ray_data;
- 		// }
+ 			return light_ray_data;
+ 		}
 
 		// printf("light ray intersection point: %.2f, %.2f, %.2f\n", pos.x, pos.y, pos.z);
 		// increment ray position by a small amount so it is inside the volume.
@@ -1568,6 +1570,23 @@ __device__ void check_texture_lookup()
 	printf("val.w: %f\n", val.w);
 
 }
+
+// __global__ void check_trace_rays_through_density_gradients_02(int a, int b)
+// {
+// 	/*
+	//  * This function is used to check the ray deflection produced by the
+	//  * trace_rays_through_density_gradients routine for a set of rays that are parallel
+	//  * to the z axis
+	//  */
+	// int c;
+	// int id = threadIdx.x;
+
+	// c = a + b;
+
+	// x[id] = c;
+
+	// check_texture_lookup();
+// }
 
 __global__ void check_trace_rays_through_density_gradients(light_ray_data_t* light_ray_data, density_grad_params_t params, curandState* states,
 		bool save_intermediate_ray_data, int num_intermediate_positions_save, float3* intermediate_pos, float3* intermediate_dir)

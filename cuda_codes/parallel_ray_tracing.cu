@@ -3471,7 +3471,7 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 		cudaMalloc((void **)&d_final_dir, sizeof(float3)*num_lightrays_save);
 	}
 
-	if(save_intermediate_ray_data)
+	if(simulate_density_gradients && save_intermediate_ray_data)
 	{
 		printf("number of intermediate positions to be saved for each light ray: %d\n", num_intermediate_positions_save);
 		// allocate memory
@@ -3522,7 +3522,7 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 			cudaMemcpy(d_final_pos, final_pos, sizeof(float3)*num_lightrays_save, cudaMemcpyHostToDevice);
 			cudaMemcpy(d_final_dir, final_dir, sizeof(float3)*num_lightrays_save, cudaMemcpyHostToDevice);
 		}
-		if(save_intermediate_ray_data)
+		if(simulate_density_gradients && save_intermediate_ray_data)
 		{
 			// initialize all values to nan
 			for(light_ray_index = 0; light_ray_index < num_lightrays_save; light_ray_index++)
@@ -3600,7 +3600,7 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 			file_final_dir.close();
 		}
 
-		if(save_intermediate_ray_data)
+		if(simulate_density_gradients && save_intermediate_ray_data)
 		{
 			//--------------------------------------------------------------------------------------
 			// save intermediate light ray positions to file (for debugging purposes)
@@ -3689,7 +3689,7 @@ void start_ray_tracing(float lens_pitch, float image_distance,
 		cudaFree(d_final_dir);
 	}
 
-	if(save_intermediate_ray_data)
+	if(simulate_density_gradients && save_intermediate_ray_data)
 	{
 		// printf("freeing memory allocated for saving intermediate light ray data\n");
 		// free arrays
