@@ -948,7 +948,6 @@ def load_lightfield_data(simulation_parameters,optical_system,mie_scattering_dat
     # based upon the Full Width Half Maximum
     gaussian_sigma = gaussian_beam_fwhm/(2.0*np.sqrt(2.0*np.log(2.0)))
 
-
     # This calculates the intensity of the particles based upon the
     # Gaussian beam distribution (the scale factor coefficient is to ensure
     # that the particle intensity gives roughly "typical" results for default
@@ -979,6 +978,7 @@ def load_lightfield_data(simulation_parameters,optical_system,mie_scattering_dat
     lightfield_source['diameter_index'] = np.ones(X.shape) # particle_diameter_index_distribution
     lightfield_source['z_offset'] = z_offset
     lightfield_source['object_distance'] = object_distance
+    
     return lightfield_source
 
 
