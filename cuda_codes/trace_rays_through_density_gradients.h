@@ -815,6 +815,7 @@ __device__ light_ray_data_t euler(light_ray_data_t light_ray_data,
 
 				break;
 			}
+			
 			// check if light ray is sufficiently inside the volume to get a non-zero refractive index.
 			// if not, propagate the ray further.
 			if(!access_refractive_index(pos, params, lookup))
@@ -841,15 +842,6 @@ __device__ light_ray_data_t euler(light_ray_data_t light_ray_data,
 				}
 				else
 					val = val_prev;
-				// printf("loop_ctr: %d, lookup.z: %f, val.x: %g, val.w= %f < 0\n", loop_ctr, lookup.z, val.x, val.w);
-
-				// pos = pos + params.step_size * dir;
-				// pos = pos + params.step_size/(1 + params.data_min) * dir;
-				// pos = pos + params.step_size/refractive_index * dir;
-
-				// light_ray_data.ray_source_coordinates = pos;
-				// increment_arc_length(&params, thread_id);
-				// continue;
 			}
 
 			current_refractive_index = 1 + val.w;
@@ -1028,23 +1020,24 @@ __device__ light_ray_data_t rk4(light_ray_data_t light_ray_data, density_grad_pa
 			// check if ray is inside volume
 			if(!ray_inside_box(pos, params, lookup) && loop_ctr!=0)
 			{
-				// flag rays that exit through the sides of the volume
-				if(pos.x < params.min_bound.x || pos.y < params.min_bound.y ||
-						pos.x >= params.max_bound.x || pos.y >= params.max_bound.y||
-						lookup.x < 0 || lookup.y < 0 ||	lookup.x >= params.data_width
-						|| lookup.y >= params.data_height)
-				{
-					//# % This sets any of the light ray positions outside of the domain
-					//# % to NaN values
-					light_ray_data.ray_source_coordinates = make_float3(CUDART_NAN_F,CUDART_NAN_F,CUDART_NAN_F);
+				// // flag rays that exit through the sides of the volume
+				// if(pos.x < params.min_bound.x || pos.y < params.min_bound.y ||
+				// 		pos.x >= params.max_bound.x || pos.y >= params.max_bound.y||
+				// 		lookup.x < 0 || lookup.y < 0 ||	lookup.x >= params.data_width
+				// 		|| lookup.y >= params.data_height)
+				// {
+				// 	//# % This sets any of the light ray positions outside of the domain
+				// 	//# % to NaN values
+				// 	light_ray_data.ray_source_coordinates = make_float3(CUDART_NAN_F,CUDART_NAN_F,CUDART_NAN_F);
 
-					//# % This sets any of the light ray directions outside of the domain
-					//# % to NaN values
-					light_ray_data.ray_propagation_direction = make_float3(CUDART_NAN_F,CUDART_NAN_F,CUDART_NAN_F);
+				// 	//# % This sets any of the light ray directions outside of the domain
+				// 	//# % to NaN values
+				// 	light_ray_data.ray_propagation_direction = make_float3(CUDART_NAN_F,CUDART_NAN_F,CUDART_NAN_F);
 
-				}
+				// }
 				break;
 			}
+			
 			// check if light ray is sufficiently inside the volume to get a non-zero refractive index.
 			// if not, propagate the ray further.
 			if(!access_refractive_index(pos, params, lookup))
@@ -1100,10 +1093,11 @@ __device__ light_ray_data_t rk4(light_ray_data_t light_ray_data, density_grad_pa
 			// check if ray is inside volume
 			if(!ray_inside_box(pos, params, lookup))
 			{
-				// calculate distance between current ray position and exit
-				light_ray_data.ray_source_coordinates = light_ray_data.ray_source_coordinates
-						+ params.step_size/(current_refractive_index) * light_ray_data.ray_propagation_direction;
-				continue; //break;
+				// // calculate distance between current ray position and exit
+				// light_ray_data.ray_source_coordinates = light_ray_data.ray_source_coordinates
+				// 		+ params.step_size/(current_refractive_index) * light_ray_data.ray_propagation_direction;
+				// continue; 
+				break;
 			}
 
 			// record current refractive index before accessing
@@ -1140,9 +1134,10 @@ __device__ light_ray_data_t rk4(light_ray_data_t light_ray_data, density_grad_pa
 			// check if ray is inside volume
 			if(!ray_inside_box(pos, params, lookup))
 			{
-				light_ray_data.ray_source_coordinates = light_ray_data.ray_source_coordinates
-						+ params.step_size/(current_refractive_index) * light_ray_data.ray_propagation_direction;
-				continue; //break;
+				// light_ray_data.ray_source_coordinates = light_ray_data.ray_source_coordinates
+				// 		+ params.step_size/(current_refractive_index) * light_ray_data.ray_propagation_direction;
+				// continue; 
+				break;
 			}
 			// store current refractive index
 			val_prev = val;
@@ -1185,6 +1180,9 @@ __device__ light_ray_data_t rk4(light_ray_data_t light_ray_data, density_grad_pa
 		}
 	}
 
+	// ===================================
+	// cubic interpolation
+	// ===================================
 	else
 	{
 		while(inside_box)
@@ -1289,11 +1287,6 @@ __device__ light_ray_data_t rk4(light_ray_data_t light_ray_data, density_grad_pa
 
 	//***************** END OF RK4 ********************************//
 
-	// if the light ray did not propagate through the whole volume, then set it to NAN
-	// float threshold = 0.1;
-	// if(fabs(light_ray_data.ray_source_coordinates.z - params.min_bound.z) > threshold*params.min_bound.z)
-	// 	set_lightray_to_NAN(&light_ray_data);
-	// printf("loop_ctr: %d\n", loop_ctr);
 	return light_ray_data;
 }
 
