@@ -71,7 +71,7 @@ __device__ float random_single(unsigned int seed, int id)
 __device__ light_ray_data_t generate_lightfield_angular_data(float lens_pitch, float image_distance,
 		scattering_data_t scattering_data, int scattering_type, lightfield_source_single_t lightfield_source,
                                      int lightray_number_per_particle, float beam_wavelength,
-                                     float aperture_f_number, float random_number_1,float random_number_2, float ray_cone_pitch_ratio)
+                                     float aperture_f_number, float random_number_1, float random_number_2, float ray_cone_pitch_ratio)
 {
 	/*
 		This function generates a light ray for a given source point
@@ -100,11 +100,6 @@ __device__ light_ray_data_t generate_lightfield_angular_data(float lens_pitch, f
 	float x_current = lightfield_source.x;
 	float y_current = lightfield_source.y;
 	float z_current = lightfield_source.z;
-	// printf("x_current: %.2f, y_current: %.2f\n", x_current, y_current);
-	// float x_current = 0.0;
-	// float y_current = 0.0;
-	// float x_current = 25.0e3; //0.0;
-	// float y_current = 25.0e3;
 
 	//--------------------------------------------------------------------------------------
 	// compute direction of propagation of light ray
@@ -112,25 +107,26 @@ __device__ light_ray_data_t generate_lightfield_angular_data(float lens_pitch, f
 	float lens_pitch_scaling_factor = ray_cone_pitch_ratio; //1; //1e-1; //1e-4; //0.3; //1e-4;
 
 	// generate random points on the lens where the rays should intersect
-	// float x_lens = lens_pitch_scaling_factor*lens_pitch*sqrt(random_number_1)*cos(2*M_PI*random_number_2);
-	// float y_lens = lens_pitch_scaling_factor*lens_pitch*sqrt(random_number_1)*sin(2*M_PI*random_number_2);
-	float x_lens = lens_pitch_scaling_factor * 0.5 * lens_pitch*random_number_1 * cos(2*M_PI*random_number_2);
-	float y_lens = lens_pitch_scaling_factor * 0.5 * lens_pitch*random_number_1 * sin(2*M_PI*random_number_2);
-
-	// float x_lens = sqrt(random_number_1)*cos(2*M_PI*random_number_2);
-	// float y_lens = sqrt(random_number_1)*sin(2*M_PI*random_number_2);
-	// float x_lens = 0.0; //0.5*lens_pitch_scaling_factor*(random_number_1 - 0.5);
-	// float y_lens = 0.0;
-	// image_distance = 217514.0;
+	float x_lens, y_lens;
+	if (lightray_number_per_particle == 1)
+	{
+		// if just a single ray is to be traced for each source point, make that the chief ray
+		x_lens = 0.0;
+		y_lens = 0.0;
+	}
+	else
+	{
+		// if multiple rays are to be traced for each source point, then pick a location
+		// based on a random intersection point
+		x_lens = lens_pitch_scaling_factor * 0.5 * lens_pitch*random_number_1 * cos(2*M_PI*random_number_2);
+		y_lens = lens_pitch_scaling_factor * 0.5 * lens_pitch*random_number_1 * sin(2*M_PI*random_number_2);	
+	}
 
 	// calculate the x angles for the light rays
 	float theta_temp = -(x_lens - x_current) / (image_distance - z_current);
-	// float theta_temp = (random_number_1 - 0.5) * 1e-3;
 	// calculate the y angles for the light rays
 	float phi_temp = -(y_lens - y_current) / (image_distance - z_current);
 
-	// float theta_temp = M_PI/180.0 * 1e-2;
-	// float phi_temp = M_PI/180.0 * 1e-2;
 	//--------------------------------------------------------------------------------------
 	// compute irradiance of the light ray
 	//--------------------------------------------------------------------------------------
