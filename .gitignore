@@ -7,6 +7,9 @@
 #.mat files
 #**.mat
 
+# python hidden files
+python_codes/__pycache__/*
+
 # pycharm files
 python_codes/.idea/*
 
