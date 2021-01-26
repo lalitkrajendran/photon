@@ -252,7 +252,10 @@ def calculate_dot_average(a, num_rays_per_dot):
     #
     # AUTHOR:
     # Lalit Rajendran (lrajendr@purdue.edu)
-        
+
+    # ensure num rays per dot is int
+    num_rays_per_dot = int(num_rays_per_dot)        
+    
     # co-ordinates
     coords = list(a.keys())
 
@@ -353,7 +356,7 @@ def plot_dot_displacements_contour(pos, d_pos, x_lim, y_lim, grid_spacing, skip=
     
     # plot contours 
     # fig = plt.figure()
-    plt.pcolormesh(pos_grid['x'][::skip], pos_grid['y'][::skip], d_pos_mag[::skip], cmap='Greys')
+    plt.pcolormesh(pos_grid['x'][::skip], pos_grid['y'][::skip], d_pos_mag[::skip], cmap='plasma')
     plt.colorbar()
     # ax = fig.axes[0]
     ax = plt.gca()
