@@ -139,11 +139,10 @@ for i in range(starting_index,starting_index+number_of_parameter_files):
         # if(type(simulation_parameters[i]) is str or type(simulation_parameters[i]) is list or type(simulation_parameters[i]) is unicode):
         if(type(simulation_parameters[i]) is bytes or type(simulation_parameters[i]) is list or type(simulation_parameters[i]) is str):
             continue
-        for j in simulation_parameters[i].keys():
-            print(simulation_parameters[i][j])
+        for j in simulation_parameters[i]:
             if (type(simulation_parameters[i][j]) is int):
                 simulation_parameters[i][j] = float(simulation_parameters[i][j])
-    exit(0)
+
     # This runs the camera simulation for the current camera
     run_simulation_02(simulation_parameters)
 

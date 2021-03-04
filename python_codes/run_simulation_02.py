@@ -9,8 +9,6 @@ from numpy import linalg as la
 import scipy.special as scispec
 from bhmie import bhmie
 import tifffile as TIFF
-import matplotlib
-import matplotlib.image as mpimg
 import sys
 import platform
 

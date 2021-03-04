@@ -58,7 +58,8 @@ all: libparallel_ray_tracing.so
 libparallel_ray_tracing.so: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: NVCC Linker'
-	/usr/local/cuda-10.1/bin/nvcc --cudart static -L/usr/include/ -L/scratch/shannon/a/lrajendr/usr/lib/ -L/scratch/shannon/a/lrajendr/usr/bin/ -L/scratch/shannon/a/lrajendr/usr/lib64 -L/scratch/shannon/a/lrajendr/usr/include/teem/ -L/scratch/shannon/a/lrajendr/usr/include/ -L/usr/local/include/ -L/usr/lib64/ -shared --relocatable-device-code=false -gencode arch=compute_30,code=compute_30 -gencode arch=compute_30,code=sm_30 -link -o  "libparallel_ray_tracing.so" $(OBJS) $(USER_OBJS) $(LIBS)
+	# /usr/local/cuda-10.1/bin/nvcc --cudart static -L/usr/include/ -L/scratch/shannon/a/lrajendr/usr/lib/ -L/scratch/shannon/a/lrajendr/usr/bin/ -L/scratch/shannon/a/lrajendr/usr/lib64 -L/scratch/shannon/a/lrajendr/usr/include/teem/ -L/scratch/shannon/a/lrajendr/usr/include/ -L/usr/local/include/ -L/usr/lib64/ -shared --relocatable-device-code=false -gencode arch=compute_30,code=compute_30 -gencode arch=compute_30,code=sm_30 -link -o  "libparallel_ray_tracing.so" $(OBJS) $(USER_OBJS) $(LIBS)
+	/usr/local/cuda-10.1/bin/nvcc --cudart static -L/usr/include/ -L/scratch/shannon/a/lrajendr/usr/lib/ -L/scratch/shannon/a/lrajendr/usr/bin/ -L/scratch/shannon/a/lrajendr/usr/lib64 -L teem/ -L/scratch/shannon/a/lrajendr/usr/include/ -L/usr/local/include/ -L/usr/lib64/ -shared --relocatable-device-code=false -gencode arch=compute_30,code=compute_30 -gencode arch=compute_30,code=sm_30 -link -o  "libparallel_ray_tracing.so" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
