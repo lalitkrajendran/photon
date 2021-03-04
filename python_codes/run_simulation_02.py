@@ -9,6 +9,7 @@ from numpy import linalg as la
 import scipy.special as scispec
 from bhmie import bhmie
 import tifffile as TIFF
+import matplotlib
 import matplotlib.image as mpimg
 import sys
 import platform
@@ -1699,19 +1700,22 @@ def generate_random_numbers_for_lightrays(lightray_number_per_particle):
     # path to the directory containing the cuda codes
     cuda_codes_filepath = '../cuda_codes'
 
+    dir_name = os.path.join(cuda_codes_filepath, 'data')
+    if not os.path.exists(dir_name):
+        os.makedirs(dir_name)
     # generate a set of random numbers using MT 19937
     # % This creates random radial coordinates for the lightrays to intersect
     # % on the lens
     np.random.seed(1105)
     r_temp = np.random.rand(1, int(lightray_number_per_particle)).astype('float32')
-    r_temp.tofile(os.path.join(cuda_codes_filepath, 'data', 'random1.bin'))
+    r_temp.tofile(os.path.join(dir_name, 'random1.bin'))
 
     # % This creates random angular coordinates for the lightrays to
     # % intersect on the lens
     # np.random.seed(4092)
     psi_temp = np.random.rand(1, int(lightray_number_per_particle)).astype('float32')
     # psi_temp = np.zeros(shape=(1,int(lightray_number_per_particle))).astype('float32')
-    psi_temp.tofile(os.path.join(cuda_codes_filepath, 'data', 'random2.bin'))
+    psi_temp.tofile(os.path.join(dir_name, 'random2.bin'))
 
 
 def run_simulation_02(simulation_parameters):
