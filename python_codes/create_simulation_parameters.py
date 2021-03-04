@@ -56,6 +56,8 @@ def create_simulation_parameters(simulation_type):
     simulation_parameters['camera_design']['intensity_rescaling'] = True
     # option to implement diffraction on the camera sensor
     simulation_parameters['camera_design']['implement_diffraction'] = True
+    # diffraction diameter in pixels
+    simulation_parameters['camera_design']['diffraction_diameter'] = 3.0
     
     if simulation_type == 'piv':
         # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -87,7 +89,7 @@ def create_simulation_parameters(simulation_type):
         # % This is the number of lightrays to simulate per particle (this is roughly
         # % equivalent to the power of the laser)
         simulation_parameters['particle_field'][
-            'lightray_number_per_particle'] = 1e4  # % 1e4 is a good number of lightrays . . .
+            'lightray_number_per_particle'] = 1e2 
         # % This is the number of lightrays to propogate per iteration (this is a
         # % function of the RAM available on the computer)
         simulation_parameters['particle_field']['lightray_process_number'] = 1e6

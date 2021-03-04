@@ -20,6 +20,17 @@ if platform.system() == 'Linux':
 else:
     mount_directory = '/Volumes/aether_c/'
 
+# The following functions convert an object to a struct so that it can be saved to a mat file
+def loadmat(filename):
+    '''
+	this function should be called instead of direct spio.loadmat
+	as it cures the problem of not properly recovering python dictionaries
+	from mat files. It calls the function check keys to cure all entries
+	which are still mat-objects
+	'''
+    data = sio.loadmat(filename, struct_as_record=False, squeeze_me=True)
+    return _check_keys(data)
+
 
 def create_single_lens_optical_system():
     """
@@ -592,7 +603,7 @@ def calculate_particle_diameter_indices(simulation_parameters,particle_diameter_
 
     # This extracts the number of particles to simulate out of the list of
     # possible particles
-    particle_number = simulation_parameters['particle_field']['particle_number']
+    particle_number = int(simulation_parameters['particle_field']['particle_number'])
 
     # This calculates the cumulative sum of the particle diameter PDF function
     # to determine the particle diameter distribution
@@ -674,7 +685,7 @@ def calculate_mie_scattering_intensity(simulation_parameters,particle_diameter_v
         # calculate relative refractive index
         refrel = ref_part/ref_med
         # specify number of angles between 0 and 90 where irradiance data is reqd
-        nang = mie_scattering_angle_number
+        nang = int(mie_scattering_angle_number)
         # call bhmie function to evaluate mie scattering intensities
         [s1,s2,qext,qsca,qback,gsca,theta] = bhmie(x,refrel,nang)
         dang = 0.5*np.pi/(nang-1)
@@ -795,7 +806,7 @@ def load_lightfield_data(simulation_parameters,optical_system,mie_scattering_dat
     # This extracts the number of particles to simulate out of the list of
     # possible particles (if this number is larger than the number of
     # saved particles, an error will be returned)
-    particle_number = simulation_parameters['particle_field']['particle_number']
+    particle_number = int(simulation_parameters['particle_field']['particle_number'])
 
     # This extracts the Full Width Half Maximum of the laser sheet
     # Gaussian function (in microns) which will produce an illuminated
@@ -882,8 +893,9 @@ def load_lightfield_data(simulation_parameters,optical_system,mie_scattering_dat
         particle_data_filename_read = particle_data_list[frame_index-1]
 
         # This loads the particle data file to memory
-        mat_contents = sio.loadmat(particle_data_filename_read, squeeze_me = True)
-        particle_data = pickle.load(open(particle_data_filename_read[:-3] + 'p','rb'))
+        # mat_contents = sio.loadmat(particle_data_filename_read, squeeze_me = True)
+        particle_data = loadmat(particle_data_filename_read, squeeze_me=True)
+        # particle_data = pickle.load(open(particle_data_filename_read[:-3] + 'p','rb'))
 
         # reads variable from mat_contents
         X = np.squeeze(particle_data['X'])
@@ -910,12 +922,12 @@ def load_lightfield_data(simulation_parameters,optical_system,mie_scattering_dat
         if 'Y_Min' in simulation_parameters['particle_field'].keys():
             Y_Min = simulation_parameters['particle_field']['Y_Min']
         else:
-            Y_Min = -7.5e4 #-7.5e4
+            Y_Min = -1e5 #-7.5e4 #-7.5e4
 
         if 'Y_Max' in simulation_parameters['particle_field'].keys():
             Y_Max = simulation_parameters['particle_field']['Y_Max']
         else:
-            Y_Max = 7.5e4 #+7.5e4
+            Y_Max = 1e5 #7.5e4 #+7.5e4
 
         if 'Z_Min' in simulation_parameters['particle_field'].keys():
             Z_Min = simulation_parameters['particle_field']['Z_Min']

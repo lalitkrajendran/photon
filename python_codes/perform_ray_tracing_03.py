@@ -1799,9 +1799,9 @@ def prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, sc
         if lens_model == 'thin-lens':
             element_data_ctypes[i].element_type = ('t').encode('utf-8')
         elif lens_model == 'apparent':
-            element_data_ctypes[i].element_type = 'n'
+            element_data_ctypes[i].element_type = ('n').encode('utf-8')
         else:
-            element_data_ctypes[i].element_type = 'l'
+            element_data_ctypes[i].element_type = ('l').encode('utf-8')
 
         element_data_ctypes[i].elements_coplanar = element_data[i]['elements_coplanar']
 

@@ -348,8 +348,11 @@ def plot_dot_displacements_contour(pos, d_pos, x_lim, y_lim, grid_spacing, skip=
     # AUTHOR:
     # Lalit Rajendran (lrajendr@purdue.edu)
 
+    # create 2D co-ordinate grid
+    X, Y = create_coordinate_grid(x_lim, y_lim, grid_spacing)
+    
     # interpolate displacements onto grid
-    pos_grid, d_pos_grid = interpolate_deflections_to_grid(pos, d_pos, x_lim, y_lim, grid_spacing)
+    pos_grid, d_pos_grid = interpolate_deflections_to_grid(pos, d_pos, X, Y)
 
     # calculate displacement magnitude
     d_pos_mag = np.sqrt(d_pos_grid['x']**2 + d_pos_grid['y']**2)
@@ -368,23 +371,19 @@ def plot_dot_displacements_contour(pos, d_pos, x_lim, y_lim, grid_spacing, skip=
 
     # return fig, ax
 
-
-def interpolate_deflections_to_grid(pos, d_pos, x_lim, y_lim, grid_spacing):
-    # Function to interpolate dot deflections to a grid
+def create_coordinate_grid(x_lim, y_lim, grid_spacing): 
+    # Function to create a 2D co-ordinate grid
     #
     # INPUTS:
-    # pos: dot positions
-    # d_pos: dot displacements
     # x_lim, y_lim: axis limits
-    # grid_spacing: spacing of the grid to interpolate the displacements
+    # grid_spacing: spacing of the grid to interpolate the displacements    
     #
     # OUTPUTS:
-    # pos_grid: grid co-ordinates
-    # d_pos_grid: interpolated displacements
+    # X, Y: x,y co-ordinates on the grid (2D arrays)
     #
     # AUTHOR:
     # Lalit Rajendran (lrajendr@purdue.edu)
-
+        
     # calculate number of grid points
     num_grid_points_x = int((x_lim[1] - x_lim[0]) / grid_spacing)
     num_grid_points_y = int((y_lim[1] - y_lim[0]) / grid_spacing)
@@ -393,9 +392,28 @@ def interpolate_deflections_to_grid(pos, d_pos, x_lim, y_lim, grid_spacing):
     x = x_lim[0] + np.linspace(start=0, stop=num_grid_points_x-1, num=num_grid_points_x, endpoint=True) * grid_spacing
     y = y_lim[0] + np.linspace(start=0, stop=num_grid_points_y-1, num=num_grid_points_y, endpoint=True) * grid_spacing
     X, Y = np.meshgrid(x, y)
+
+    return X, Y
+
+def interpolate_deflections_to_grid(pos, d_pos, X, Y):
+    # Function to interpolate dot deflections to a grid
+    #
+    # INPUTS:
+    # pos: dot positions
+    # d_pos: dot displacements
+    # X, Y: co-ordinate grid on which interpolation is to be performed
+    #
+    # OUTPUTS:
+    # pos_grid: grid co-ordinates
+    # d_pos_grid: interpolated displacements
+    #
+    # AUTHOR:
+    # Lalit Rajendran (lrajendr@purdue.edu)
     
     # collect points with non-nan indices
-    valid_idx = np.logical_and(np.isfinite(pos['x']), np.isfinite(pos['y']))
+    valid_idx_pos = np.logical_and(np.isfinite(pos['x']), np.isfinite(pos['y']))
+    valid_idx_dpos = np.logical_and(np.isfinite(d_pos['x']), np.isfinite(d_pos['y']))
+    valid_idx = np.logical_and(valid_idx_pos, valid_idx_dpos)
     x_valid = pos['x'][valid_idx]
     y_valid = pos['y'][valid_idx]
     dx_valid = d_pos['x'][valid_idx]
@@ -405,8 +423,11 @@ def interpolate_deflections_to_grid(pos, d_pos, x_lim, y_lim, grid_spacing):
     points = np.transpose(np.vstack((x_valid, y_valid)))
 
     # interpolate onto grid
-    dx_grid = griddata(points, dx_valid, (X, Y), method='linear')
-    dy_grid = griddata(points, dy_valid, (X, Y), method='linear')
+    dx_grid = griddata(points, dx_valid, (X, Y), method='linear', fill_value=0)
+    dy_grid = griddata(points, dy_valid, (X, Y), method='linear', fill_value=0)
+
+    # dx_grid = griddata(points, dx_valid, (X, Y), method='cubic', fill_value=0)
+    # dy_grid = griddata(points, dy_valid, (X, Y), method='cubic', fill_value=0)
 
     # prepare variables to return
     pos_grid = dict()
@@ -577,18 +598,22 @@ def process_lightray_data(folder, save_results=False, display_progress=False):
     # remove edge dots
     # --------------------------
     dot_diameter = parameters['camera_design']['diffraction_diameter']
-    pos1_dot, dir1_dot = remove_edge_dots(pos1_dot, dir1_dot, buffer=2*dot_diameter, num_pixels=num_pixels)
-    pos2_dot, dir2_dot = remove_edge_dots(pos2_dot, dir2_dot, buffer=2*dot_diameter, num_pixels=num_pixels)
+    # pos1_dot, dir1_dot = remove_edge_dots(pos1_dot, dir1_dot, buffer=2*dot_diameter, num_pixels=num_pixels)
+    # pos2_dot, dir2_dot = remove_edge_dots(pos2_dot, dir2_dot, buffer=2*dot_diameter, num_pixels=num_pixels)
 
-    # --------------------------
-    # remove very large displacements
-    # --------------------------
-    print('Removing Large Deflections')
-    indices = np.argwhere(np.logical_or(abs(d_pos_dot['x']) > 1.5, abs(d_pos_dot['y']) > 1.5))
-    d_pos_dot['x'][indices] = np.nan
-    d_pos_dot['y'][indices] = np.nan
-    d_dir_dot['x'][indices] = np.nan
-    d_dir_dot['y'][indices] = np.nan
+    # # --------------------------
+    # # remove very large displacements
+    # # --------------------------
+    # print('Removing Large Deflections')
+    # indices = np.argwhere(np.logical_or(abs(d_pos_dot['x']) > 5, abs(d_pos_dot['y']) > 5))
+    # # d_pos_dot['x'][indices] = np.nan
+    # # d_pos_dot['y'][indices] = np.nan
+    # # d_dir_dot['x'][indices] = np.nan
+    # # d_dir_dot['y'][indices] = np.nan
+    # d_pos_dot['x'] = np.delete(d_pos_dot['x'], indices)
+    # d_pos_dot['y'] = np.delete(d_pos_dot['y'], indices)
+    # d_dir_dot['x'] = np.delete(d_dir_dot['x'], indices)
+    # d_dir_dot['y'] = np.delete(d_dir_dot['y'], indices)
 
     # display min, max displacements
     print('x: %.2f to %.2f pix.' % (np.nanmin(d_pos_dot['x']), np.nanmax(d_pos_dot['x'])))
