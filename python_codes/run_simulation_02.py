@@ -10,8 +10,6 @@ import scipy.special as scispec
 from bhmie import bhmie
 import tifffile as TIFF
 import matplotlib.image as mpimg
-# import skimage.io as ski_io
-import matplotlib.pyplot as plt
 import sys
 import platform
 
