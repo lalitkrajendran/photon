@@ -47,7 +47,7 @@ def main():
     expected_displacement_pixels = int(expected_displacement_pixels)
     '''
     # simulation type ('piv' or 'bos' or 'calibration')
-    simulation_type = 'piv'
+    simulation_type = 'bos'
 
     # ==========================
     # read/write settings
@@ -65,8 +65,12 @@ def main():
     # generate a sample data structure
     simulation_parameters = CS.create_simulation_parameters(simulation_type)
 
-    simulation_parameters['particle_field']['perform_mie_scattering'] = False
+    # simulation_parameters['particle_field']['perform_mie_scattering'] = False
     
+    # set file containing density gradients if it is a bos simulatoin
+    if simulation_type == 'bos':
+        simulation_parameters['density_gradients']['density_gradient_filename'] = os.path.join(top_data_directory, 'sample-density.nrrd')
+
     # set the final directory where the images for each case will be stored
     simulation_parameters['output_data']['image_directory'] = top_image_directory
     print("image directory", simulation_parameters['output_data']['image_directory'])

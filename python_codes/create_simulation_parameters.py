@@ -229,7 +229,7 @@ def create_simulation_parameters(simulation_type):
     # This specifies the path to the file containing the density gradient data
     simulation_parameters['density_gradients']['density_gradient_filename'] = ''
     # ray tracing algorithm (1 - euler, 2 - rk4, 3 - rk45, 4 - adams-bashforth)
-    simulation_parameters['density_gradients']['ray_tracing_algorithm'] = 1
+    simulation_parameters['density_gradients']['ray_tracing_algorithm'] = 2
     # gladstone dale constant (m^3/kg)
     simulation_parameters['density_gradients']['gladstone_dale'] = 0.225e-3
     # ambient density (kg/m^3)

@@ -9,7 +9,7 @@ UPDATED Instructions for running the software.
 - Run "makefile_simplified" in the terminal - this should compile the codes and generate the file "libparallel_ray_tracing.so"
 - Run "ls -lt libparallel_ray_tracing.so" and check the timestamp to ensure that the file has been recently updated.
 - Navigate to python_codes
-- Run "sample_run_script.sh" to generate a sample piv image
+- Run "sample_run_script.sh piv" to run a sample piv simulation or "sample_run_script.sh bos" to run a sample bos simulation
 
 Dependencies for Python:
 - numpy

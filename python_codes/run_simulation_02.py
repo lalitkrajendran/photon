@@ -1007,7 +1007,7 @@ def calculate_sunflower_coordinates(grid_point_diameter,lightray_number_per_grid
     lightray_point_spacing = np.sqrt(grid_point_area/lightray_number_per_grid_point)
     
     #% This is a vector of radii to place the lightray points at
-    radius_lightray_vector = np.linspace(lightray_point_spacing,(grid_point_diameter/2.0),np.round((grid_point_diameter/2.0)/lightray_point_spacing))
+    radius_lightray_vector = np.linspace(lightray_point_spacing, (grid_point_diameter/2.0), int(np.round((grid_point_diameter/2.0)/lightray_point_spacing)))
     
     #% This is the density of the lightray points per unit distance
     rho = 1.0/lightray_point_spacing
