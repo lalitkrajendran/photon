@@ -4,10 +4,12 @@ Rajendran, L. K., Bane, S., & Vlachos, P. (2019). PIV/BOS synthetic image genera
 
 Please cite the above paper if you use this code package for your work.
 
-Instructions for running the software.
-- Compile parallel_ray_tracing.cu under cuda_codes (see dependencies below).
-- Use create_simulation_parameters.py to create a set of parameters in a python dictionary and save to a .mat file.
-- Use batch run simulation to read parameter file (.mat) and perform the ray tracing.
+UPDATED Instructions for running the software.
+- Navigate to cuda_codes/Debug/
+- Run "makefile_simplified" in the terminal - this should compile the codes and generate the file "libparallel_ray_tracing.so"
+- Run "ls -lt libparallel_ray_tracing.so" and check the timestamp to ensure that the file has been recently updated.
+- Navigate to python_codes
+- Run "sample_run_script.sh" to generate a sample piv image
 
 Dependencies for Python:
 - numpy
