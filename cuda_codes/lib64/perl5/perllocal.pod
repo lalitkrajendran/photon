@@ -1,0 +1,44 @@
+=head2 Mon Mar 13 18:00:20 2017: C<Module> L<Git|Git>
+
+=over 4
+
+=item *
+
+C<installed into: /home/barracuda/a/lrajendr/usr/share/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.01>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Mon Mar 13 18:08:05 2017: C<Module> L<Git|Git>
+
+=over 4
+
+=item *
+
+C<installed into: /home/barracuda/a/lrajendr/usr/share/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.01>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+

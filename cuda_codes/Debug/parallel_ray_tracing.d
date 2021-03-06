@@ -184,7 +184,7 @@
     /usr/include/c++/4.8.2/iostream \
     /usr/include/c++/4.8.2/numeric \
     /usr/include/c++/4.8.2/bits/stl_numeric.h \
-    /scratch/shannon/a/lrajendr/usr/include/teem/nrrd.h \
+    ../include/teem/nrrd.h \
     /usr/include/errno.h \
     /usr/include/bits/errno.h \
     /usr/include/linux/errno.h \
@@ -192,13 +192,13 @@
     /usr/include/asm-generic/errno.h \
     /usr/include/asm-generic/errno-base.h \
     /usr/lib/gcc/x86_64-redhat-linux/4.8.5/include/float.h \
-    /scratch/shannon/a/lrajendr/usr/include/teem/air.h \
-    /scratch/shannon/a/lrajendr/usr/include/teem/airExistsConf.h \
-    /scratch/shannon/a/lrajendr/usr/include/teem/hest.h \
-    /scratch/shannon/a/lrajendr/usr/include/teem/biff.h \
-    /scratch/shannon/a/lrajendr/usr/include/teem/nrrdDefines.h \
-    /scratch/shannon/a/lrajendr/usr/include/teem/nrrdMacros.h \
-    /scratch/shannon/a/lrajendr/usr/include/teem/nrrdEnums.h \
+    ../include/teem/air.h \
+    ../include/teem/airExistsConf.h \
+    ../include/teem/hest.h \
+    ../include/teem/biff.h \
+    ../include/teem/nrrdDefines.h \
+    ../include/teem/nrrdMacros.h \
+    ../include/teem/nrrdEnums.h \
     /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/cuda.h \
     /usr/lib/gcc/x86_64-redhat-linux/4.8.5/include/stdint.h \
     /usr/include/stdint.h \
@@ -234,24 +234,24 @@
     ../helper_cuda.h \
     ../helper_string.h \
     /usr/include/strings.h \
-    /scratch/shannon/c/aether/Projects/BOS/image-generation/analysis/src/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/code/memcpy.cu \
-    /scratch/shannon/c/aether/Projects/BOS/image-generation/analysis/src/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/examples/cuda5_fix/cutil.h \
+    ../CubicInterpolationCUDA/code/memcpy.cu \
+    ../CubicInterpolationCUDA/examples/cuda5_fix/cutil.h \
     /usr/local/cuda-10.1/bin/../targets/x86_64-linux/include/cuda_gl_interop.h \
     /usr/include/GL/gl.h \
     /usr/include/GL/glext.h \
     /usr/include/KHR/khrplatform.h \
     /usr/include/inttypes.h \
-    /scratch/shannon/c/aether/Projects/BOS/image-generation/analysis/src/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/examples/cuda5_fix/helper_timer.h \
-    /scratch/shannon/c/aether/Projects/BOS/image-generation/analysis/src/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/examples/cuda5_fix/exception.h \
+    ../CubicInterpolationCUDA/examples/cuda5_fix/helper_timer.h \
+    ../CubicInterpolationCUDA/examples/cuda5_fix/exception.h \
     /usr/include/c++/4.8.2/stdexcept \
     /usr/include/c++/4.8.2/ctime \
     /usr/include/sys/time.h \
-    /scratch/shannon/c/aether/Projects/BOS/image-generation/analysis/src/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/code/internal/math_func.cu \
-    /scratch/shannon/c/aether/Projects/BOS/image-generation/analysis/src/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/code/internal/version.cu \
-    /scratch/shannon/c/aether/Projects/BOS/image-generation/analysis/src/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/code/cubicTex3D.cu \
-    /scratch/shannon/c/aether/Projects/BOS/image-generation/analysis/src/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/code/internal/bspline_kernel.cu \
-    /scratch/shannon/c/aether/Projects/BOS/image-generation/analysis/src/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/code/internal/cutil_math_bugfixes.h \
-    /scratch/shannon/c/aether/Projects/BOS/image-generation/analysis/src/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/code/internal/cubicTex3D_kernel.cu \
-    /scratch/shannon/c/aether/Projects/BOS/image-generation/analysis/src/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/code/cubicPrefilter3D.cu \
-    /scratch/shannon/c/aether/Projects/BOS/image-generation/analysis/src/cuda-practice/cubic-interpolation/CubicInterpolationCUDA/code/internal/cubicPrefilter_kernel.cu \
+    ../CubicInterpolationCUDA/code/internal/math_func.cu \
+    ../CubicInterpolationCUDA/code/internal/version.cu \
+    ../CubicInterpolationCUDA/code/cubicTex3D.cu \
+    ../CubicInterpolationCUDA/code/internal/bspline_kernel.cu \
+    ../CubicInterpolationCUDA/code/internal/cutil_math_bugfixes.h \
+    ../CubicInterpolationCUDA/code/internal/cubicTex3D_kernel.cu \
+    ../CubicInterpolationCUDA/code/cubicPrefilter3D.cu \
+    ../CubicInterpolationCUDA/code/internal/cubicPrefilter_kernel.cu \
     ../cubic_interpolation_functions.h

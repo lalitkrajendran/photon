@@ -1,0 +1,6 @@
+Name: libssh_threads
+Description: The SSH Library Thread Extension
+Version: 0.7.2
+Libs: -L/home/barracuda/a/lrajendr/usr/lib -lssh_threads
+Cflags: -I/home/barracuda/a/lrajendr/usr/include
+
