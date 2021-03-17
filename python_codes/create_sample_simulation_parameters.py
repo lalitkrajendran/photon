@@ -47,7 +47,7 @@ def main():
     expected_displacement_pixels = int(expected_displacement_pixels)
     '''
     # simulation type ('piv' or 'bos' or 'calibration')
-    simulation_type = 'bos'
+    simulation_type = 'piv'
 
     # ==========================
     # read/write settings
@@ -64,9 +64,15 @@ def main():
 
     # generate a sample data structure
     simulation_parameters = CS.create_simulation_parameters(simulation_type)
+    # simulation_parameters['lens_design']['lens_radius_of_curvature'] = 100e3
+    simulation_parameters['camera_design']['implement_diffraction'] = False
+    # simulation_parameters['particle_field']['particle_number'] = 1
+    simulation_parameters['particle_field']['particle_number'] = 5e4        
+    simulation_parameters['particle_field']['lightray_number_per_particle'] = 1e4
+    simulation_parameters['particle_field']['medium_refractive_index'] = 1.0 #1.33
+    simulation_parameters['particle_field']['particle_refractive_index'] = 1.47
+    # simulation_parameters['particle_field']['particle_refractive_index'] = 1.51
 
-    # simulation_parameters['particle_field']['perform_mie_scattering'] = False
-    
     # set file containing density gradients if it is a bos simulatoin
     if simulation_type == 'bos':
         simulation_parameters['density_gradients']['density_gradient_filename'] = os.path.join(top_data_directory, 'sample-density.nrrd')

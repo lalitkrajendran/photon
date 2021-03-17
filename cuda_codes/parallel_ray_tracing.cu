@@ -118,14 +118,16 @@ __device__ light_ray_data_t generate_lightfield_angular_data(float lens_pitch, f
 	{
 		// if multiple rays are to be traced for each source point, then pick a location
 		// based on a random intersection point
-		x_lens = lens_pitch_scaling_factor * 0.5 * lens_pitch*random_number_1 * cos(2*M_PI*random_number_2);
-		y_lens = lens_pitch_scaling_factor * 0.5 * lens_pitch*random_number_1 * sin(2*M_PI*random_number_2);	
+		// x_lens = lens_pitch_scaling_factor * 0.5 * lens_pitch*random_number_1 * cos(2*M_PI*random_number_2);
+		// y_lens = lens_pitch_scaling_factor * 0.5 * lens_pitch*random_number_1 * sin(2*M_PI*random_number_2);	
+		x_lens = lens_pitch_scaling_factor * 1.0 * lens_pitch * random_number_1 * cos(2*M_PI*random_number_2);
+		y_lens = lens_pitch_scaling_factor * 1.0 * lens_pitch * random_number_1 * sin(2*M_PI*random_number_2);	
 	}
 
 	// calculate the x angles for the light rays
-	float theta_temp = -(x_lens - x_current) / (image_distance - z_current);
+	float theta_temp = atanf(-(x_lens - x_current) / (image_distance - z_current));
 	// calculate the y angles for the light rays
-	float phi_temp = -(y_lens - y_current) / (image_distance - z_current);
+	float phi_temp = atanf(-(y_lens - y_current) / (image_distance - z_current));
 
 	//--------------------------------------------------------------------------------------
 	// compute irradiance of the light ray
@@ -154,7 +156,10 @@ __device__ light_ray_data_t generate_lightfield_angular_data(float lens_pitch, f
 		diameter_index = lightfield_source.diameter_index;
 		// % This calculates the light ray's direction vectors (in the camera
 		// % coordinate system)
-		ray_direction_vector = make_float3(x_lens-x_current,y_lens-y_current,image_distance-z_current);
+		// ray_direction_vector = make_float3(x_lens-x_current,y_lens-y_current,image_distance-z_current);
+		// ray_direction_vector = make_float3(theta_temp, phi_temp, -1.0);
+		// ray_direction_vector = make_float3(cosf(theta_temp), cosf(phi_temp), -1.0);
+		ray_direction_vector = make_float3(tanf(theta_temp), tanf(phi_temp), -1.0);
 
 		// % This normalizes the ray direction vectors
 		ray_direction_vector = normalize(ray_direction_vector);
@@ -172,10 +177,12 @@ __device__ light_ray_data_t generate_lightfield_angular_data(float lens_pitch, f
 		}
 		ray_direction_vector = make_float3(dot_vector[0],dot_vector[1],dot_vector[2]);
 
+		ray_direction_vector = normalize(ray_direction_vector);
+
 		// % This calculates the angle that the light ray direction vectors make
 		// % with the laser propagation direction vector in radians
 		ray_scattering_angles = angleBetween(beam_propagation_vector,ray_direction_vector)*M_PI/180.0;
-
+		
 		// % This calculates the Mie scattering irradiance at the current
 		// % scattered angle and with the current particle diameter using linear interpolation
 
@@ -192,9 +199,15 @@ __device__ light_ray_data_t generate_lightfield_angular_data(float lens_pitch, f
 		// find the scattering irradiance for the given angle and diameter using linear
 		// interpolation
 		ray_scattering_irradiance = irradiance_l + (angle - angle_l)/(angle_u - angle_l) * (irradiance_u - irradiance_l);
-
+		
 		// % This calculates the total irradiance for the current particle's rays
 		irradiance_current=ray_scattering_irradiance*lightfield_source.radiance; //[current_source_point_number];
+	
+		// printf("beam propagation vector: %.2f, %.2f, %.2f\n", beam_propagation_vector.x, beam_propagation_vector.y, beam_propagation_vector.z);
+		// printf("ray position: %.2f, %.2f, %.2f\n", lightfield_source.x, lightfield_source.y, lightfield_source.z);
+		// printf("ray direction vector: %.2f, %.2f, %.2f\n", ray_direction_vector.x, ray_direction_vector.y, ray_direction_vector.z);
+		// printf("pos: (%.2f, %.2f), dir: (%.2f, %.2f), angles: %.2f, irradiance: %.2f\n", lightfield_source.y/1000, lightfield_source.z/1000, ray_direction_vector.y, ray_direction_vector.z, ray_scattering_angles, ray_scattering_irradiance);		
+		
 	}
 	// if not mie scattering, then set irradiance to be uniform (diffuse)
 	else
@@ -211,7 +224,8 @@ __device__ light_ray_data_t generate_lightfield_angular_data(float lens_pitch, f
 	light_ray_data.ray_source_coordinates = make_float3(x_current,y_current,z_current);
 
 	// this is the propagation direction of the light ray
-	light_ray_data.ray_propagation_direction = normalize(make_float3(theta_temp,phi_temp,-1.0));
+	// light_ray_data.ray_propagation_direction = normalize(make_float3(theta_temp,phi_temp,-1.0));
+	light_ray_data.ray_propagation_direction = normalize(make_float3(tanf(theta_temp), tanf(phi_temp), -1.0));
 
 	// this is the wavelength of the light ray
 	light_ray_data.ray_wavelength = beam_wavelength;

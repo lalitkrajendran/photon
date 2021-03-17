@@ -76,7 +76,7 @@ def bhmie(x,refrel,nang):
     # beginning with initial value (0.,0.) at J=NMX
     
     nn = int(nmx)-1
-    d=zeros(nn+1)
+    d=zeros(nn+1, dtype=complex128)
     for n in range(0,nn):
         en = nmx - n
         d[nn-n-1] = (en/y) - (1./ (d[nn-n]+en/y))

@@ -11,6 +11,7 @@ from bhmie import bhmie
 import tifffile as TIFF
 import sys
 import platform
+import helper_functions
 
 if platform.system() == 'Linux':
     mount_directory = '/scratch/shannon/c/aether/'
@@ -891,7 +892,7 @@ def load_lightfield_data(simulation_parameters,optical_system,mie_scattering_dat
 
         # This loads the particle data file to memory
         # mat_contents = sio.loadmat(particle_data_filename_read, squeeze_me = True)
-        particle_data = loadmat(particle_data_filename_read, squeeze_me=True)
+        particle_data = helper_functions.loadmat(particle_data_filename_read, squeeze_me=True)
         # particle_data = pickle.load(open(particle_data_filename_read[:-3] + 'p','rb'))
 
         # reads variable from mat_contents
@@ -909,36 +910,36 @@ def load_lightfield_data(simulation_parameters,optical_system,mie_scattering_dat
         if 'X_Min' in simulation_parameters['particle_field'].keys():
             X_Min = simulation_parameters['particle_field']['X_Min']
         else:
-            X_Min = -1e5 #-7.5e4
+            X_Min = -7.5e4
 
         if 'X_Max' in simulation_parameters['particle_field'].keys():
             X_Max = simulation_parameters['particle_field']['X_Max']
         else:
-            X_Max = 1e5 #+7.5e4
+            X_Max = 7.5e4
 
         if 'Y_Min' in simulation_parameters['particle_field'].keys():
             Y_Min = simulation_parameters['particle_field']['Y_Min']
         else:
-            Y_Min = -1e5 #-7.5e4 #-7.5e4
+            Y_Min = -7.5e4
 
         if 'Y_Max' in simulation_parameters['particle_field'].keys():
             Y_Max = simulation_parameters['particle_field']['Y_Max']
         else:
-            Y_Max = 1e5 #7.5e4 #+7.5e4
+            Y_Max = 7.5e4 
 
         if 'Z_Min' in simulation_parameters['particle_field'].keys():
             Z_Min = simulation_parameters['particle_field']['Z_Min']
         else:
-            Z_Min = -7.5e3 #-7.5e3
+            Z_Min = -7.5e3 
 
         if 'Z_Max' in simulation_parameters['particle_field'].keys():
             Z_Max = simulation_parameters['particle_field']['Z_Max']
         else:
-            Z_Max = +7.5e3 #+7.5e3
+            Z_Max = 7.5e3
 
 
         # if only point is to be generated, then place it in the center of the FOV
-        if int(particle_number) == 1:
+        if particle_number == 1:
             X = np.array([X_Min + 1 * (X_Max - X_Min) / 2.0 + simulation_parameters['camera_design']['pixel_pitch'] / M / 2.0])
             Y = np.array([Y_Min + 1 * (Y_Max - Y_Min) / 2.0 + simulation_parameters['camera_design']['pixel_pitch'] / M / 2.0])
             if 'particle_depth' in simulation_parameters['particle_field'].keys():
@@ -946,11 +947,13 @@ def load_lightfield_data(simulation_parameters,optical_system,mie_scattering_dat
             else:
                 Z = np.array([0.0]) #np.array([Y_Min + 1 * (Z_Max - Z_Min) / 2.0])
         else:
-            # np.random.seed(2445)
+            # X = np.zeros((particle_number, ))
+            # Z = np.zeros((particle_number, ))
+            # Y = np.linspace(start=-(particle_number-1)//2, stop=(particle_number-1)//2, num=particle_number) * (Y_Max - Y_Min)/(particle_number-1)
             np.random.seed()
-            X = (X_Max - X_Min) * np.random.rand(int(particle_number)) + X_Min
-            Y = (Y_Max - Y_Min) * np.random.rand(int(particle_number)) + Y_Min
-            Z = (Z_Max - Z_Min) * np.random.rand(int(particle_number)) + Z_Min
+            X = (X_Max - X_Min) * np.random.rand(particle_number) + X_Min
+            Y = (Y_Max - Y_Min) * np.random.rand(particle_number) + Y_Min
+            Z = (Z_Max - Z_Min) * np.random.rand(particle_number) + Z_Min
 
 
     # This calculates the standard deviation of the Gaussian beam function

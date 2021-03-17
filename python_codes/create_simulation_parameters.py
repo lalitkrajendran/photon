@@ -25,7 +25,7 @@ def create_simulation_parameters(simulation_type):
     # % lens front principal plane and the center of the focal plane) to the
     # % design structure (in microns)
     simulation_parameters['lens_design']['object_distance'] = 700e3
-    simulation_parameters['lens_design']['lens_radius_of_curvature'] = 100e3 #100000.0e3
+    simulation_parameters['lens_design']['lens_radius_of_curvature'] = 100000.0e3
     simulation_parameters['lens_design']['lens_model'] = 'general'
     # fraction of the lens frontal radius that will be used for imaging
     simulation_parameters['lens_design']['ray_cone_pitch_ratio'] = 1e-4
