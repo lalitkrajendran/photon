@@ -45,7 +45,7 @@ def create_simulation_parameters(simulation_type):
     # % less then or equal to 16)
     simulation_parameters['camera_design']['pixel_bit_depth'] = 10
     # % This is the gain of the sensor in decibels
-    simulation_parameters['camera_design']['pixel_gain'] = []
+    simulation_parameters['camera_design']['pixel_gain'] = 25
     # % This is the x angle of the camera to the particle volume
     simulation_parameters['camera_design']['x_camera_angle'] = -0.00 * np.pi / 180.0
     # % This is the y angle of the camera to the particle volume
@@ -93,9 +93,9 @@ def create_simulation_parameters(simulation_type):
         # % This is the number of lightrays to propogate per iteration (this is a
         # % function of the RAM available on the computer)
         simulation_parameters['particle_field']['lightray_process_number'] = 1e6
-        # % This is the gain of the sensor in decibels to be used in the particle
-        # % field simulation
-        simulation_parameters['particle_field']['pixel_gain'] = 30
+        # # % This is the gain of the sensor in decibels to be used in the particle
+        # # % field simulation
+        # simulation_parameters['particle_field']['pixel_gain'] = 30
         # % This is the Full Width Half Maximum of the laser sheet Gaussian function
         # % (in microns) which will produce an illuminated sheet on the XY plane
         simulation_parameters['particle_field']['gaussian_beam_fwhm'] = 0.73e3
@@ -172,9 +172,9 @@ def create_simulation_parameters(simulation_type):
         # % This is the number of lightrays to propogate per iteration (this is a
         # % function of the RAM available on the computer)
         simulation_parameters['calibration_grid']['lightray_process_number'] = 1e6
-        # % This is the gain of the sensor in decibels to be used in the calibration
-        # % grid simulation
-        simulation_parameters['calibration_grid']['pixel_gain'] = 25
+        # # % This is the gain of the sensor in decibels to be used in the calibration
+        # # % grid simulation
+        # simulation_parameters['calibration_grid']['pixel_gain'] = 25
 
     elif simulation_type == 'bos':
         # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -201,9 +201,9 @@ def create_simulation_parameters(simulation_type):
         # % This is the number of lightrays to propogate per iteration (this is a
         # % function of the RAM available on the computer)
         simulation_parameters['bos_pattern']['lightray_process_number'] = 1e6
-        # % This is the gain of the sensor in decibels to be used in the calibration
-        # % grid simulation
-        simulation_parameters['bos_pattern']['pixel_gain'] = 25
+        # # % This is the gain of the sensor in decibels to be used in the calibration
+        # # % grid simulation
+        # simulation_parameters['bos_pattern']['pixel_gain'] = 25
         # This sets the minimum and maximum values of the X co-ordinate of the bos pattern target
         simulation_parameters['bos_pattern']['X_Min'] = -7.5e4
         simulation_parameters['bos_pattern']['X_Max'] = +7.5e4
