@@ -1074,18 +1074,18 @@ def generate_calibration_lightfield_data(simulation_parameters,optical_system,pl
     # % This extracts the calibration plane spacing from the structure
     calibration_plane_spacing = simulation_parameters['calibration_grid']['calibration_plane_spacing']
     # % This extracts the calibration plane number from the structure
-    calibration_plane_number = simulation_parameters['calibration_grid']['calibration_plane_number']
+    calibration_plane_number = int(simulation_parameters['calibration_grid']['calibration_plane_number'])
     # % This extracts the grid point diameter from the structure
     grid_point_diameter = simulation_parameters['calibration_grid']['grid_point_diameter']
     # % This extracts the grid point spacing from the structure
     x_grid_point_spacing = simulation_parameters['calibration_grid']['x_grid_point_spacing']
     y_grid_point_spacing = simulation_parameters['calibration_grid']['y_grid_point_spacing']
     # % This extracts the grid point number from the calibration structure
-    x_grid_point_number = simulation_parameters['calibration_grid']['x_grid_point_number'] 
-    y_grid_point_number = simulation_parameters['calibration_grid']['y_grid_point_number']
+    x_grid_point_number = int(simulation_parameters['calibration_grid']['x_grid_point_number']) 
+    y_grid_point_number = int(simulation_parameters['calibration_grid']['y_grid_point_number'])
     # % This extracts the number of light source partciles per grid point from 
     # % the calibration structure
-    particle_number_per_grid_point = simulation_parameters['calibration_grid']['particle_number_per_grid_point']
+    particle_number_per_grid_point = int(simulation_parameters['calibration_grid']['particle_number_per_grid_point'])
 
     # % This extracts the x angle of the camera to the particle volume
     x_camera_angle = simulation_parameters['camera_design']['x_camera_angle']
@@ -1243,7 +1243,8 @@ def generate_calibration_lightfield_data(simulation_parameters,optical_system,pl
 	# of the GPU memory, and threads-blocks-grids specifications
     lightfield_source['source_point_number'] = 10000
     lightfield_source['z_offset'] = z_offset
-
+    lightfield_source['object_distance'] = object_distance
+    
     return lightfield_source
 
 
@@ -1877,7 +1878,7 @@ def run_simulation_02(simulation_parameters):
                         format='5',
                         long_field_names=True)
 
-    elif simulation_parameters['simulation_type'] == 'calibration':
+    elif simulation_parameters['simulation_type'] == 'cal':
         # # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         # # % Calibration Grid Simulation                                             %
         # # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1898,84 +1899,79 @@ def run_simulation_02(simulation_parameters):
         # # % grid simulation
         # pixel_gain = simulation_parameters['calibration_grid']['pixel_gain']
 
-        # generate_calibration_grid_images = True
-        # % This generates the calibration grid images if specified by the parameters
-        # % structure
-        if generate_calibration_grid_images:
+        # % This displays that the calibration images are being simulated
+        # fprintf('\n\n');
+        print('Simulating calibration images . . . ')
 
-            # % This displays that the calibration images are being simulated
-            # fprintf('\n\n');
-            print('Simulating calibration images . . . ')
+        # % This sets the scattering type to diffuse for the calibration grid
+        # % simulation
+        scattering_type = 'diffuse'
+        # % This sets the scattering data to a Null value for the calibration grid
+        scattering_data = None
 
-            # % This sets the scattering type to diffuse for the calibration grid
-            # % simulation
-            scattering_type = 'diffuse'
-            # % This sets the scattering data to a Null value for the calibration grid
-            scattering_data = None
+        field_type = 'calibration'
 
-            field_type = 'calibration'
+        # generate random numbers for light ray intersection with lens
+        generate_random_numbers_for_lightrays(lightray_number_per_particle)
 
-            # generate random numbers for light ray intersection with lens
-            generate_random_numbers_for_lightrays(lightray_number_per_particle)
+        # % This iterates through the calibration grid planes performing the ray
+        # % tracing operations for each plane
+        for plane_index in range(1,calibration_plane_number+1):
 
-            # % This iterates through the calibration grid planes performing the ray
-            # % tracing operations for each plane
-            for plane_index in range(1,calibration_plane_number+1):
+            # % This creates the lightfield data for performing the raytracing operation
+            lightfield_source = generate_calibration_lightfield_data(simulation_parameters,optical_system,plane_index-1)
+            # % This adds the number of lightrays per particle to the
+            # % 'lightfield_source' data
+            lightfield_source['lightray_number_per_particle'] = lightray_number_per_particle
+            # % This adds the number of lightrays to simulateously process to the
+            # % 'lightfield_source' data
+            lightfield_source['lightray_process_number'] = lightray_process_number
+            # save data to mat file
+            # convert none to NAN just for MATLAB
+            scattering_data = np.NAN
 
-                # % This creates the lightfield data for performing the raytracing operation
-                lightfield_source = generate_calibration_lightfield_data(simulation_parameters,optical_system,plane_index-1)
-                # % This adds the number of lightrays per particle to the
-                # % 'lightfield_source' data
-                lightfield_source['lightray_number_per_particle'] = lightray_number_per_particle
-                # % This adds the number of lightrays to simulateously process to the
-                # % 'lightfield_source' data
-                lightfield_source['lightray_process_number'] = lightray_process_number
-                # save data to mat file
-                # convert none to NAN just for MATLAB
-                scattering_data = np.NAN
+            if simulation_parameters['output_data']['save_lightrays']:
+                simulation_parameters['output_data']['lightray_positions_filepath'] = os.path.join(image_directory, 'light-ray-positions', 'plane%02d' % (plane_index))
+                # if the write directory does not exist, create it
+                if (not (os.path.exists(simulation_parameters['output_data']['lightray_positions_filepath']))):
+                    os.makedirs(simulation_parameters['output_data']['lightray_positions_filepath'])
+                # if it exists, then delete the old parameter files
+                else:
+                    files = glob.glob(os.path.join(simulation_parameters['output_data']['lightray_positions_filepath'], '*.bin'))
+                    for f in files:
+                        os.remove(f)
 
-                if simulation_parameters['output_data']['save_lightrays']:
-                    simulation_parameters['output_data']['lightray_positions_filepath'] = os.path.join(image_directory, 'light-ray-positions', 'plane%02d' % (plane_index))
-                    # if the write directory does not exist, create it
-                    if (not (os.path.exists(simulation_parameters['output_data']['lightray_positions_filepath']))):
-                        os.makedirs(simulation_parameters['output_data']['lightray_positions_filepath'])
-                    # if it exists, then delete the old parameter files
-                    else:
-                        files = glob.glob(os.path.join(simulation_parameters['output_data']['lightray_positions_filepath'], '*.bin'))
-                        for f in files:
-                            os.remove(f)
+                simulation_parameters['output_data']['lightray_directions_filepath'] = os.path.join(image_directory, 'light-ray-directions', 'plane%02d' % (plane_index))
+                # if the write directory does not exist, create it
+                if (not (os.path.exists(simulation_parameters['output_data']['lightray_directions_filepath']))):
+                    os.makedirs(simulation_parameters['output_data']['lightray_directions_filepath'])
+                # if it exists, then delete the old parameter files
+                else:
+                    files = glob.glob(os.path.join(simulation_parameters['output_data']['lightray_directions_filepath'], '*.bin'))
+                    for f in files:
+                        os.remove(f)
 
-                    simulation_parameters['output_data']['lightray_directions_filepath'] = os.path.join(image_directory, 'light-ray-directions', 'plane%02d' % (plane_index))
-                    # if the write directory does not exist, create it
-                    if (not (os.path.exists(simulation_parameters['output_data']['lightray_directions_filepath']))):
-                        os.makedirs(simulation_parameters['output_data']['lightray_directions_filepath'])
-                    # if it exists, then delete the old parameter files
-                    else:
-                        files = glob.glob(os.path.join(simulation_parameters['output_data']['lightray_directions_filepath'], '*.bin'))
-                        for f in files:
-                            os.remove(f)
+            # % This performs the ray tracing to generate the sensor image
+            I, I_raw = perform_ray_tracing_03(simulation_parameters,optical_system,pixel_gain,scattering_data,scattering_type,lightfield_source,field_type)
 
-                # % This performs the ray tracing to generate the sensor image
-                I, I_raw = perform_ray_tracing_03(simulation_parameters,optical_system,pixel_gain,scattering_data,scattering_type,lightfield_source,field_type)
+            # % This is the filename to save the image data to
+            image_filename_write = os.path.join(tif_image_directory, 'calibration_image_plane_' + '%04d' % plane_index + '.tif')
 
-                # % This is the filename to save the image data to
-                image_filename_write = os.path.join(tif_image_directory, 'calibration_image_plane_' + '%04d' % plane_index + '.tif')
+            # % This saves the image to memory
+            TIFF.imsave(image_filename_write, I)
 
-                # % This saves the image to memory
-                TIFF.imsave(image_filename_write, I)
+            # this is the filename to save the raw image data to
+            raw_image_filename_write = os.path.join(raw_image_directory, 'calibration_image_plane_' + '%04d' % plane_index + '.bin')
 
-                # this is the filename to save the raw image data to
-                raw_image_filename_write = os.path.join(raw_image_directory, 'calibration_image_plane_' + '%04d' % plane_index + '.bin')
+            # % This saves the image to memory
+            I_raw.tofile(raw_image_filename_write)
 
-                # % This saves the image to memory
-                I_raw.tofile(raw_image_filename_write)
-
-            # save parameters to file
-            sio.savemat(os.path.join(image_directory, 'parameters.mat'), simulation_parameters, appendmat=True,
-                        format='5',
-                        long_field_names=True)
-            sio.savemat(os.path.join(image_directory, 'optical_system.mat'), optical_system, appendmat=True, format='5',
-                        long_field_names=True)
+        # save parameters to file
+        sio.savemat(os.path.join(image_directory, 'parameters.mat'), simulation_parameters, appendmat=True,
+                    format='5',
+                    long_field_names=True)
+        sio.savemat(os.path.join(image_directory, 'optical_system.mat'), optical_system, appendmat=True, format='5',
+                    long_field_names=True)
 
     elif simulation_parameters['simulation_type'] == 'bos':
         # # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

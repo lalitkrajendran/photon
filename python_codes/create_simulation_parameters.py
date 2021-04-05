@@ -5,7 +5,7 @@ def create_simulation_parameters(simulation_type):
     # % This function is designed to create a basic parameters structure for
     # % controlling simulating data using the thick lens camera simulation
     # % code.
-    # specify simulation type as "piv"/"bos"/"calibration"
+    # specify simulation type as "piv"/"bos"/"cal"
 
     # % This initializes the simulation parameters structure
     simulation_parameters = {}
@@ -141,7 +141,7 @@ def create_simulation_parameters(simulation_type):
         # % particles (in microns)
         simulation_parameters['particle_field']['beam_wavelength'] = 0.532
 
-    elif simulation_type == 'calibration':
+    elif simulation_type == 'cal':
         # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         # % Calibration Grid Parameters                                             %
         # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
