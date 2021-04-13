@@ -19,18 +19,6 @@ else:
     mount_directory = '/Volumes/aether_c/'
 
 # os.environ['LD_LIBRARY_PATH'] = '~/usr/lib/python2.7'
-# os.environ['LD_LIBRARY_PATH'] += ':../cuda_codes/lib/:../cuda_codes/lib64/'
-old = os.environ.get("LD_LIBRARY_PATH")
-path_1 = os.path.join(os.path.abspath('..'), 'cuda_codes/lib')
-path_2 = os.path.join(os.path.abspath('..'), 'cuda_codes/lib64')
-
-# PATH = os.path.abspath('..') + 'cuda_codes/lib/:../cuda_codes/lib64/'
-PATH = path_1 + ':' + path_2
-
-if old:
-    os.environ["LD_LIBRARY_PATH"] = old + ":" + PATH
-else:
-    os.environ["LD_LIBRARY_PATH"] = PATH
 print(os.environ['LD_LIBRARY_PATH'])
 
 # exit(0)
