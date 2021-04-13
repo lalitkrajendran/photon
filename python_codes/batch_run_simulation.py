@@ -19,8 +19,16 @@ else:
     mount_directory = '/Volumes/aether_c/'
 
 # os.environ['LD_LIBRARY_PATH'] = '~/usr/lib/python2.7'
-os.environ['LD_LIBRARY_PATH'] += ':../cuda_codes/lib/:../cuda_codes/lib64/'
-print(os.environ['LD_LIBRARY_PATH'])
+# os.environ['LD_LIBRARY_PATH'] += ':../cuda_codes/lib/:../cuda_codes/lib64/'
+# print(os.environ['LD_LIBRARY_PATH'])
+
+old = os.environ.get("LD_LIBRARY_PATH")
+PATH = '../cuda_codes/lib/:../cuda_codes/lib64/'
+if old:
+    os.environ["LD_LIBRARY_PATH"] = old + ":" + PATH
+else:
+    os.environ["LD_LIBRARY_PATH"] = PATH
+
 # exit(0)
 # get the starting index, and the number of parameter files to read at a time
 script, filepath, starting_index, number_of_parameter_files = argv
