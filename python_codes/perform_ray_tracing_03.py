@@ -2110,6 +2110,8 @@ def perform_ray_tracing_03(simulation_parameters, optical_system, pixel_gain, sc
     simulate_density_gradients = simulation_parameters['density_gradients']['simulate_density_gradients']
     if simulate_density_gradients:
         density_grad_filename = simulation_parameters['density_gradients']['density_gradient_filename']
+        # convert path to absolute path
+        density_grad_filename = os.path.abspath(density_grad_filename)
         ray_tracing_algorithm = int(simulation_parameters['density_gradients']['ray_tracing_algorithm'])
     else:
         density_grad_filename = ''
