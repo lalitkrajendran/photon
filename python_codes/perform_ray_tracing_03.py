@@ -1882,6 +1882,8 @@ def prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, sc
     # -------------------------------------------------------------------------------------------------------------------
     # call cuda code
     # -------------------------------------------------------------------------------------------------------------------
+    print(os.environ['LD_LIBRARY_PATH'])
+
     # import cuda code
     cuda_func = ctypes.CDLL(os.path.abspath('../cuda_codes/Debug/libparallel_ray_tracing.so'))
 
