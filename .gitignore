@@ -3,7 +3,8 @@
 *.pyc
 #object files
 *.o
-*.so
+cuda_codes/Debug/libparallel_ray_tracing.so
+#*.so
 #.mat files
 #**.mat
 
