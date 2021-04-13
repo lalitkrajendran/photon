@@ -21,7 +21,7 @@ else:
 # os.environ['LD_LIBRARY_PATH'] = '~/usr/lib/python2.7'
 # os.environ['LD_LIBRARY_PATH'] += ':../cuda_codes/lib/:../cuda_codes/lib64/'
 old = os.environ.get("LD_LIBRARY_PATH")
-PATH = '../cuda_codes/lib/:../cuda_codes/lib64/'
+PATH = os.getcwd() + '../cuda_codes/lib/:../cuda_codes/lib64/'
 if old:
     os.environ["LD_LIBRARY_PATH"] = old + ":" + PATH
 else:
