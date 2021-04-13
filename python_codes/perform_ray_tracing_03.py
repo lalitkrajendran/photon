@@ -9,6 +9,10 @@ import scipy.integrate as siint
 from scipy.interpolate import interp1d
 import ctypes
 import numpy.ctypeslib as npct
+
+import sys
+
+sys.path.append('../cuda_codes/lib/')
 # from skimage import exposure
 
 def create_element_coordinate_data(optical_element):
@@ -1879,7 +1883,7 @@ def prepare_data_for_cytpes_call(lens_pitch, image_distance, scattering_data, sc
     # call cuda code
     # -------------------------------------------------------------------------------------------------------------------
     # import cuda code
-    cuda_func = ctypes.CDLL('../cuda_codes/Debug/libparallel_ray_tracing.so')
+    cuda_func = ctypes.CDLL(os.path.abspath('../cuda_codes/Debug/libparallel_ray_tracing.so'))
 
     # # specify the properties of the function that will save the input parameters to a file for debugging later
     # # these are the argument data types
