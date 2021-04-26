@@ -10,6 +10,7 @@ UPDATED Instructions for running the software.
 - Run "ls -lt libparallel_ray_tracing.so" and check the timestamp to ensure that the file has been recently updated.
 - Type "export LD_LIBRARY_PATH=$(cd ../ && pwd)/lib:$(cd ../ && pwd)/lib64" in the terminal command
 - Then type "echo $LD_LIBRARY_PATH" and confirm that it displays something like: "path-to-photon/cuda_codes/lib:path-to-photon/cuda_codes/lib64"
+- To avoid performing the above two steps everytime, add the two commands to a bash initialization script (such as .bashrc or .profile)
 - Navigate to python_codes
 - Run "sample_run_script.sh piv" to run a sample piv simulation or "sample_run_script.sh bos" to run a sample bos simulation
 
